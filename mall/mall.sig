@@ -17,6 +17,7 @@ type    list_o                  o -> list_o -> list_o.
 
 type 	split 			list_o -> list_o -> list_o -> o.
 type 	memb_and_rest		o -> list_o -> list_o -> o.
+type 	eq 			list_o -> list_o -> o.
 
 %% MALL
 kind	term, form		 type.
