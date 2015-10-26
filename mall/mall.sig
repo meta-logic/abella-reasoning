@@ -1,0 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%				      %%
+%%       MALL specification in        %%
+%%       λProlog	      	      %%
+%%				      %%
+%%	 Leonardo Lima, 2015          %%
+%%				      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sig mall.
+
+%% List
+kind    list_o                  type.
+
+type    empty 			list_o.
+type    list_o                  o -> list_o -> list_o.
+
+type 	split 			list_o -> list_o -> list_o -> o.
+type 	memb_and_rest		o -> list_o -> list_o -> o.
+
+%% MALL
+kind	term, form		 type.
+
+type	zero, one, bot, top	 o.
+type	p			 term -> o.
+type	tensor, par, plus, with  o -> o -> o.
+type	formula	     	         o -> o.
+type    prove		 	 list_o -> list_o -> o.
+type 	a, b			 term.

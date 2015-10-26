@@ -1,0 +1,8 @@
+%% Cut elimination for MALL
+
+Specification mall.
+
+Theorem tensor_with :
+	{prove G (list_ (tensor (p a) (p b)) D)} ->
+	{prove G (list_ (with (p a) (p b)) D)} ->
+	G = empty -> D = empty. % Dummy theorem

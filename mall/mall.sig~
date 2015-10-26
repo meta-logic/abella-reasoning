@@ -1,0 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%				      %%
+%%       MALL specification in        %%
+%%       λProlog	      	      %%
+%%				      %%
+%%	 Leonardo Lima, 2015          %%
+%%				      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sig mall.
+
+%% List
+kind    list_                   type -> type. % Abella doesn't accept inductively defined types such as this
+
+type    empty 			list_ A.
+type    list_                   A -> list_ A -> list_ A.
+
+type 	split 			list_ A -> list_ A -> list_ A -> o.
+type 	memb_and_rest		A -> list_ A -> list_ A -> o.
+
+%% MALL
+kind	term, form		 type.
+
+type	zero, one, bot, top	 form.
+type	p			 term -> form.
+type	tensor, par, plus, with  form -> form -> form.
+type	formula	     	         form -> o.
+type    prove		 	 list_ form -> list_ form -> o.
+type 	a, b			 term.
