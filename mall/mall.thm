@@ -1,8 +1,32 @@
 %% Cut elimination for MALL
 
-Specification mall.
+Specification "mall".
 
-Theorem tensor_with :
-	{prove G (list_ (tensor (p a) (p b)) D)} ->
-	{prove G (list_ (with (p a) (p b)) D)} ->
-	G = empty -> D = empty. % Dummy theorem
+%% Lemma 1: cut permutes up
+
+%% G4 = G2 U G3; D4 = D2 U D3
+Theorem tensor_r_cut1 :
+	forall A B C G2 G3 G4 D2 D3 D4,
+	(
+		{prove (list_o C G2) (list_o A D2)} /\ {prove G3 (list_o B D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
+		{prove (list_o C G4) (list_o (tensor A B) D4)}
+	). %intros. case H1.
+
+%% G4 = G2 U G3; D4 = D2 U D3
+%% G5 = G1 U G4; D5 = D1 U D4
+Theorem tensor_r_cut2 :	
+	forall A B C G1 G2 G3 G4 G5 D1 D2 D3 D4 D5, 
+	(
+		(
+		{prove (list_o C G2) (list_o A D2)} /\ {prove G3 (list_o B D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
+		{prove (list_o C G4) (list_o (tensor A B) D4)}
+		) /\ {prove G1 (list_o C D1)} /\ {split G1 G4 G5} /\ {split D1 D4 D5} ->
+		{prove G5 (list_o (tensor A B) D5)}
+	) ->
+	(
+	 	(
+	 	{prove G2 (list_o C D2)} /\ {prove (list_o C G3) (list_o A D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
+	 	{prove G4 (list_o A D4)}
+	 	) /\ {prove G1 (list_o B D1)} /\ {split G1 G4 G5} /\ {split D1 D4 D5} ->
+	 	{prove G5 (list_o (tensor A B) D5)}
+	). %intros. case H2.

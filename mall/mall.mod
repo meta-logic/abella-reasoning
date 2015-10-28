@@ -9,7 +9,7 @@
 
 module mall.
 
-%% Treatment of equality
+%% Equality
 eq X X.
 
 %% list_o is the data structure used to handle contexts (multisets of formulas)
@@ -18,7 +18,7 @@ memb_and_rest X (list_o X L) L.
 memb_and_rest X (list_o Y L1) (list_o Y L2) :- memb_and_rest X L1 L2.
 
 %% Splitting contexts 
-%% For computationally expensive cases use Dale's another solution
+%% For computationally expensive cases use Dale's solution
 split empty empty empty.
 split (list_o X L1) L2 (list_o Y L3) :- split L1 L2 L3.
 
