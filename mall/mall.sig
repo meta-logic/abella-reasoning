@@ -20,7 +20,7 @@ type 	memb_and_rest		o -> list_o -> list_o -> o.
 type 	eq 			list_o -> list_o -> o.
 
 %% MALL
-kind	term, form		 type.
+kind	term                     type.
 
 type	zero, one, bot, top	 o.
 type	p			 term -> o.
@@ -28,4 +28,7 @@ type	tensor, par, plus, with  o -> o -> o.
 %type	formula	     	         o -> o.
 type    prove		 	 list_o -> list_o -> o.
 type 	a, b			 term.
+
+type    composite                o -> o.
+type    atomic                   o -> o.
 

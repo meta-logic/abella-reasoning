@@ -24,6 +24,14 @@ split empty empty empty.
 split (list_o X L1) L2 (list_o X L3) :- split L1 L2 L3.
 split (list_o X L1) (list_o X L2) L3 :- split L1 L2 L3.
 
+%% Composite and atomic formulas
+% Note: by this definition, the units are considered atomic.
+composite (tensor A B).
+composite (par A B).
+composite (with A B).
+composite (plus A B).
+atomic A :- not (composite A).
+
 %% example: prove (list_o (plus (p a) (p b)) empty) (list_o (with (p a) (p b)) (list_o (p a) (list_o (p b) empty))).
 
 %% Identity rules
@@ -34,8 +42,8 @@ prove Gamma Delta :- memb_and_rest A Gamma empty,
 prove Gamma Delta :- memb_and_rest one Gamma Gamma',
       	    	     prove Gamma' Delta.				% oneL
 
-prove Gamma Delta :- memb_and_rest one Delta Delta',
-      	    	     eq Gamma empty, eq Delta' empty.			% oneR
+prove Gamma Delta :- memb_and_rest one Delta empty,
+                     eq Gamma empty.                                    % oneR
 
 prove Gamma Delta :- memb_and_rest (tensor A B) Gamma Gamma',
       	    	     prove (list_o A (list_o B Gamma')) Delta.		% tensorL
@@ -44,8 +52,8 @@ prove Gamma Delta :- memb_and_rest (tensor A B) Delta Delta',
       	    	     split Delta' D1 D2, split Gamma G1 G2,
       	    	     prove G1 (list_o A D1), prove G2 (list_o B D2).	% tensorR
 
-prove Gamma Delta :- memb_and_rest bot Gamma Gamma',
-      	    	     eq Gamma' empty, eq Delta empty.			% botL
+prove Gamma Delta :- memb_and_rest bot Gamma empty,
+                     eq Delta empty.                                    % botL
 
 prove Gamma Delta :- memb_and_rest bot Delta Delta',
       	    	     prove Gamma Delta'.				% botR
