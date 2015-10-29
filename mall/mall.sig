@@ -25,6 +25,7 @@ kind	term, form		 type.
 type	zero, one, bot, top	 o.
 type	p			 term -> o.
 type	tensor, par, plus, with  o -> o -> o.
-type	formula	     	         o -> o.
+%type	formula	     	         o -> o.
 type    prove		 	 list_o -> list_o -> o.
 type 	a, b			 term.
+

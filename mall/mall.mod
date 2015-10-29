@@ -13,14 +13,16 @@ module mall.
 eq X X.
 
 %% list_o is the data structure used to handle contexts (multisets of formulas)
-%% list_o A (list_ B (list_ C empty)) is equivalent to (A::B::C::nil)
+%% list_o A (list_o B (list_o C empty)) is equivalent to (A::B::C::nil)
 memb_and_rest X (list_o X L) L.
 memb_and_rest X (list_o Y L1) (list_o Y L2) :- memb_and_rest X L1 L2.
 
 %% Splitting contexts 
+%% split L1 L2 L3 => L2 + L3 = L1.
 %% For computationally expensive cases use Dale's solution
 split empty empty empty.
-split (list_o X L1) L2 (list_o Y L3) :- split L1 L2 L3.
+split (list_o X L1) L2 (list_o X L3) :- split L1 L2 L3.
+split (list_o X L1) (list_o X L2) L3 :- split L1 L2 L3.
 
 %% example: prove (list_o (plus (p a) (p b)) empty) (list_o (with (p a) (p b)) (list_o (p a) (list_o (p b) empty))).
 
