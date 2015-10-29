@@ -15,6 +15,18 @@ intros.
 case H1.
 search.
 
+%% Initial can be reduced to the atomic case.
+
+Theorem init_tensor: forall A B,
+  { prove (list_o (tensor A B) empty) (list_o (tensor A B) empty) } -> 
+    ( { prove (list_o A empty) (list_o A empty) } /\ 
+      { prove (list_o B empty) (list_o B empty) } ).
+
+induction on 1.
+intros.
+case H1.
+% search 17 times works... not sure yet this is what I want.
+
 %% Lemma 1: cut permutes up
 
 %% G4 = G2 U G3; D4 = D2 U D3

@@ -26,11 +26,11 @@ split (list_o X L1) (list_o X L2) L3 :- split L1 L2 L3.
 
 %% Composite and atomic formulas
 % Note: by this definition, the units are considered atomic.
-composite (tensor A B).
-composite (par A B).
-composite (with A B).
-composite (plus A B).
-atomic A :- not (composite A).
+%composite (tensor A B).
+%composite (par A B).
+%composite (with A B).
+%composite (plus A B).
+%atomic A :- not (composite A).
 
 %% example: prove (list_o (plus (p a) (p b)) empty) (list_o (with (p a) (p b)) (list_o (p a) (list_o (p b) empty))).
 
