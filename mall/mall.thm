@@ -2,8 +2,9 @@
 
 Specification "mall".
 
-% More verbose output so that we can see how variables are instantiated
+% More verbose output
 Set instantiations on.
+Set witnesses on.
 
 %% Toy theorems for practicing.
 
@@ -34,17 +35,45 @@ Theorem tensor_r: forall A B,
 	search. search. search. search.
 	% Probably unfold (named clause) followed by witness (something) is not the right thing to do
 
-%% Initial can be reduced to the atomic case.
+%% Auxiliary definitions
+
+Define formula: o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (with A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (atom A).
+
+%% Admissibility of non-atomic initials.
+
+% Lemmas
 
 Theorem init_tensor: forall A B,
-  { prove (list_o (tensor A B) empty) (list_o (tensor A B) empty) } -> 
-    ( { prove (list_o A empty) (list_o A empty) } /\ 
-      { prove (list_o B empty) (list_o B empty) } ).
+  ( { prove (list_o A empty) (list_o A empty) } /\ 
+    { prove (list_o B empty) (list_o B empty) } ) ->
+  { prove (list_o (tensor A B) empty) (list_o (tensor A B) empty) }.
 
-induction on 1.
-intros.
-case H1.
-% search 17 times works... not sure yet this is what I want.
+intros. case H1.
+unfold tensorl.
+  witness A. witness B. witness empty.
+  split. 
+    search.
+    unfold tensorr.
+      witness A. witness B. witness empty. witness empty. witness empty.
+      witness (list_o A empty). witness (list_o B empty).
+      split.
+        search. search. search. search. search.
+
+% Admissibility of non-atomic initial: main theorem
+
+Theorem atomic_initial: forall A,
+  formula A -> { prove (list_o A empty) (list_o A empty) }.
+
+induction on 1. intros. case H1.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_tensor. search.
+% TODO: finish this proof when we have the lemmas for all connectives.
 
 %% Lemma 1: cut permutes up
 

@@ -35,8 +35,8 @@ split (list_o X L1) (list_o X L2) L3 :- split L1 L2 L3.
 %% example: prove (list_o (plus (p a) (p b)) empty) (list_o (with (p a) (p b)) (list_o (p a) (list_o (p b) empty))).
 
 %% Identity rules
-prove Gamma Delta :- memb_and_rest A Gamma empty,
-                     memb_and_rest A Delta empty.                       % init
+prove Gamma Delta :- memb_and_rest (atom A) Gamma empty,
+                     memb_and_rest (atom A) Delta empty.                % init
 
 %% Multiplicative rules
 prove Gamma Delta :- memb_and_rest one Gamma Gamma',
