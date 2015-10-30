@@ -1,4 +1,4 @@
-%% Cut elimination for MALL
+%% Admissibility of non-atomic initials
 
 Specification "mall".
 
@@ -6,36 +6,7 @@ Specification "mall".
 Set instantiations on.
 Set witnesses on.
 
-%% Toy theorems for practicing.
-
-Theorem empty_split: forall L,
-  { split L empty empty } -> L = empty.
-
-induction on 1.
-intros.
-case H1.
-search.
-
-Theorem plus_l: forall A B G D,
-	({prove (list_o A G) D} /\
-	{prove (list_o B G) D}) ->
-	{prove (list_o (plus A B) G) D}.
-	intros. case H1. unfold plusl.
-	witness A. witness B. witness G.
-	split. search. search. search.
-
-Theorem tensor_r: forall A B,
-	({prove (list_o A empty) (list_o A empty)} /\
-	{prove (list_o B empty) (list_o B empty)}) ->
-	{prove (list_o A (list_o B empty)) (list_o (tensor A B) empty)}.
-	intros. case H1. unfold tensorr.
-	witness A. witness B.
-	witness empty. witness empty. witness empty.
-	witness (list_o A empty). witness (list_o B empty).
-	search. search. search. search.
-	% Probably unfold (named clause) followed by witness (something) is not the right thing to do
-
-%% Auxiliary definitions
+% Auxiliary definitions
 
 Define formula: o -> prop by
   formula (tensor A B) := formula A /\ formula B ;
@@ -43,8 +14,6 @@ Define formula: o -> prop by
   formula (with A B) := formula A /\ formula B ;
   formula (par A B) := formula A /\ formula B ;
   formula (atom A).
-
-%% Admissibility of non-atomic initials.
 
 % Lemmas
 
@@ -62,9 +31,76 @@ unfold tensorl.
       witness A. witness B. witness empty. witness empty. witness empty.
       witness (list_o A empty). witness (list_o B empty).
       split.
-        search. search. search. search. search.
+        search. 
+        search. 
+        search. 
+        search. 
+        search.
 
-% Admissibility of non-atomic initial: main theorem
+Theorem init_plus: forall A B,
+  ( { prove (list_o A empty) (list_o A empty) } /\ 
+    { prove (list_o B empty) (list_o B empty) } ) ->
+  { prove (list_o (plus A B) empty) (list_o (plus A B) empty) }.
+
+intros. case H1.
+unfold plusl.
+  witness A. witness B. witness empty.
+  split.
+    search.
+    unfold plusr1.
+      witness A. witness B. witness empty.
+      split.
+        search.
+        search.
+    unfold plusr2.
+      witness A. witness B. witness empty.
+      split.
+        search.
+        search.
+
+Theorem init_with: forall A B,
+  ( { prove (list_o A empty) (list_o A empty) } /\ 
+    { prove (list_o B empty) (list_o B empty) } ) ->
+  { prove (list_o (with A B) empty) (list_o (with A B) empty) }.
+
+intros. case H1.
+unfold withr.
+  witness A. witness B. witness empty.
+  split.
+    search.
+    unfold withl1.
+      witness A. witness B. witness empty.
+      split.
+        search.
+        search.
+    unfold withl2.
+      witness A. witness B. witness empty.
+      split.
+        search.
+        search.
+
+Theorem init_par: forall A B,
+  ( { prove (list_o A empty) (list_o A empty) } /\ 
+    { prove (list_o B empty) (list_o B empty) } ) ->
+  { prove (list_o (par A B) empty) (list_o (par A B) empty) }.
+
+intros. case H1.
+unfold parr.
+  witness A. witness B. witness empty.
+  split. 
+    search.
+    unfold parl.
+      witness A. witness B. witness empty. witness empty. witness empty.
+      witness (list_o A empty). witness (list_o B empty).
+      split.
+        search. 
+        search. 
+        search. 
+        search. 
+        search.
+
+
+% Main theorem
 
 Theorem atomic_initial: forall A,
   formula A -> { prove (list_o A empty) (list_o A empty) }.
@@ -73,33 +109,15 @@ induction on 1. intros. case H1.
   apply IH to H2.
   apply IH to H3.
   apply init_tensor. search.
-% TODO: finish this proof when we have the lemmas for all connectives.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_plus. search.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_with. search.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_par. search.
+  unfold init.
+    witness A1. search.
 
-%% Lemma 1: cut permutes up
-
-%% G4 = G2 U G3; D4 = D2 U D3
-% Theorem tensor_r_cut1 :
-% 	forall A B C G2 G3 G4 D2 D3 D4,
-% 	(
-% 		{prove (list_o C G2) (list_o A D2)} /\ {prove G3 (list_o B D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
-% 		{prove (list_o C G4) (list_o (tensor A B) D4)}
-% 	). %intros. case H1.
-
-%% G4 = G2 U G3; D4 = D2 U D3
-%% G5 = G1 U G4; D5 = D1 U D4
-% Theorem tensor_r_cut2 :	
-% 	forall A B C G1 G2 G3 G4 G5 D1 D2 D3 D4 D5, 
-% 	(
-% 		(
-% 		{prove (list_o C G2) (list_o A D2)} /\ {prove G3 (list_o B D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
-% 		{prove (list_o C G4) (list_o (tensor A B) D4)}
-% 		) /\ {prove G1 (list_o C D1)} /\ {split G1 G4 G5} /\ {split D1 D4 D5} ->
-% 		{prove G5 (list_o (tensor A B) D5)}
-% 	) ->
-% 	(
-% 	 	(
-% 	 	{prove G2 (list_o C D2)} /\ {prove (list_o C G3) (list_o A D3)} /\ {split G2 G3 G4} /\ {split D2 D3 D4} ->
-% 	 	{prove G4 (list_o A D4)}
-% 	 	) /\ {prove G1 (list_o B D1)} /\ {split G1 G4 G5} /\ {split D1 D4 D5} ->
-% 	 	{prove G5 (list_o (tensor A B) D5)}
-% 	). %intros. case H2.

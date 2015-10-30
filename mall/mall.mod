@@ -24,17 +24,10 @@ split empty empty empty.
 split (list_o X L1) L2 (list_o X L3) :- split L1 L2 L3.
 split (list_o X L1) (list_o X L2) L3 :- split L1 L2 L3.
 
-%% Composite and atomic formulas
-% Note: by this definition, the units are considered atomic.
-%composite (tensor A B).
-%composite (par A B).
-%composite (with A B).
-%composite (plus A B).
-%atomic A :- not (composite A).
-
 %% example: prove (list_o (plus (p a) (p b)) empty) (list_o (with (p a) (p b)) (list_o (p a) (list_o (p b) empty))).
 
 %% Identity rules
+%:init:
 prove Gamma Delta :- memb_and_rest (atom A) Gamma empty,
                      memb_and_rest (atom A) Delta empty.                % init
 
@@ -57,11 +50,11 @@ prove Gamma Delta :- memb_and_rest bot Gamma empty,
 
 prove Gamma Delta :- memb_and_rest bot Delta Delta',
       	    	     prove Gamma Delta'.				% botR
-
+%:parl:
 prove Gamma Delta :- memb_and_rest (par A B) Gamma Gamma',
       	    	     split Gamma' G1 G2, split Delta D1 D2,
 		     prove (list_o A G1) D1, prove (list_o B G2) D2.	% parL
-
+%:parr:
 prove Gamma Delta :- memb_and_rest (par A B) Delta Delta',
 		     prove Gamma (list_o A (list_o B Delta')).		% parR
 
@@ -70,12 +63,13 @@ prove Gamma Delta :- memb_and_rest zero Gamma _.   			% zeroL
 
 prove Gamma Delta :- memb_and_rest top Delta _. 			% topR
 
+%:withl1:
 prove Gamma Delta :- memb_and_rest (with A B) Gamma Gamma',
       	    	     prove (list_o A Gamma') Delta.			% withL1
-
+%:withl2:
 prove Gamma Delta :- memb_and_rest (with A B) Gamma Gamma',
       	    	     prove (list_o B Gamma') Delta.			% withL2
-
+%:withr:
 prove Gamma Delta :- memb_and_rest (with A B) Delta Delta',
       	    	     prove Gamma (list_o A Delta'),
 		     prove Gamma (list_o B Delta').			% withR
@@ -83,9 +77,9 @@ prove Gamma Delta :- memb_and_rest (with A B) Delta Delta',
 prove Gamma Delta :- memb_and_rest (plus A B) Gamma Gamma',
       	    	     prove (list_o A Gamma') Delta,
 		     prove (list_o B Gamma') Delta.			% plusL
-
+%:plusr1:
 prove Gamma Delta :- memb_and_rest (plus A B) Delta Delta',
       	    	     prove Gamma (list_o A Delta').			% plusR1
-
+%:plusr2:
 prove Gamma Delta :- memb_and_rest (plus A B) Delta Delta',
       	    	     prove Gamma (list_o B Delta').			% plusR2
