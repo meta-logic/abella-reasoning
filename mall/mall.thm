@@ -15,6 +15,17 @@ intros.
 case H1.
 search.
 
+Theorem tensor_r: forall A B,
+	({prove (list_o A empty) (list_o A empty)} /\
+	{prove (list_o B empty) (list_o B empty)}) ->
+	{prove (list_o A (list_o B empty)) (list_o (tensor A B) empty)}.
+	intros. case H1. unfold tensorr.
+	witness A. witness B.
+	witness empty. witness empty. witness empty.
+	witness (list_o A empty). witness (list_o B empty).
+	search. search. search. search.
+	% Probably unfold (named clause) followed by witness (something) is not the right thing to do
+
 %% Initial can be reduced to the atomic case.
 
 Theorem init_tensor: forall A B,

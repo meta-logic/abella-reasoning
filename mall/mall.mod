@@ -44,10 +44,10 @@ prove Gamma Delta :- memb_and_rest one Gamma Gamma',
 
 prove Gamma Delta :- memb_and_rest one Delta empty,
                      eq Gamma empty.                                    % oneR
-
+%:tensorl:
 prove Gamma Delta :- memb_and_rest (tensor A B) Gamma Gamma',
       	    	     prove (list_o A (list_o B Gamma')) Delta.		% tensorL
-
+%:tensorr:
 prove Gamma Delta :- memb_and_rest (tensor A B) Delta Delta',
       	    	     split Delta' D1 D2, split Gamma G1 G2,
       	    	     prove G1 (list_o A D1), prove G2 (list_o B D2).	% tensorR
