@@ -79,7 +79,7 @@ prove Gamma Delta :- memb_and_rest (with A B) Gamma Gamma',
 prove Gamma Delta :- memb_and_rest (with A B) Delta Delta',
       	    	     prove Gamma (list_o A Delta'),
 		     prove Gamma (list_o B Delta').			% withR
-
+%:plusl:
 prove Gamma Delta :- memb_and_rest (plus A B) Gamma Gamma',
       	    	     prove (list_o A Gamma') Delta,
 		     prove (list_o B Gamma') Delta.			% plusL

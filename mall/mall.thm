@@ -15,6 +15,14 @@ intros.
 case H1.
 search.
 
+Theorem plus_l: forall A B G D,
+	({prove (list_o A G) D} /\
+	{prove (list_o B G) D}) ->
+	{prove (list_o (plus A B) G) D}.
+	intros. case H1. unfold plusl.
+	witness A. witness B. witness G.
+	split. search. search. search.
+
 Theorem tensor_r: forall A B,
 	({prove (list_o A empty) (list_o A empty)} /\
 	{prove (list_o B empty) (list_o B empty)}) ->
