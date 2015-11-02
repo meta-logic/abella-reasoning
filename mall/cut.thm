@@ -6,75 +6,61 @@ Specification "mall".
 Set instantiations on.
 Set witnesses on.
 
-% Theorems for all inference rules in MALL assuming its premises
-Theorem plus_l : forall A B C G D,
-	({prove (list_o A (list_o C G)) D} /\ {prove (list_o B (list_o C G)) D}) ->
-	{prove (list_o (plus A B) (list_o C G)) D}.
-	
-	intros. case H1. unfold plusl.
-		witness A. witness B. witness (list_o C G).
-	split. search. search. search.
-
-Theorem plus_r1 : forall A B C G D,
-	{prove (list_o C G) (list_o A D)} ->
-	{prove (list_o C G) (list_o (plus A B) D)}.
-
-	intros. unfold plusr1.
-		witness A. witness B. witness D.
-	split. search. search.
-
-Theorem plus_r2 : forall A B C G D,
-	{prove (list_o C G) (list_o B D)} ->
-	{prove (list_o C G) (list_o (plus A B) D)}.
-
-	intros. unfold plusr2.
-		witness A. witness B. witness D.
-	split. search. search.
-
 % Lemma 1: cut permutes up
 % let r be any rule, cut/r -> r/cut
-
-%TODO: This theorem is wrong, the premises of the second derivation are not a subset of the first derivation.
-% Theorem plus_l_over_cut : forall A B C G1 G2 G3 D1 D2 D3,
-% 	(({prove (list_o A (list_o C G2)) D2} /\ {prove (list_o B (list_o C G2)) D2}
-% 		 -> {prove (list_o (plus A B) (list_o C G2)) D2}
-% 	) /\ {prove G1 (list_o C D1)} /\ {split G1 G2 G3} /\ {split D1 D2 D3} ->
-% 	{prove (list_o (plus A B) G3) D3})
-% 	->
-% 	(({prove G1 (list_o C D1)} /\ {prove (list_o A (list_o C G2)) D2}
-% 		 /\ {split G1 G2 G3} /\ {split D1 D2 D3} -> {prove (list_o A G3) D3}
-% 	) /\ {prove (list_o B G3) D3} ->
-% 	{prove (list_o (plus A B) G3) D3}).
-
-% 	intros. case H2. backchain H1.
-% 		split.
-
-
-
-% Theorem plus_r_over_cut : forall A B C G1 G2 G3 D1 D2 D3,
-% 	({prove (list_o C G2) (list_o A D2)} /\ {prove (list_o C G2) (list_o (plus A B) D2)}
-% 		/\ {prove G1 (list_o C D1)} /\ {split G1 G2 G3} /\ {split D1 D2 D3}
-% 		/\ {prove G3 (list_o (plus A B) D3)}
-% 	) ->
-% 	({prove G1 (list_o C D1)} /\ {prove (list_o C G2) (list_o A D2)}
-% 		/\ {split G1 G2 G3} /\ {split D1 D2 D3} /\
-% 		{prove G3 (list_o A D3)}
-% 		/\ {prove G3 (list_o (plus A B) D3)}
-% 	).
-
-% 	intros. case H1. split.
+Theorem plus_l_over_cut1 : forall A B C G1 G2 G3 D1 D2 D3,
+	({prove (list_o A (list_o C G2)) D2} -> {prove (list_o B (list_o C G2)) D2}
+		-> {prove (list_o C (list_o (plus A B) G2)) D2}
+		-> {prove G1 (list_o C D1)} -> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove (list_o (plus A B) G3) D3}
+	) ->
+	({prove G1 (list_o C D1)} -> {prove (list_o A (list_o C G2)) D2}
+		-> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove G1 (list_o C D1)} -> {prove (list_o B (list_o C G2)) D2}
+		-> {prove (list_o A G3) D3} -> {prove (list_o B G3) D3}
+		-> {prove (list_o (plus A B) G3) D3}
+	).
 	
+ 	intros. backchain H1.
+	
+Theorem plus_l_over_cut2 : forall A B C G1 G2 G3 D1 D2 D3,
+	({prove (list_o A G1) (list_o C D1)} -> {prove (list_o B G1) (list_o C D1)}
+		-> {prove (list_o (plus A B) G1) (list_o C D1)}
+		-> {prove (list_o C G2) D2} -> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove (list_o (plus A B) G3) D3}
+	) ->
+	({prove (list_o A G1) (list_o C D1)} -> {prove (list_o C G2) D2}
+		-> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove (list_o B G1) (list_o C D1)} -> {prove (list_o C G2) D2}
+		-> {prove (list_o A G3) D3} -> {prove (list_o B G3) D3}
+		-> {prove (list_o (plus A B) G3) D3}
+	).
 
-% Theorem plus_r_over_cut : forall A B C G1 G2 G3 D1 D2 D3,
-% 	(({prove (list_o C G2) (list_o A D2)} -> {prove (list_o C G2) (list_o (plus A B) D2)})
-% 		/\ {prove G1 (list_o C D1)} /\ {split G1 G2 G3} /\ {split D1 D2 D3}
-% 		-> {prove G3 (list_o (plus A B) D3)}
-% 	) ->
-% 	(({prove G1 (list_o C D1)} /\ {prove (list_o C G2) (list_o A D2)}
-% 		/\ {split G1 G2 G3} /\ {split D1 D2 D3} ->
-% 		{prove G3 (list_o A D3)})
-% 		-> {prove G3 (list_o (plus A B) D3)}
-% 	).
+	intros. backchain H1.
+
+Theorem plus_r1_over_cut : forall A B C G1 G2 G3 D1 D2 D3,
+	({prove (list_o C G2) (list_o A D2)} -> {prove (list_o C G2) (list_o (plus A B) D2)}
+		-> {prove G1 (list_o C D1)} -> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove G3 (list_o (plus A B) D3)}
+	) ->
+	({prove G1 (list_o C D1)} -> {prove (list_o C G2) (list_o A D2)}
+		-> {split G1 G2 G3} -> {split D1 D2 D3} -> {prove G3 (list_o A D3)}
+		-> {prove G3 (list_o (plus A B) D3)}
+	).
+	
+ 	intros. backchain H1.
+
+Theorem plus_r2_over_cut : forall A B C G1 G2 G3 D1 D2 D3,
+	({prove (list_o C G2) (list_o B D2)} -> {prove (list_o C G2) (list_o (plus A B) D2)}
+		-> {prove G1 (list_o C D1)} -> {split G1 G2 G3} -> {split D1 D2 D3}
+		-> {prove G3 (list_o (plus A B) D3)}
+	) ->
+	({prove G1 (list_o C D1)} -> {prove (list_o C G2) (list_o B D2)}
+		-> {split G1 G2 G3} -> {split D1 D2 D3} -> {prove G3 (list_o B D3)}
+		-> {prove G3 (list_o (plus A B) D3)}
+	).
+	
+ 	intros. backchain H1.
 
 Theorem cut_admissibility : forall A G1 G2 G3 D1 D2 D3,
 	{prove G1 (list_o A D1)} /\ {prove (list_o A G2) D2} /\ {split G1 G2 G3} -> {prove G3 D3}.
