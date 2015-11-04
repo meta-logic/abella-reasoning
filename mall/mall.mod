@@ -32,11 +32,12 @@ prove Gamma Delta :- memb_and_rest (atom A) Gamma empty,
                      memb_and_rest (atom A) Delta empty.                % init
 
 %% Multiplicative rules
+prove Gamma Delta :- memb_and_rest one Delta empty,
+                     eq Gamma empty.                                    % oneR
+
 prove Gamma Delta :- memb_and_rest one Gamma Gamma',
       	    	     prove Gamma' Delta.				% oneL
 
-prove Gamma Delta :- memb_and_rest one Delta empty,
-                     eq Gamma empty.                                    % oneR
 %:tensorl:
 prove Gamma Delta :- memb_and_rest (tensor A B) Gamma Gamma',
       	    	     prove (list_o A (list_o B Gamma')) Delta.		% tensorL
