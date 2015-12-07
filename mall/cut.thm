@@ -233,11 +233,6 @@ Set subgoals off.
 % 
 % Lemma 2: the degree of the cut-formula can be reduced
 
-% I think we need an inductive definition of lists to prove this lemma.
-%Theorem split_empty : forall L1 L2,
-%  { split L1 L2 empty } \/ { split L1 empty L2 } -> L1 = L2.
-
-
 Define formula : o -> prop by
   formula (tensor A B) := formula A /\ formula B ;
   formula (plus A B) := formula A /\ formula B ;
@@ -245,17 +240,87 @@ Define formula : o -> prop by
   formula (par A B) := formula A /\ formula B ;
   formula (atom A).
 
-% Main theorem
-Theorem cut_admissibility : forall A G1 G2 G3 D1 D2 D3,
-  formula A -> 
-  {prove G1 (list_o A D1)} -> {prove (list_o A G2) D2} -> 
-  {split G3 G2 G1} -> {split D3 D2 D1} -> 
-  {prove G3 D3}.
+Theorem split_exists : forall C1 C2,
+  { is_list C1 } -> { is_list C2 } -> exists C3, { split C3 C2 C1 }.
 
-induction on 1. induction on 2. induction on 3. intros. 
-% case H1. % unfolds formula.
+induction on 1. intros.
+case H1.
+  search.
+  apply IH to H3 H2. search.
+
+Theorem memb_and_rest_superset1 : forall L L' L1 L1' L2 F, 
+  { is_list L } -> { is_list L' } -> 
+  { split L L1 L2 } -> { memb_and_rest F L1 L1' } -> { split L' L1' L2 } ->
+  { memb_and_rest F L L' }.
+
+induction on 1. induction on 2. intros.
+case H1.
+  % L is empty
+  case H3.
+    case H4. % invalid case
+    case H4. % invalid case
+  % L is (list_o X L3).
+  case H2.
+    % L' is empty
+    case H5.
+      case H4.
+        case H3.
+          search.
+          case H7.
+            search.
+            search.
+      case H4.
+        case H3.
+          search.
+          case H7.
+            search.
+            search.
+    % L' is (list_o X1 L4)
+    case H3.
+      % L1 is empty
+      case H4. % invalid case
+      % L2 is empty
+%      case H5.
+%        search.
+
+      
+%  case H3. case H5. search. search.
+
+%   case H2.
+%     case H3. 
+%       case H5. search. search. 
+%       case H5. search. search.
+%     case H3.
+%       case H5. search.
+%       case H7. search. search.
+  
+% Main theorem
+Theorem cut_admissibility : forall A G1 D1 D1' G2 G2' D2 G3 D3,
+  formula A ->
+  { is_list G1 } -> { is_list D1 } -> { is_list D1' } ->
+  { is_list G2 } -> { is_list G2' } -> { is_list D2 } ->
+  { prove G1 D1 } -> { prove G2 D2 } -> 
+  { memb_and_rest A D1 D1' } -> { memb_and_rest A G2 G2' } ->
+  { split G3 G2' G1 } -> { split D3 D2 D1' } -> 
+  { prove G3 D3 }.
+
+% We need three inductions for the proof: on the cut-formula structure, the left
+% premise proof and the right premise proof.
+induction on 1. induction on 8. induction on 9. intros.
+
+% Unfold the formula induction.
+case H1 (keep).
   % Tensor case
-    % case H2. % unfolds first 'prove', with cut-formula on the right.
+    % Unfolds the induction on the left premise (cut-formula in the conclusion)
+    case H8.
       % Init case, invalid
-      % case H9.
-      % OneL case,
+      case H17. case H10. case H18.
+      % OneR case, invalid
+      case H16. case H10. case H18.
+      % OneL case, permutes down
+      apply split_exists to H16 H6. 
+      apply IH1 to H1 H16 H3 H4 H5 H6 H7 H18 H9 H10 H11 H19 H13.
+  % Plus case
+  % With case
+  % Par case
+  % Atom

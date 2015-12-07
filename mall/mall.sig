@@ -15,6 +15,8 @@ kind    list_o                  type.
 type    empty 			list_o.
 type    list_o                  o -> list_o -> list_o.
 
+type    is_list                 list_o -> o.
+
 type 	split 			list_o -> list_o -> list_o -> o.
 type 	memb_and_rest		o -> list_o -> list_o -> o.
 type 	eq 			list_o -> list_o -> o.
