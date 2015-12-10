@@ -328,14 +328,16 @@ Theorem memb_and_rest_superset1 : forall L L' L1 L1' L2 F,
   { memb_and_rest F L L' }.
 
 induction on 3. induction on 5. intros.
-case H3 (keep).
-  case H4.
+  case H3 (keep).
+    case H4.
   case H5.
     search.
-    search.
-  apply is_list_empty.
-  apply split_implies_list1 to H6 H8 H7.
-  apply empty_split1 to H8 H9 H6.
+      search.
+    case H2.
+    apply is_list_empty.
+    apply split_implies_list1 to H6 H7 H8.
+    apply empty_split1 to H7 H9 H6.
+      search.
 
 % induction on 1. induction on 2. intros.
 % case H1.
