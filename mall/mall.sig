@@ -30,5 +30,5 @@ type    atom                     atm -> o.
 
 type    prove		 	 list_o -> list_o -> o.
 type	p			 term -> atm.
-type 	a, b			 term.
+type 	a, b			 o.
 
