@@ -1,0 +1,82 @@
+Kind fm   type.
+Kind mset type.
+
+% MALL
+Type a, b, c                   fm.
+Type tensor, par, plus, with   fm -> fm -> fm.
+Type one, bot, zero, top       fm.
+Type not                       fm -> fm.
+% Multiset definitions
+Type empty                     mset.
+Type cons                      fm -> mset -> mset.
+
+Define atom : fm -> prop by
+  atom a ;
+  atom b.
+
+Define dual : fm -> fm -> prop by
+  dual A (not A) := atom A;
+  dual (not A) A := atom A;
+  dual (tensor A B) (par C D) := dual A C /\ dual B D;
+  dual (par A B) (tensor C D) := dual A C /\ dual B D;
+  dual (plus A B) (with C D)  := dual A C /\ dual B D;
+  dual (with A B) (plus C D)  := dual A C /\ dual B D.
+
+Define membrest : fm -> mset -> mset -> prop by
+  membrest X (cons X L) L ;
+  membrest X (cons Y L) (cons Y L') := membrest X L L'.
+
+% Define mset_incl : mset -> mset -> prop by
+%   mset_incl L1 L2 := forall F, exists L1' L2', membrest F L1 L1' -> membrest F L2 L2'.
+
+% Define mset_eq : mset -> mset -> prop by
+%   mset_eq L1 L2 := mset_incl L1 L2 /\ mset_incl L2 L1.
+
+Define split : mset -> mset -> mset -> prop by
+  split empty empty empty ;
+  split L3 L2 L1 := exists X L3' L2', membrest X L3 L3' /\ membrest X L2 L2' /\ split L3' L2' L1 ;
+  split L3 L2 L1 := exists X L3' L1', membrest X L3 L3' /\ membrest X L1 L1' /\ split L3' L2 L1'.
+
+Theorem split_eq : forall L L',
+  split L L' empty -> mset_eq L L'.
+
+Theorem form_eq : forall X F L L',
+  membrest F L L' -> membrest X L L' -> X = F.
+  
+Define permutation : mset -> mset -> prop by
+  permutation Delta Delta' := split Delta Delta' empty.
+
+Define prove : mset -> prop by
+  prove Delta := exists A Delta',
+                 membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' empty ;
+  prove Delta := exists A B Delta' D0 D1 D2 D3,
+                 membrest (tensor A B) Delta Delta' /\ split Delta' D1 D2 /\
+                 membrest A D0 D1 /\ membrest B D3 D2 /\ prove D0 /\ prove D3;
+  prove Delta := exists A B Delta' D1 D2,
+                 membrest (par A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 D1 /\
+                 prove D2 ;
+  prove Delta := exists A B Delta' D1 D2,
+                 membrest (with A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 Delta' /\
+                 prove D1 /\ prove D2 ;
+  prove Delta := exists A B Delta' D0,
+                 membrest (plus A B) Delta Delta' /\
+                 ((membrest A D0 Delta' /\ prove D0) \/ (membrest B D0 Delta' /\ prove D0)).
+
+% Theorem split_empty1 : forall Delta Delta',
+%   split Delta Delta' empty -> Delta = Delta'.
+
+Theorem permutation_works : forall Delta Delta',
+  split Delta Delta' empty -> prove Delta -> prove Delta'.
+
+induction on 1. intros.
+  case H1.
+    search.
+
+Theorem cut_admissibility : forall Delta Delta' B C D D1 D2,
+    prove Delta -> membrest B Delta D1 ->
+    prove Delta' -> membrest C Delta' D2 -> dual B C -> split D D1 D2 -> prove D.
+  
+induction on 1. intros. 
+    case H1. case H9. case H7. case H2. case H6. case H11. case H12. case H10.
+    case H8. case H5. case H11.
+
