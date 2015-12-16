@@ -6,6 +6,7 @@ Type a, b, c                   fm.
 Type tensor, par, plus, with   fm -> fm -> fm.
 Type one, bot, zero, top       fm.
 Type not                       fm -> fm.
+
 % Multiset definitions
 Type empty                     mset.
 Type cons                      fm -> mset -> mset.
@@ -26,57 +27,106 @@ Define membrest : fm -> mset -> mset -> prop by
   membrest X (cons X L) L ;
   membrest X (cons Y L) (cons Y L') := membrest X L L'.
 
-% Define mset_incl : mset -> mset -> prop by
-%   mset_incl L1 L2 := forall F, exists L1' L2', membrest F L1 L1' -> membrest F L2 L2'.
+Define mset_incl : mset -> mset -> prop by
+  mset_incl L1 L2 := forall F, exists L1' L2', membrest F L1 L1' -> membrest F L2 L2'.
 
-% Define mset_eq : mset -> mset -> prop by
-%   mset_eq L1 L2 := mset_incl L1 L2 /\ mset_incl L2 L1.
+Define mset_eq : mset -> mset -> prop by
+  mset_eq L1 L2 := mset_incl L1 L2 /\ mset_incl L2 L1.
 
 Define split : mset -> mset -> mset -> prop by
   split empty empty empty ;
   split L3 L2 L1 := exists X L3' L2', membrest X L3 L3' /\ membrest X L2 L2' /\ split L3' L2' L1 ;
   split L3 L2 L1 := exists X L3' L1', membrest X L3 L3' /\ membrest X L1 L1' /\ split L3' L2 L1'.
 
-Theorem split_eq : forall L L',
-  split L L' empty -> mset_eq L L'.
+%Theorem split_eq_aux : forall X L L' L1 L2,
+%  mset_eq L1 L2 -> membrest X L L1 -> membrest X L' L2 -> L = L'.
 
-Theorem form_eq : forall X F L L',
-  membrest F L L' -> membrest X L L' -> X = F.
+%Theorem split_eq : forall L L',
+%  split L L' empty -> mset_eq L L'.
+
+%induction on 1. intros.
+%  case H1.
+%    search.
   
-Define permutation : mset -> mset -> prop by
-  permutation Delta Delta' := split Delta Delta' empty.
+%Define permutation : mset -> mset -> prop by
+%  permutation Delta Delta' := split Delta Delta' empty.
 
 Define prove : mset -> prop by
+%  prove Delta := membrest one Delta empty ;                                                             % oneR
+%  prove Delta := exists Delta',
+%                 membrest top Delta Delta' /\ prove Delta' ;                                            % topR
   prove Delta := exists A Delta',
-                 membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' empty ;
+                 membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' empty ;                   % init
   prove Delta := exists A B Delta' D0 D1 D2 D3,
                  membrest (tensor A B) Delta Delta' /\ split Delta' D1 D2 /\
-                 membrest A D0 D1 /\ membrest B D3 D2 /\ prove D0 /\ prove D3;
+                 membrest A D0 D1 /\ membrest B D3 D2 /\ prove D0 /\ prove D3;                          % tensorR
   prove Delta := exists A B Delta' D1 D2,
                  membrest (par A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 D1 /\
-                 prove D2 ;
+                 prove D2 ;                                                                             % parR
   prove Delta := exists A B Delta' D1 D2,
                  membrest (with A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 Delta' /\
-                 prove D1 /\ prove D2 ;
+                 prove D1 /\ prove D2 ;                                                                 % withR
   prove Delta := exists A B Delta' D0,
                  membrest (plus A B) Delta Delta' /\
-                 ((membrest A D0 Delta' /\ prove D0) \/ (membrest B D0 Delta' /\ prove D0)).
+                 ((membrest A D0 Delta' /\ prove D0) \/ (membrest B D0 Delta' /\ prove D0)).            % plusR
 
-% Theorem split_empty1 : forall Delta Delta',
-%   split Delta Delta' empty -> Delta = Delta'.
-
-Theorem permutation_works : forall Delta Delta',
-  split Delta Delta' empty -> prove Delta -> prove Delta'.
+Theorem fm_eq : forall X F L,
+  membrest X (cons F L) L -> X = F.
 
 induction on 1. intros.
   case H1.
     search.
+  apply IH to H2.
+    search.
+
+Theorem membrest_eq : forall X F L L',
+  membrest F L L' -> membrest X L L' -> X = F.
+
+induction on 1. induction on 2. intros.
+  case H1.
+    case H2.
+      search.
+      apply fm_eq to H3.
+      search.
+    case H2.
+      apply fm_eq to H3.
+      search.
+    apply IH1 to H3 H4.
+      search.
+
+Theorem atomic_inference : forall A B,
+  atom A -> dual A B -> B = (not A).
+
+intros.
+  case H1.
+    case H2.
+      search.
+    case H2.
+      search.
+  
+%Theorem permutation_works : forall Delta Delta',
+%  split Delta Delta' empty -> prove Delta -> prove Delta'.
+%
+%induction on 1. intros.
+%  case H1.
+%    search.
 
 Theorem cut_admissibility : forall Delta Delta' B C D D1 D2,
     prove Delta -> membrest B Delta D1 ->
     prove Delta' -> membrest C Delta' D2 -> dual B C -> split D D1 D2 -> prove D.
   
-induction on 1. intros. 
-    case H1. case H9. case H7. case H2. case H6. case H11. case H12. case H10.
-    case H8. case H5. case H11.
-
+induction on 1. induction on 3. intros.
+  % left premise introduction
+  case H1.
+    % init
+    case H9. case H7.
+      % right premise introduction
+      case H2.
+        % init
+        apply atomic_inference to H8 H5.
+        case H4. case H3. case H12. case H10. case H11. case H13. case H6.
+        case H15. case H16. case H18. case H18. case H19. case H17. case H14. search.
+        case H20. search. case H21. case H21. case H20. case H17. case H15. case H16.
+        case H19. case H18. case H17. case H14. search. case H20. search.
+        case H18. case H21. case H23. case H21. case H18. case H17.
+        % tensor
