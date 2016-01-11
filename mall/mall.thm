@@ -1,20 +1,12 @@
 Set instantiations on.
 Set witnesses on.
 Set subgoals off.
-
-Kind fm                        type.
-Kind mset                      type.
-Kind nat                       type.
-
-% Nat
-Type z                         nat.
-Type s                         nat -> nat.
    
 % MALL
 Type a, b, c                   o.
 Type tensor, par, plus, with   o -> o -> o.
 Type one, bot, zero, top       o.
-Type not, bang, qmark          o -> o.
+Type not                       o -> o.
 
 Define atom : o -> prop by
   atom a ;
@@ -31,95 +23,42 @@ Define dual : o -> o -> prop by
   dual (par A B) (tensor C D) := dual A C /\ dual B D;
   dual (plus A B) (with C D)  := dual A C /\ dual B D;
   dual (with A B) (plus C D)  := dual A C /\ dual B D.
-
-Define membrest : o -> olist -> olist -> prop by
-  membrest X (X :: L) L ;
-  membrest X (Y :: L) (Y :: L') := membrest X L L'.
   
 Define split : olist -> olist -> olist -> prop by
   split nil nil nil ;
-  split L3 L2 L1 := exists X L3' L2', membrest X L3 L3' /\ membrest X L2 L2' /\ split L3' L2' L1 ;
-  split L3 L2 L1 := exists X L3' L1', membrest X L3 L3' /\ membrest X L1 L1' /\ split L3' L2 L1'.
-
-Define prove : olist -> olist -> prop by
-  % Inference rules for MALL
-  prove nil Delta := exists A Delta',
-                       membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' nil ;                     % init
-  prove nil Delta := exists A B Delta' D0 D1 D2 D3,
-                       membrest (tensor A B) Delta Delta' /\ split Delta' D1 D2 /\
-                       membrest A D0 D1 /\ membrest B D3 D2 /\ prove nil D0 /\ prove nil D3 ;                 % tensorR
-  prove nil Delta := exists A B Delta' D1 D2,
-                       membrest (par A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 D1 /\
-                       prove nil D2 ;                                                                         % parR
-  prove nil Delta := exists A B Delta' D1 D2,
-                       membrest (with A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 Delta' /\
-                       prove nil D1 /\ prove nil D2 ;                                                         % withR
-  prove nil Delta := exists A B Delta' D0,
-                       membrest (plus A B) Delta Delta' /\
-                       ((membrest A D0 Delta' /\ prove nil D0) \/ (membrest B D0 Delta' /\ prove nil D0)) ;   % plusR
-  prove nil Delta := Delta = (one :: nil) ;                                                                   % oneR
-  prove nil Delta := exists Delta', membrest top Delta Delta' ;                                               % topR
-  prove nil Delta := exists Delta', membrest bot Delta Delta' /\ prove nil Delta'.                            % botR
-
-% Multisets
-Define multiset : olist -> prop by
-  multiset nil ;
-  multiset (X :: L) := multiset L.
+  split (X :: L3) (X :: L2) L1 := split L3 L2 L1 ;
+  split (X :: L3) L2 (X :: L1) := split L3 L2 L1.
 
 Define perm : olist -> olist -> prop by
   perm nil nil ;
-  perm L R := exists X L' R', membrest X L L' /\ membrest X R R' /\ perm L' R'.
+  perm (X :: L2) (X :: L1) := perm L2 L1.
 
-Theorem perm_identity : forall L,
-  multiset L -> perm L L.
+Define prove : olist -> prop by
+  prove (one :: nil) ;                                                                                     % oneR
+  prove (top :: Delta) ;                                                                                   % topR
+  prove (A :: (not A) :: nil) := atom A;                                                                   % init
+  prove (bot :: Delta) := prove Delta ;                                                                    % botR
+  prove ((tensor A B) :: Delta) := exists D1 D2, split Delta D1 D2 /\ prove (A :: D1) /\ prove (B :: D2) ; % tensorR
+  prove ((par A B) :: Delta) := prove (A :: B :: Delta) ;                                                  % parR
+  prove ((with A B) :: Delta) := prove (A :: Delta) /\ prove (B :: Delta) ;                                % withR
+  prove ((plus A B) :: Delta) := prove (A :: Delta) \/ prove (B :: Delta).                                 % plusR
+
+Theorem split1_implies_perm : forall D2 D1,
+  split D2 nil D1 -> perm D2 D1.
 
 induction on 1. intros.
-  case H1.
-    search.
-  apply IH to H2.
-    search.
+  case H1. search.
+    apply IH to H2. unfold.
+        search.
 
-Theorem perm_sym : forall L R,
-  perm L R -> perm R L.
+Theorem split2_implies_perm : forall D2 D1,
+  split D2 D1 nil -> perm D2 D1.
 
 induction on 1. intros.
-  case H1.
-    search.
-  apply IH to H4.
-    unfold.
-      witness X. witness R'. witness L'.
-        split. search. search. search.
-
-Theorem perm_other_dir :
-  forall X L L' R R', membrest X L L' -> membrest X R R' -> perm L' R' -> perm L R.
-
-search.
+  case H1. search.
+    apply IH to H2. unfold.
+        search.
   
-Theorem split1_perm : forall L R,
-  split L R nil -> perm L R.
-
-induction on 1. intros.
-  case H1.
-    search.
-    apply IH to H4.
-      unfold. witness X. witness L3'. witness L2'. split.
-        search. search. search.
-    case H3.
-  
-Theorem split2_perm : forall L R,
-  split L nil R -> perm L R.
-
-induction on 1. intros.
-  case H1.
-    search.
-    case H3.
-      apply IH to H4.
-        unfold. witness X. witness L3'. witness L1'. split.
-          search. search. search.
-
-Theorem perm_prop1 : forall X L L' R R',
-  membrest X L L' -> perm L R -> membrest X R R' -> perm L' R'.
-
 Theorem atomic_inference : forall A B,
   atom A -> dual A B -> B = (not A).
 
@@ -130,50 +69,99 @@ intros.
     case H2.
       search.
 
-%Theorem permutation_works : forall Delta Delta',
-%  split Delta Delta' empty -> prove Delta -> prove Delta'.
-%
-%induction on 1. intros.
-%  case H1.
-%    search.
+Theorem split_of_perm : forall D3 D3' D2 D1,
+  split D3 D2 D1 -> perm D3' D3 -> split D3' D2 D1.
 
-Theorem cut_admissibility : forall Delta Delta' B C D D1 D2,
-    prove nil Delta -> membrest B Delta D1 ->
-    prove nil Delta' -> membrest C Delta' D2 -> dual B C -> split D D1 D2 -> prove nil D.
+induction on 2. intros.
+  case H2.
+    search.
+  case H1.
+    apply IH to H4 H3.
+      search.
+    apply IH to H4 H3.
+      search.
+
+Theorem perm_supercase1 : forall A B D D',
+  prove (A :: B :: D) -> perm D' D -> perm (A :: B :: D') (A :: B :: D).
+
+search.
+
+Theorem perm_supercase2 : forall A D D',
+  prove (A :: D) -> perm D' D -> perm (A :: D') (A :: D).
+
+search.
   
-induction on 1. induction on 3. intros.
-  % left premise introduction
-  case H1. case H9.
-    case H7.
-      case H2. % init
-        apply atomic_inference to H8 H5.
-          case H4.
-            case H3. case H12. % right premise introduction
-              case H10.
-                case H11.
-              case H13.
-                case H6.
-                  case H15.
-                    case H16.
-                      case H18. case H18. % trivial cases
-                      case H19. case H17. case H14.
-                        search.
-                      case H20.
-                        search.
-                      case H21. case H21. case H20. case H17. % trivial cases
-                      case H15.
-                        case H16.
-                          case H19. case H18. case H17.
-                            case H14.
-                              search.
-                            case H20.
-                              search.
-                            case H18. case H21. case H23. case H21. case H18. case H17. % trivial cases
-      case H10. case H16. % tensor
-        case H6.
-          case H18.
-            case H17.
-              case H19.
-                case H21. case H21. case H20.
-                  unfold 2. witness A1. witness B1. witness (cons (not A) L3'1). witness D0. witness D3.
-                  witness D4. witness D5. % We have to prove the permutation lemma so: split L3'1 nil L1' -> L3'1 = L1'. Can we avoid it?
+Theorem perm_provability : forall D2 D1,
+  prove D2 -> perm D1 D2 -> prove D1.
+
+induction on 1. intros.
+  case H1.
+    case H2. case H3.
+      search.
+    case H2. case H3.
+      search.
+        search.
+    case H2. case H4. case H5.
+      search.
+    case H2. apply IH to H3 H4.
+      search.
+    case H2.
+      unfold. witness D3. witness D4.
+        split. apply split_of_perm to H3 H6.
+          search. search. search.
+    case H2.
+      unfold. apply perm_supercase1 to H3 H4.
+        apply IH to H3 H5.
+          search.
+    case H2. unfold.
+      apply perm_supercase2 to H3 H5.
+        apply IH to H3 H6.
+          search.
+      apply perm_supercase2 to H4 H5.
+        apply IH to H4 H6.
+          search.
+    case H2. unfold.
+      case H3.
+        apply perm_supercase2 to H5 H4.
+          apply IH to H5 H6.
+            search.
+        apply perm_supercase2 to H5 H4.
+          apply IH to H5 H6.
+            search.
+
+Theorem despise_order_atomic_case : forall A,
+  prove (not A :: not (not A) :: nil) -> prove (A :: (not A) :: nil). 
+
+Theorem cut_admissibility : forall B C D D1 D2,
+    prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
+
+induction on 1. induction on 2. intros.
+  case H1 (keep). % left premise
+    % B = one
+    case H2 (keep). % right premise
+      case H3. case H3. % trivial
+        case H3. % init
+          case H5. case H5.
+        % C = bot
+        apply split1_implies_perm to H4.
+          apply perm_provability to H5 H6.
+            search.
+      case H3. case H3. case H3. case H3. % trivial
+    % B = top
+    case H2 (keep).
+      case H3. case H3.
+        case H3. % init
+          case H5. case H6.
+        case H3. case H3. case H3. case H3. case H3.
+    % atom (B)
+    case H2 (keep).
+      case H3.
+        case H5. case H6.
+      case H3.
+        case H5. case H6.
+      case H3.
+        case H5. case H5. case H5. case H5. % trivial
+        case H4. case H8. case H9.
+        % Abella shows a hypothesis H: atom (not B). We can not eliminate the case applying case analysis on H, because this is just
+        % an implementation subtlety. (atom (not B)) should be viewed as (not (atom B)). Is it really a subtlety or a mistake? Think about it.
+        
