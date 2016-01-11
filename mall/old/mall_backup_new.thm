@@ -1,0 +1,199 @@
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Kind mset                      type.
+Kind nat                       type.
+
+% Nat
+Type z                         nat.
+Type s                         nat -> nat.
+   
+% MALL
+Type a, b, c                   o.
+Type tensor, par, plus, with   o -> o -> o.
+Type one, bot, zero, top       o.
+Type not, bang, qmark          o -> o.
+
+Define atom : o -> prop by
+  atom a ;
+  atom b.
+
+Define dual : o -> o -> prop by
+  dual one bot ;
+  dual bot one ;
+  dual top zero ;
+  dual zero top ;
+  dual A (not A) := atom A;
+  dual (not A) A := atom A;
+  dual (tensor A B) (par C D) := dual A C /\ dual B D;
+  dual (par A B) (tensor C D) := dual A C /\ dual B D;
+  dual (plus A B) (with C D)  := dual A C /\ dual B D;
+  dual (with A B) (plus C D)  := dual A C /\ dual B D.
+
+Define membrest : o -> olist -> olist -> prop by
+  membrest X (X :: L) L ;
+  membrest X (Y :: L) (Y :: L') := membrest X L L'.
+  
+Define split : olist -> olist -> olist -> prop by
+  split nil nil nil ;
+  split L3 L2 L1 := exists X L3' L2', membrest X L3 L3' /\ membrest X L2 L2' /\ split L3' L2' L1 ;
+  split L3 L2 L1 := exists X L3' L1', membrest X L3 L3' /\ membrest X L1 L1' /\ split L3' L2 L1'.
+
+Define prove : olist -> olist -> prop by
+  % Inference rules for MALL
+  prove nil Delta := exists A Delta',
+                       membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' nil ;                     % init
+  prove nil Delta := exists A B Delta' D0 D1 D2 D3,
+                       membrest (tensor A B) Delta Delta' /\ split Delta' D1 D2 /\
+                       membrest A D0 D1 /\ membrest B D3 D2 /\ prove nil D0 /\ prove nil D3 ;                 % tensorR
+  prove nil Delta := exists A B Delta' D1 D2,
+                       membrest (par A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 D1 /\
+                       prove nil D2 ;                                                                         % parR
+  prove nil Delta := exists A B Delta' D1 D2,
+                       membrest (with A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 Delta' /\
+                       prove nil D1 /\ prove nil D2 ;                                                         % withR
+  prove nil Delta := exists A B Delta' D0,
+                       membrest (plus A B) Delta Delta' /\
+                       ((membrest A D0 Delta' /\ prove nil D0) \/ (membrest B D0 Delta' /\ prove nil D0)) ;   % plusR
+  prove nil Delta := Delta = (one :: nil) ;                                                                   % oneR
+  prove nil Delta := exists Delta', membrest top Delta Delta' ;                                               % topR
+  prove nil Delta := exists Delta', membrest bot Delta Delta' /\ prove nil Delta'.                            % botR
+
+% Multisets
+Define multiset : olist -> prop by
+  multiset nil ;
+  multiset (X :: L) := multiset L.
+
+Define perm : olist -> olist -> prop by
+  perm nil nil ;
+  perm L R := exists X L' R', membrest X L L' /\ membrest X R R' /\ perm L' R'.
+
+Define size : olist -> nat -> prop by
+  size nil z ;
+  size (X :: L) (s N) := size L N.
+
+Define is_nat : nat -> prop by
+  is_nat z ;
+  is_nat (s N) := is_nat N.
+
+Theorem membrest_size_increase : forall N X L L',
+  size L' N -> membrest X L L' -> size L (s N).
+
+induction on 1. intros.
+  case H1. case H2.
+    search.
+  case H2.
+    search.
+    case H2.
+      search.
+    apply IH to H3 H4.
+      search.
+
+Theorem size_preservation : forall N L R,
+  is_nat N -> size L N -> perm L R -> size R N.
+
+Theorem perm_identity : forall L,
+  multiset L -> perm L L.
+
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H2.
+    search.
+
+Theorem perm_sym : forall L R,
+  perm L R -> perm R L.
+
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H4.
+    unfold.
+      witness X. witness R'. witness L'.
+        split. search. search. search.
+
+Theorem perm_other_dir :
+  forall X L L' R R', membrest X L L' -> membrest X R R' -> perm L' R' -> perm L R.
+
+search.
+  
+Theorem split1_perm : forall L R,
+  split L R nil -> perm L R.
+
+induction on 1. intros.
+  case H1.
+    search.
+    apply IH to H4.
+      unfold. witness X. witness L3'. witness L2'. split.
+        search. search. search.
+    case H3.
+  
+Theorem split2_perm : forall L R,
+  split L nil R -> perm L R.
+
+induction on 1. intros.
+  case H1.
+    search.
+    case H3.
+      apply IH to H4.
+        unfold. witness X. witness L3'. witness L1'. split.
+          search. search. search.
+  
+Theorem atomic_inference : forall A B,
+  atom A -> dual A B -> B = (not A).
+
+intros.
+  case H1.
+    case H2.
+      search.
+    case H2.
+      search.
+
+%Theorem permutation_works : forall Delta Delta',
+%  split Delta Delta' empty -> prove Delta -> prove Delta'.
+%
+%induction on 1. intros.
+%  case H1.
+%    search.
+
+Theorem cut_admissibility : forall Delta Delta' B C D D1 D2,
+    prove nil Delta -> membrest B Delta D1 ->
+    prove nil Delta' -> membrest C Delta' D2 -> dual B C -> split D D1 D2 -> prove nil D.
+  
+induction on 1. induction on 3. intros.
+  % left premise introduction
+  case H1. case H9.
+    case H7.
+      case H2. % init
+        apply atomic_inference to H8 H5.
+          case H4.
+            case H3. case H12. % right premise introduction
+              case H10.
+                case H11.
+              case H13.
+                case H6.
+                  case H15.
+                    case H16.
+                      case H18. case H18. % trivial cases
+                      case H19. case H17. case H14.
+                        search.
+                      case H20.
+                        search.
+                      case H21. case H21. case H20. case H17. % trivial cases
+                      case H15.
+                        case H16.
+                          case H19. case H18. case H17.
+                            case H14.
+                              search.
+                            case H20.
+                              search.
+                            case H18. case H21. case H23. case H21. case H18. case H17. % trivial cases
+      case H10. case H16. % tensor
+        case H6.
+          case H18.
+            case H17.
+              case H19.
+                case H21. case H21. case H20.
+                  unfold 2. witness A1. witness B1. witness (cons (not A) L3'1). witness D0. witness D3.
+                  witness D4. witness D5. % We have to prove the permutation lemma so: split L3'1 nil L1' -> L3'1 = L1'. Can we avoid it?

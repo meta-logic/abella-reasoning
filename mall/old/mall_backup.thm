@@ -1,0 +1,201 @@
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Kind fm                        type.
+Kind mset                      type.
+Kind nat                       type.
+
+% Nat
+Type z                         nat.
+Type s                         nat -> nat.
+
+% Multisets
+Type empty                     mset.
+Type cons                      fm -> mset -> mset.
+   
+% MALL
+Type a, b, c                   fm.
+Type tensor, par, plus, with   fm -> fm -> fm.
+Type one, bot, zero, top       fm.
+Type not                       fm -> fm.
+
+Define atom : fm -> prop by
+  atom a ;
+  atom b.
+
+Define dual : fm -> fm -> prop by
+  dual one bot ;
+  dual bot one ;
+  dual top zero ;
+  dual zero top ;
+  dual A (not A) := atom A;
+  dual (not A) A := atom A;
+  dual (tensor A B) (par C D) := dual A C /\ dual B D;
+  dual (par A B) (tensor C D) := dual A C /\ dual B D;
+  dual (plus A B) (with C D)  := dual A C /\ dual B D;
+  dual (with A B) (plus C D)  := dual A C /\ dual B D.
+
+Define membrest : fm -> mset -> mset -> prop by
+  membrest X (cons X L) L ;
+  membrest X (cons Y L) (cons Y L') := membrest X L L'.
+  
+Define split : mset -> mset -> mset -> prop by
+  split empty empty empty ;
+  split L3 L2 L1 := exists X L3' L2', membrest X L3 L3' /\ membrest X L2 L2' /\ split L3' L2' L1 ;
+  split L3 L2 L1 := exists X L3' L1', membrest X L3 L3' /\ membrest X L1 L1' /\ split L3' L2 L1'.
+  
+Define perm : nat -> mset -> mset -> prop by
+  perm z empty empty ;
+  perm (s N) G D := exists X G' D', membrest X G G' /\ membrest X D D' /\ perm N G' D'.
+
+Define prove : mset -> prop by
+  prove Delta := exists A Delta',
+                 membrest A Delta Delta' /\ atom A /\ membrest (not A) Delta' empty ;                    % init
+  prove Delta := exists A B Delta' D0 D1 D2 D3,
+                 membrest (tensor A B) Delta Delta' /\ split Delta' D1 D2 /\
+                 membrest A D0 D1 /\ membrest B D3 D2 /\ prove D0 /\ prove D3 ;                          % tensorR
+  prove Delta := exists A B Delta' D1 D2,
+                 membrest (par A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 D1 /\
+                 prove D2 ;                                                                              % parR
+  prove Delta := exists A B Delta' D1 D2,
+                 membrest (with A B) Delta Delta' /\ membrest A D1 Delta' /\ membrest B D2 Delta' /\
+                 prove D1 /\ prove D2 ;                                                                  % withR
+  prove Delta := exists A B Delta' D0,
+                 membrest (plus A B) Delta Delta' /\
+                 ((membrest A D0 Delta' /\ prove D0) \/ (membrest B D0 Delta' /\ prove D0)) ;            % plusR
+  prove Delta := Delta = (cons one empty) ;                                                              % oneR
+  prove Delta := exists Delta', membrest top Delta Delta' ;                                              % topR
+  prove Delta := exists Delta', membrest bot Delta Delta' /\ prove Delta'.                               % botR
+
+% Multisets
+CoDefine multiset : mset -> prop by
+  multiset empty ;
+  multiset (cons X L) := multiset L.
+
+CoDefine eqi : mset -> mset -> prop by
+  eqi empty empty ;
+  eqi L R := exists X L' R', membrest X L L' /\ membrest X R R' /\ eqi L' R'.
+
+Define tk : nat -> mset -> mset -> prop by
+  tk z L empty ;
+  tk N empty empty ;
+  tk (s N) L R := exists X L' R', membrest X L L' /\ membrest X R R' /\ tk N L' R'.
+
+Define eqf : mset -> mset -> prop by
+  eqf L R := (forall N S, tk N L S -> tk N R S) /\
+             (forall N S, tk N R S -> tk N L S).
+
+% Theorem eqi_take : forall L R S N,
+%   eqi L R -> tk N L S -> tk N R S.
+
+% Theorem split1_implies_perm : forall L L',
+%   split L L' empty -> perm L L'.
+
+% intros. search.
+
+% Theorem split2_implies_perm : forall L L',
+%   split L empty L' -> perm L L'.
+
+% intros. search.
+  
+Theorem perm_identity : forall D,
+  is_ms D -> perm D D.
+
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H2. case H3.
+    unfold 1.
+      search.
+    unfold 2.
+      search.
+      
+% Theorem perm_prop : forall X G G' D D', 
+%   membrest X G G' -> split G D empty -> membrest X D D' -> split G' D' empty.
+
+%Theorem perm_prop : forall X G D D',
+%  is_ms G -> is_ms D -> is_ms D' -> 
+%  exists G', is_ms G' -> membrest X G G' -> membrest X D D' -> perm G D -> perm G' D'.
+    
+Theorem fm_eq : forall X F L,
+  membrest X (cons F L) L -> X = F.
+
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H2.
+    search.
+
+Theorem membrest_fm_eq : forall X F L L',
+  membrest F L L' -> membrest X L L' -> X = F.
+
+induction on 1. induction on 2. intros.
+  case H1.
+    case H2.
+      search.
+      apply fm_eq to H3.
+      search.
+    case H2.
+      apply fm_eq to H3.
+      search.
+    apply IH1 to H3 H4.
+      search.
+
+Theorem atomic_inference : forall A B,
+  atom A -> dual A B -> B = (not A).
+
+intros.
+  case H1.
+    case H2.
+      search.
+    case H2.
+      search.
+
+%Theorem permutation_works : forall Delta Delta',
+%  split Delta Delta' empty -> prove Delta -> prove Delta'.
+%
+%induction on 1. intros.
+%  case H1.
+%    search.
+
+Theorem cut_admissibility : forall Delta Delta' B C D D1 D2,
+    prove Delta -> membrest B Delta D1 ->
+    prove Delta' -> membrest C Delta' D2 -> dual B C -> split D D1 D2 -> prove D.
+  
+induction on 1. induction on 3. intros.
+  % left premise introduction
+  case H1. case H9.
+    case H7.
+      case H2. % init
+        apply atomic_inference to H8 H5.
+          case H4.
+            case H3. case H12. % right premise introduction
+              case H10.
+                case H11.
+              case H13.
+                case H6.
+                  case H15.
+                    case H16.
+                      case H18. case H18. % trivial cases
+                      case H19. case H17. case H14.
+                        search.
+                      case H20.
+                        search.
+                      case H21. case H21. case H20. case H17. % trivial cases
+                      case H15.
+                        case H16.
+                          case H19. case H18. case H17.
+                            case H14.
+                              search.
+                            case H20.
+                              search.
+                            case H18. case H21. case H23. case H21. case H18. case H17. % trivial cases
+      case H10. case H16. % tensor
+        case H6.
+          case H18.
+            case H17.
+              case H19.
+                case H21. case H21. case H20.
+                  unfold 2. witness A1. witness B1. witness (cons (not A) L3'1). witness D0. witness D3.
+                  witness D4. witness D5. % We have to prove the permutation lemma so: split L3'1 empty L1' -> L3'1 = L1'. Can we avoid it?

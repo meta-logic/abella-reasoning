@@ -1,0 +1,68 @@
+%% Admissibility of non-atomic initials
+
+Specification "mall".
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+
+% Auxiliary definitions
+
+Define formula: o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (with A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (atom A).
+
+% Lemmas
+
+Theorem init_tensor: forall A B,
+  { prove (list_o A empty) (list_o A empty) } ->
+  { prove (list_o B empty) (list_o B empty) } ->
+  { prove (list_o (tensor A B) empty) (list_o (tensor A B) empty) }.
+
+intros. search.
+
+Theorem init_plus: forall A B,
+  { prove (list_o A empty) (list_o A empty) } ->
+  { prove (list_o B empty) (list_o B empty) } ->
+  { prove (list_o (plus A B) empty) (list_o (plus A B) empty) }.
+
+intros. search.
+
+Theorem init_with: forall A B,
+  { prove (list_o A empty) (list_o A empty) } -> 
+  { prove (list_o B empty) (list_o B empty) } ->
+  { prove (list_o (with A B) empty) (list_o (with A B) empty) }.
+
+intros. search.
+
+Theorem init_par: forall A B,
+  { prove (list_o A empty) (list_o A empty) } -> 
+  { prove (list_o B empty) (list_o B empty) } ->
+  { prove (list_o (par A B) empty) (list_o (par A B) empty) }.
+
+intros. search.
+
+
+% Main theorem
+
+Theorem atomic_initial: forall A,
+  formula A -> { prove (list_o A empty) (list_o A empty) }.
+
+induction on 1. intros. case H1.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_tensor. search.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_plus. search.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_with. search.
+  apply IH to H2.
+  apply IH to H3.
+  apply init_par. search.
+  search.
+

@@ -1,0 +1,186 @@
+%% Cut elimination for MALL
+
+Specification "mall".
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+
+Set subgoals off.
+
+Define formula : o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (with A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (zero) ; formula (one) ; formula (bot) ;
+  formula (top) ; formula (atom A).
+
+Theorem empty_split1 : forall C1 C2,
+  { is_list C1 } -> { is_list C2 } -> { split C1 C2 empty } -> C1 = C2.
+
+induction on 3. intros.
+  case H1.
+    case H3.
+      search.
+  case H2.
+    case H3.
+    case H3.
+    apply IH to H4 H5 H6.
+      search.
+
+Theorem empty_split2 : forall C1 C2,
+  { is_list C1 } -> { is_list C2 } -> { split C1 empty C2 } -> C1 = C2.
+
+induction on 3. intros.
+  case H1.
+    case H3.
+      search.
+  case H2.
+    case H3.
+    case H3.
+    apply IH to H4 H5 H6.
+      search.
+
+Theorem is_list_split1 : forall L,
+  { is_list L } -> { split L L empty }.
+
+induction on 1. intros.
+  case H1.
+    search.
+    apply IH to H2.
+    search.
+
+Theorem is_list_split2 : forall L,
+  { is_list L } -> { split L empty L }.
+
+induction on 1. intros.
+  case H1.
+    search.
+    apply IH to H2.
+    search.
+
+Theorem split_implies_list1 : forall L1 L2 L3,
+  { split L1 L2 L3 } -> { is_list L1 } -> { is_list L3 } -> { is_list L2 }.
+
+induction on 1. intros.
+  case H1.
+    search.
+    case H2.
+      case H3.
+      apply IH to H4 H5 H6.
+        search.
+    case H2.
+      apply IH to H4 H5 H3.
+      search.
+
+Theorem is_list_empty : { is_list empty }.
+  search.
+
+Theorem split_exists : forall C1 C2,
+  { is_list C1 } -> { is_list C2 } -> exists C3, { split C3 C2 C1 }.
+
+induction on 1. induction on 2. intros.
+  case H1.
+    apply is_list_split1 to H2.
+      witness C2.
+      search.
+  case H2.
+    apply is_list_split2 to H3.
+      witness (list_o X L).
+      search.
+    apply IH1 to H3 H4.
+    witness (list_o X1 (list_o X C3)).
+    search.
+
+Theorem memb_and_rest_superset1 : forall L L' L1 L1' L2 F, 
+  { is_list L } -> { is_list L' } -> 
+  { split L L1 L2 } -> { memb_and_rest F L1 L1' } -> { split L' L1' L2 } ->
+  { memb_and_rest F L L' }.
+
+induction on 3. induction on 5. intros.
+  case H3 (keep).
+    case H4.
+  case H5 (keep).
+    case H1. case H2.
+    apply IH to H8 H9 H6 H4 H7.
+      search.
+
+%    search.
+%      search.
+%    case H2.
+%    apply is_list_empty.
+%    apply split_implies_list1 to H6 H7 H8.
+%    apply empty_split1 to H7 H9 H6.
+%      search.
+
+% induction on 1. induction on 2. intros.
+% case H1.
+%   % L is empty
+%   case H3.
+%     case H4. % invalid case
+%     case H4. % invalid case
+%   % L is (list_o X L3).
+%   case H2.
+%     % L' is empty
+%     case H5.
+%       case H4.
+%         case H3.
+%           search.
+%           case H7.
+%             search.
+%             search.
+%       case H4.
+%         case H3.
+%           search.
+%           case H7.
+%             search.
+%             search.
+%     % L' is (list_o X1 L4)
+%     case H3.
+%       % L1 is empty
+%       case H4. % invalid case
+%       % L2 is empty
+%      case H5.
+%        search.
+      
+%  case H3. case H5. search. search.
+
+%   case H2.
+%     case H3. 
+%       case H5. search. search. 
+%       case H5. search. search.
+%     case H3.
+%       case H5. search.
+%       case H7. search. search.
+
+% Main theorem
+Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2 G3 D3,
+  formula C ->
+  { is_list G1 } -> { is_list D1 } -> { is_list D1' } ->
+  { is_list G2 } -> { is_list G2' } -> { is_list D2 } ->
+  { prove G1 D1 } -> { prove G2 D2 } -> 
+  { memb_and_rest C D1 D1' } -> { memb_and_rest C G2 G2' } ->
+  { split G3 G2' G1 } -> { split D3 D2 D1' } -> 
+  { prove G3 D3 }.
+
+% We need three inductions for the proof: on the cut-formula structure, the left
+% premise proof and the right premise proof.
+induction on 1. induction on 8. induction on 9. intros.
+
+% Unfold the formula induction.
+case H1 (keep).
+  % Tensor case
+    % Unfolds the induction on the left premise (cut-formula in the conclusion)
+    case H8.
+      % Init case, invalid
+      case H17. case H10. case H18.
+      % OneR case, invalid
+      case H16. case H10. case H18.
+      % OneL case, permutes down
+      apply split_exists to H16 H6. 
+      apply IH1 to H1 H16 H3 H4 H5 H6 H7 H18 H9 H10 H11 H19 H13.
+  % Plus case
+  % With case
+  % Par case
+  % Atom
