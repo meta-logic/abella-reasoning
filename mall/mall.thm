@@ -18,7 +18,7 @@ Define dual : o -> o -> prop by
   dual top zero ;
   dual zero top ;
   dual A (not A) := atom A;
-  dual (not A) A := atom A;
+  dual (not A) A := atom A; % can we remove this? maybe it will be useful
   dual (tensor A B) (par C D) := dual A C /\ dual B D;
   dual (par A B) (tensor C D) := dual A C /\ dual B D;
   dual (plus A B) (with C D)  := dual A C /\ dual B D;
@@ -33,6 +33,21 @@ Define perm : olist -> olist -> prop by
   perm nil nil ;
   perm (X :: L2) (X :: L1) := perm L2 L1.
 
+Define is_list : olist -> prop by
+  is_list nil ;
+  is_list (X :: L) := is_list L.
+
+Define fm : o -> prop by
+  fm one ;
+  fm bot ;
+  fm zero ;
+  fm top ;
+  fm (A) := atom A ;
+  fm (tensor A B) := form A /\ form B ;
+  fm (par A B) := form A /\ form B ;
+  fm (plus A B) := form A /\ form B ;
+  fm (with A B) := form A /\ form B.
+
 Define prove : olist -> prop by
   prove (one :: nil) ;                                                                                     % oneR
   prove (top :: Delta) ;                                                                                   % topR
@@ -42,6 +57,11 @@ Define prove : olist -> prop by
   prove ((par A B) :: Delta) := prove (A :: B :: Delta) ;                                                  % parR
   prove ((with A B) :: Delta) := prove (A :: Delta) /\ prove (B :: Delta) ;                                % withR
   prove ((plus A B) :: Delta) := prove (A :: Delta) \/ prove (B :: Delta).                                 % plusR
+
+% Theorem double_negation_axiom : forall A,
+%   prove ((not A) :: (not (not A)) :: nil) -> prove (A :: (not A) :: nil).
+
+% skip.
 
 Theorem split1_implies_perm : forall D2 D1,
   split D2 nil D1 -> perm D2 D1.
@@ -129,8 +149,51 @@ induction on 1. intros.
           apply IH to H5 H6.
             search.
 
-Theorem despise_order_atomic_case : forall A,
-  prove (not A :: not (not A) :: nil) -> prove (A :: (not A) :: nil). 
+Theorem split_implies_list1 : forall L R S,
+  split L R S -> is_list S.
+
+induction on 1. intros.
+  case H1. search.
+    apply IH to H2. search.
+      apply IH to H2. search.
+
+Theorem split_existence : forall R S,
+  is_list R -> is_list S -> exists L, split L R S.
+
+induction on 1. induction on 2. intros.
+  case H1 (keep).
+    case H2 (keep).
+      search.
+    apply IH1 to H1 H3.
+      search.
+    apply IH to H3 H2.
+      search.
+
+Theorem split_plus_form1 : forall A B D D1 D2,
+  prove (A :: B :: D2) -> split D D1 D2 -> split (B :: D) D1 (B :: D2).
+
+intros. search.
+
+Theorem split_plus_form2 : forall A B D D1 D2,
+  prove (A :: B :: D2) -> split D D1 D2 -> split (A :: D) D1 (A :: D2).
+
+intros. search.
+
+Theorem rename_ms_with_form1 : forall A B D D1 D2,
+  prove (A :: B :: D2) -> split (B :: D) D1 (B :: D2) -> exists D', prove (A :: D') /\ split (B :: D) D1 D'.
+
+intros. search.
+
+% Theorem rename_ms_with_form2 : forall A B D D1 D2,
+%   prove (A :: B :: D2) -> split (A :: D) D1 (A :: D2) -> exists D', prove (B :: D') /\ split (A :: D) D1 D'.
+
+% intros. search.
+  
+% Theorem split_redistribution : forall D D1 D2 D3 D4 D5,
+%  split D D1 D2 -> split D1 D3 D4 -> split D5 D2 D4 -> split D D3 D5.
+
+% Theorem despise_order : forall A B D,
+%   fm A -> fm B -> prove (A :: B :: D) -> prove (B :: A :: D).
 
 Theorem cut_admissibility : forall B C D D1 D2,
     prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
@@ -153,7 +216,7 @@ induction on 1. induction on 2. intros.
         case H3. % init
           case H5. case H6.
         case H3. case H3. case H3. case H3. case H3.
-    % atom (B)
+    % B = atom (B)
     case H2 (keep).
       case H3.
         case H5. case H6.
@@ -161,7 +224,40 @@ induction on 1. induction on 2. intros.
         case H5. case H6.
       case H3.
         case H5. case H5. case H5. case H5. % trivial
-        case H4. case H8. case H9.
+        case H6. case H5. % Remove this later, it's not correct
+        %case H4. case H8. case H9.
         % Abella shows a hypothesis H: atom (not B). We can not eliminate the case applying case analysis on H, because this is just
         % an implementation subtlety. (atom (not B)) should be viewed as (not (atom B)). Is it really a subtlety or a mistake? Think about it.
-        
+        case H5. case H5. case H5. case H5. % trivial
+      case H3. % trivial
+        case H5. case H7.
+      case H3. % trivial
+        case H9. case H5.
+      case H3. % trivial
+        case H7. case H5.
+      case H3. % trivial
+        case H8. case H5.
+      case H3. % trivial
+        case H7. case H5.
+    % B = bot
+    case H2 (keep).
+      apply split2_implies_perm to H4.
+        apply perm_provability to H5 H6.
+          search.
+      case H3. case H3.
+        case H6. case H7.
+      case H3. case H3. case H3.
+      case H3. case H3.
+    % B = tensor A B1
+    case H2 (keep).
+      case H3. case H3. case H3.
+        case H9. case H8.
+      case H3.
+        case H3. % trivial
+      case H3.
+        % apply split_implies_list1 to H4.
+        %   apply split_implies_list1 to H5.
+        %     apply split_existence to H12 H11.
+        %       apply split_plus_form2 to H8 H13.
+        %         apply rename_ms_with_form2 to H8 H14.
+        %           apply IH to H7 H15 H10 H16.
