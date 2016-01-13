@@ -1,7 +1,13 @@
 Set instantiations on.
 Set witnesses on.
 Set subgoals off.
-   
+
+% nat
+Kind nat type.
+
+Type z nat.
+Type s nat -> nat.
+
 % MALL
 Type a, b, c                   o.
 Type tensor, par, plus, with   o -> o -> o.
@@ -43,10 +49,10 @@ Define fm : o -> prop by
   fm zero ;
   fm top ;
   fm (A) := atom A ;
-  fm (tensor A B) := form A /\ form B ;
-  fm (par A B) := form A /\ form B ;
-  fm (plus A B) := form A /\ form B ;
-  fm (with A B) := form A /\ form B.
+  fm (tensor A B) := fm A /\ fm B ;
+  fm (par A B) := fm A /\ fm B ;
+  fm (plus A B) := fm A /\ fm B ;
+  fm (with A B) := fm A /\ fm B.
 
 Define prove : olist -> prop by
   prove (one :: nil) ;                                                                                     % oneR
@@ -149,8 +155,8 @@ induction on 1. intros.
           apply IH to H5 H6.
             search.
 
-Theorem split_implies_list1 : forall L R S,
-  split L R S -> is_list S.
+Theorem split_implies_lists : forall L R S,
+  split L R S -> is_list L /\ is_list R /\ is_list S.
 
 induction on 1. intros.
   case H1. search.
@@ -184,16 +190,39 @@ Theorem rename_ms_with_form1 : forall A B D D1 D2,
 
 intros. search.
 
-% Theorem rename_ms_with_form2 : forall A B D D1 D2,
-%   prove (A :: B :: D2) -> split (A :: D) D1 (A :: D2) -> exists D', prove (B :: D') /\ split (A :: D) D1 D'.
+Theorem split_distributivity : forall L R S,
+  split L R nil -> split R nil S -> split L S nil.
 
-% intros. search.
+induction on 1. intros.
+  case H1. case H2.
+    search.
+  case H2.
+    apply IH to H3 H4.
+      search.
+
+Theorem split_add_fm1 : forall X L1 L2 L3 L4 L5,
+  split L4 L5 (X :: L3) -> split L1 L2 L3 -> split (X :: L1) L2 (X :: L3).
+
+intros. search.
+
+Theorem split_add_fm2 : forall X L1 L2 L3 L4 L5,
+  split L3 (X :: L4) L5 -> split L4 L1 L2 -> split (X :: L4) L1 (X :: L2).
+
+intros. search.
   
-% Theorem split_redistribution : forall D D1 D2 D3 D4 D5,
-%  split D D1 D2 -> split D1 D3 D4 -> split D5 D2 D4 -> split D D3 D5.
+% Theorem split_rearrangement : forall D D1 D2 D3 D4 D5,
+% split D D1 D2 -> split D1 D3 D4 -> split D5 D3 D2 -> split D D4 D5.
 
-% Theorem despise_order : forall A B D,
-%   fm A -> fm B -> prove (A :: B :: D) -> prove (B :: A :: D).
+% induction on 3. intros.
+%  case H3.
+%    apply split_distributivity to H1 H2.
+%      search.
+%    case H2. case H1.
+%      apply IH to H6 H5 H4.
+%        search.
+%      apply split_add_fm1 to H4 H6.
+%        apply split_add_fm2 to H7 H5.
+%          apply IH to H7 H8 H4.
 
 Theorem cut_admissibility : forall B C D D1 D2,
     prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
@@ -255,9 +284,9 @@ induction on 1. induction on 2. intros.
       case H3.
         case H3. % trivial
       case H3.
-        % apply split_implies_list1 to H4.
-        %   apply split_implies_list1 to H5.
-        %     apply split_existence to H12 H11.
-        %       apply split_plus_form2 to H8 H13.
-        %         apply rename_ms_with_form2 to H8 H14.
-        %           apply IH to H7 H15 H10 H16.
+        apply split_implies_lists to H4.
+          apply split_implies_lists to H5.
+            apply split_existence to H15 H13.
+              apply split_plus_form1 to H8 H17.
+                apply rename_ms_with_form1 to H8 H18.
+                  apply IH to H6 H19 H9 H20.
