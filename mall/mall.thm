@@ -1,116 +1,135 @@
 Set instantiations on.
 Set witnesses on.
-Set subgoals off.
+%Set subgoals off.
 
-% nat
-Kind nat type.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                               %%          
+%%          Multisets            %%     
+%%                               %%          
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Type z nat.
-Type s nat -> nat.
-
-% MALL
-Type a, b, c                   o.
-Type tensor, par, plus, with   o -> o -> o.
-Type one, bot, zero, top       o.
-Type not                       o -> o.
-
-Define nat : nat -> prop by
-  nat z ;
-  nat (s N) := nat N.
-
-Define atom : o -> prop by
-  atom a ;
-  atom b.
-
-Define dual : o -> o -> prop by
-  dual one bot ;
-  dual bot one ;
-  dual top zero ;
-  dual zero top ;
-  dual A (not A) := atom A;
-  dual (not A) A := atom A; % this case doesn't seem necessary
-  dual (tensor A B) (par C D) := dual A C /\ dual B D;
-  dual (par A B) (tensor C D) := dual A C /\ dual B D;
-  dual (plus A B) (with C D)  := dual A C /\ dual B D;
-  dual (with A B) (plus C D)  := dual A C /\ dual B D.
-  
 Define split : olist -> olist -> olist -> prop by
   split nil nil nil ;
   split (X :: L3) (X :: L2) L1 := split L3 L2 L1 ;
   split (X :: L3) L2 (X :: L1) := split L3 L2 L1.
 
-Define list_eq : olist -> olist -> prop by
-  list_eq nil nil ;
-  list_eq (X :: L2) (X :: L1) := list_eq L2 L1.
+Define memb_and_rest : o -> olist -> olist -> prop by
+  memb_and_rest X (X :: L) L ;
+  memb_and_rest X (Y :: L) (Y :: R) := memb_and_rest X L R.
+
+Define list_same_length : olist -> olist -> prop by
+  list_same_length nil nil ;
+  list_same_length L R :=
+    exists X L' R', memb_and_rest X L L' /\ memb_and_rest X R R' /\
+                    list_same_length L' R'.
+  
+Define perm : olist -> olist -> prop by
+  perm nil nil ;
+  perm L2 L1 := exists X L1' L2', list_same_length L2 L1 /\
+                                  memb_and_rest X L2 L2' /\
+                                  memb_and_rest X L1 L1' /\ perm L2' L1'.
 
 Define is_list : olist -> prop by
   is_list nil ;
   is_list (X :: L) := is_list L.
 
-Define fm : o -> prop by
-  fm one ;
-  fm bot ;
-  fm zero ;
-  fm top ;
-  fm (A) := atom A ;
-  fm (not A) := atom A ;
-  fm (tensor A B) := fm A /\ fm B ;
-  fm (par A B) := fm A /\ fm B ;
-  fm (plus A B) := fm A /\ fm B ;
-  fm (with A B) := fm A /\ fm B.
-
-Define prove : olist -> prop by
-  prove (one :: nil) ;                                                                                     % oneR
-  prove (top :: Delta) ;                                                                                   % topR
-  prove (A :: (not A) :: nil) := atom A;                                                                   % init
-  prove (bot :: Delta) := prove Delta ;                                                                    % botR
-  prove ((tensor A B) :: Delta) := exists D1 D2, split Delta D1 D2 /\ prove (A :: D1) /\ prove (B :: D2) ; % tensorR
-  prove ((par A B) :: Delta) := prove (A :: B :: Delta) ;                                                  % parR
-  prove ((with A B) :: Delta) := prove (A :: Delta) /\ prove (B :: Delta) ;                                % withR
-  prove ((plus A B) :: Delta) := prove (A :: Delta) \/ prove (B :: Delta).                                 % plusR
-
-% Theorem double_negation_axiom : forall A,
-%   prove ((not A) :: (not (not A)) :: nil) -> prove (A :: (not A) :: nil).
-
-% skip.
-
-Theorem split1_implies_list_eq : forall D2 D1,
-  split D2 nil D1 -> list_eq D2 D1.
+Theorem list_same_length_commutativity : forall L R,
+  list_same_length L R -> list_same_length R L.
 
 induction on 1. intros.
-  case H1. search.
-    apply IH to H2. 
-        search.
+  case H1.
+    search.
+  apply IH to H4.
+    unfold. witness X. witness R'. witness L'.
+      split. search. search. search.
+  
+Theorem perm_list_same_length : forall L R,
+  perm L R -> list_same_length L R.
 
-Theorem split2_implies_list_eq : forall D2 D1,
-  split D2 D1 nil -> list_eq D2 D1.
+induction on 1. intros. case H1.
+  search. search.
+
+Theorem perm_with_fm : forall X L R,
+  perm L R -> perm (X :: L) (X :: R).
 
 induction on 1. intros.
-  case H1. search.
-    apply IH to H2. unfold.
-        search.
+  case H1.
+    search.
+  case H3. case H4.
+    apply IH to H5 with X = X.
+      search.
+    apply IH to H5 with X = X.
+      search.
+    apply IH to H5 with X = X.
+      search.
 
-Theorem split_of_list_eq : forall D3 D3' D2 D1,
-  split D3 D2 D1 -> list_eq D3' D3 -> split D3' D2 D1.
+Theorem memb_and_rest_with_fm : forall X1 Y X L R,
+  memb_and_rest X1 (X :: Y :: L) (Y :: R) -> memb_and_rest X1 (X :: L) R.
 
-induction on 2. intros.
+induction on 1. intros.
+  case H1.
+    search. search.
+
+Theorem memb_and_rest_exchange : forall X1 X Y L R,
+  memb_and_rest X1 (Y :: X :: L) R -> memb_and_rest X1 (X :: Y :: L) R.
+
+induction on 1. intros.
+  case H1. unfold.
+    search.
   case H2.
     search.
+      
+
+Theorem perm_exchange : forall X Y L R,
+  perm (Y :: X :: L) R -> perm (X :: Y :: L) R.
+
+induction on 1. intros.
   case H1.
-    apply IH to H4 H3.
-      search.
-    apply IH to H4 H3.
-      search.
+    unfold. witness X1. witness L1'. witness L2'.
+      split.
 
-Theorem list_eq_adding_2_fm : forall A B D D',
-  prove (A :: B :: D) -> list_eq D' D -> list_eq (A :: B :: D') (A :: B :: D).
+Theorem perm_commutativity : forall L L',
+  perm L L' -> perm L' L.
+  
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H5.
+    case H3. case H4.
+      backchain perm_with_fm.
+    case H8.   
 
-search.
+% Theorem perm_transitivity : forall L R S,
+%   perm L R -> perm R S -> perm L S.
 
-Theorem list_eq_adding_1_fm : forall A D D',
-  prove (A :: D) -> list_eq D' D -> list_eq (A :: D') (A :: D).
+% induction on 1. intros.
+%   case H1.
+%     search.
+%   apply perm_commutativity to H2.
 
-search.
+Theorem split1_perm : forall D2 D1,
+  split D2 nil D1 -> perm D2 D1.
+
+induction on 1. intros.
+  case H1. search.
+    apply IH to H2.
+      backchain perm_add_fm.
+
+Theorem split2_perm : forall D2 D1,
+  split D2 D1 nil -> perm D2 D1.
+
+induction on 1. intros.
+  case H1. search.
+    apply IH to H2.
+      backchain perm_add_fm.
+
+Theorem split_of_perm : forall D3 D3' D2 D1,
+  split D3 D2 D1 -> perm D3' D3 -> split D3' D2 D1.
+
+induction on 1. intros.
+  case H1. case H2.
+    search. case H5.
+  case H2.
 
 Theorem split_implies_lists : forall L R S,
   split L R S -> is_list L /\ is_list R /\ is_list S.
@@ -143,6 +162,113 @@ induction on 1. intros.
       apply IH to H2.
         search.
 
+Theorem split_distributivity : forall L R S,
+  split L R nil -> split R nil S -> split L S nil.
+
+induction on 1. intros.
+  case H1. case H2.
+    search.
+  case H2.
+    apply IH to H3 H4.
+      search.
+
+Theorem split_commutativity_subcase : forall L1 L2,
+  split L1 L2 nil -> split L2 L1 nil.
+
+induction on 1. intros.
+  case H1.
+    search.
+  apply IH to H2.
+    search.
+
+Theorem split_distributivity_subcase : forall L1 L2 L3 L4,
+  split L3 L2 nil -> split L2 L4 nil -> split L4 L1 nil -> perm L3 L1.
+
+induction on 1. intros.
+  case H1. case H2. case H3.
+    search.
+  case H2. case H3.
+    apply IH to H4 H5 H6.
+      backchain perm_with_fm.
+
+Theorem new_split1 : forall L1 L2 L3 X,
+  split L1 (X :: L2) L3 -> exists K, split K L2 L3.
+
+induction on 1. intros.
+  case H1. witness L4.
+    search.
+  apply IH to H2.
+    search.
+
+Theorem perm_without_fm : forall D D1 D2 K X,
+  split D (X :: D1) D2 -> split K D1 D2 -> perm (X :: K) D.
+
+induction on 1. intros.
+  case H1.
+    unfold. witness X. witness L3. witness K.
+      split.
+        skip.
+      search.
+
+Theorem split_rearrangement : forall D' D D1 D2 D3 D4 D5,
+  split D D1 D2 -> split D1 D3 D4 -> split D5 D4 D2 -> split D' D3 D5 -> perm D D'.
+
+induction on 1. intros.
+  case H1.
+    case H2. case H3. case H4.
+      search.
+    case H2. apply new_split1 to H4.
+      apply IH to H5 H6 _ _ with D' = K, D5 = D5.
+        unfold. case H7.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                       %%
+%%                 MALL                  %%
+%%                                       %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Type a, b, c                   o.
+Type tensor, par, plus, with   o -> o -> o.
+Type one, bot, zero, top       o.
+Type not                       o -> o.
+  
+Define atom : o -> prop by
+  atom a ;
+  atom b.
+
+Define dual : o -> o -> prop by
+  dual one bot ;
+  dual bot one ;
+  dual top zero ;
+  dual zero top ;
+  dual A (not A) := atom A;
+  dual (not A) A := atom A;
+  dual (tensor A B) (par C D) := dual A C /\ dual B D;
+  dual (par A B) (tensor C D) := dual A C /\ dual B D;
+  dual (plus A B) (with C D)  := dual A C /\ dual B D;
+  dual (with A B) (plus C D)  := dual A C /\ dual B D.
+
+Define prove : olist -> prop by
+  prove (one :: nil) ;                                                                                     % oneR
+  prove (top :: Delta) ;                                                                                   % topR
+  prove (A :: (not A) :: nil) := atom A;                                                                   % init
+  prove (bot :: Delta) := prove Delta ;                                                                    % botR
+  prove ((tensor A B) :: Delta) := exists D1 D2, split Delta D1 D2 /\ prove (A :: D1) /\ prove (B :: D2) ; % tensorR
+  prove ((par A B) :: Delta) := prove (A :: B :: Delta) ;                                                  % parR
+  prove ((with A B) :: Delta) := prove (A :: Delta) /\ prove (B :: Delta) ;                                % withR
+  prove ((plus A B) :: Delta) := prove (A :: Delta) \/ prove (B :: Delta) ;                                % plusR
+  prove (A :: B :: nil) := prove (B :: A :: nil).                                                          % exchange
+
+Theorem list_eq_adding_2_fm : forall A B D D',
+  prove (A :: B :: D) -> list_eq D' D -> list_eq (A :: B :: D') (A :: B :: D).
+
+search.
+
+Theorem list_eq_adding_1_fm : forall A D D',
+  prove (A :: D) -> list_eq D' D -> list_eq (A :: D') (A :: D).
+
+search.
+
 Theorem split_adding_fm_1 : forall A B D D1 D2,
   prove (A :: B :: D2) -> split D D1 D2 -> split (B :: D) D1 (B :: D2).
 
@@ -158,16 +284,6 @@ Theorem rename_list_adding_fm : forall A B D D1 D2,
 
 intros. search.
 
-Theorem split_distributivity : forall L R S,
-  split L R nil -> split R nil S -> split L S nil.
-
-induction on 1. intros.
-  case H1. case H2.
-    search.
-  case H2.
-    apply IH to H3 H4.
-      search.
-  
 Theorem list_eq_provability : forall D2 D1,
   prove D2 -> list_eq D1 D2 -> prove D1.
 
@@ -205,48 +321,23 @@ induction on 1. intros.
         apply list_eq_adding_1_fm to H5 H4.
           apply IH to H5 H6.
             search.
-
-Theorem list_eq_commutativity : forall L L',
-  list_eq L L' -> list_eq L' L.
-
-induction on 1. intros.
-  case H1.
-    search.
-  apply IH to H2.
-    search.
-
-Theorem split_commutativity_subcase : forall L1 L2,
-  split L1 L2 nil -> split L2 L1 nil.
-
-induction on 1. intros.
-  case H1.
-    search.
-  apply IH to H2.
-    search.
-
-Theorem split_distributivity_subcase : forall L1 L2 L3 L4,
-  split L3 L2 nil -> split L2 L4 nil -> split L4 L1 nil -> list_eq L3 L1.
-
-induction on 1. intros.
-  case H1. case H2. case H3.
-    search.
-  case H2. case H3.
-    apply IH to H4 H5 H6.
-      search.
-
-% Theorem split_rearrangement : forall D' D D1 D2 D3 D4 D5,
-%   split D D1 D2 -> split D1 D3 D4 -> split D5 D4 D2 -> split D' D3 D5 -> list_eq D D'.
-
-% induction on 3. intros.
-%   case H3.
-%     case H4. case H1. case H2.
-%       search.
-%     case H2. case H2. case H1.
-%       apply split_commutativity_subcase to H7.
-%         apply split_commutativity_subcase to H6.
-%           apply split_distributivity_subcase to H5 H9 H8.
-%             apply list_eq_commutativity to H10.
-%               search. 
+    case H3.
+      case H2. case H4. case H5.
+        search.
+      case H2. case H5. case H6.
+        search.
+      case H2. case H5. case H6.
+        search.
+      case H2. case H7. case H8.
+        search.
+      case H2. case H5. case H6.
+        search.
+      case H2. case H6. case H7.
+        search.
+      case H2. case H5. case H6.
+        search.
+      case H2. case H5. case H6.
+        search.       
   
 Theorem cut_admissibility : forall B C D D1 D2,
     prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
@@ -259,7 +350,7 @@ induction on 1. induction on 2. intros.
         case H3. % init
           case H5. case H5.
         % C = bot
-        apply split1_implies_list_eq to H4.
+        apply split1_list_eq to H4.
           apply list_eq_provability to H5 H6.
             search.
       case H3. case H3. case H3. case H3. % trivial
@@ -295,7 +386,7 @@ induction on 1. induction on 2. intros.
         case H7. case H5.
     % B = bot
     case H2 (keep).
-      apply split2_implies_list_eq to H4.
+      apply split2_list_eq to H4.
         apply list_eq_provability to H5 H6.
           search.
       case H3. case H3.
