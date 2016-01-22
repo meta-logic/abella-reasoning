@@ -25,8 +25,7 @@ Define list_same_length : olist -> olist -> prop by
   
 Define perm : olist -> olist -> prop by
   perm nil nil ;
-  perm L2 L1 := exists X L1' L2', list_same_length L2 L1 /\
-                                  memb_and_rest X L2 L2' /\
+  perm L2 L1 := exists X L1' L2', memb_and_rest X L2 L2' /\
                                   memb_and_rest X L1 L1' /\ perm L2' L1'.
 
 Define is_list : olist -> prop by
@@ -43,50 +42,37 @@ induction on 1. intros.
     unfold. witness X. witness R'. witness L'.
       split. search. search. search.
   
-Theorem perm_list_same_length : forall L R,
-  perm L R -> list_same_length L R.
-
-induction on 1. intros. case H1.
-  search. search.
+% Theorem perm_list_same_length : forall L R,
+%   perm L R -> list_same_length L R.
+% 
+% induction on 1. intros. case H1.
+%   search. search.
 
 Theorem perm_with_fm : forall X L R,
   perm L R -> perm (X :: L) (X :: R).
-
+ 
 induction on 1. intros.
   case H1.
     search.
-  case H3. case H4.
-    apply IH to H5 with X = X.
-      search.
-    apply IH to H5 with X = X.
-      search.
-    apply IH to H5 with X = X.
-      search.
-
-Theorem memb_and_rest_with_fm : forall X1 Y X L R,
-  memb_and_rest X1 (X :: Y :: L) (Y :: R) -> memb_and_rest X1 (X :: L) R.
-
-induction on 1. intros.
-  case H1.
-    search. search.
-
-Theorem memb_and_rest_exchange : forall X1 X Y L R,
-  memb_and_rest X1 (Y :: X :: L) R -> memb_and_rest X1 (X :: Y :: L) R.
-
-induction on 1. intros.
-  case H1. unfold.
+  case H2. 
     search.
-  case H2.
     search.
-      
+% Proof completed
 
-Theorem perm_exchange : forall X Y L R,
-  perm (Y :: X :: L) R -> perm (X :: Y :: L) R.
+% Theorem memb_and_rest_with_fm : forall X1 Y X L R,
+%   memb_and_rest X1 (X :: Y :: L) (Y :: R) -> memb_and_rest X1 (X :: L) R.
+% 
+% induction on 1. intros.
+%   case H1.
+%     search. search.
 
-induction on 1. intros.
-  case H1.
-    unfold. witness X1. witness L1'. witness L2'.
-      split.
+% Theorem perm_exchange : forall X Y L R,
+%   perm (Y :: X :: L) R -> perm (X :: Y :: L) R.
+% 
+% induction on 1. intros.
+%   case H1.
+%     unfold. witness X1. witness L1'. witness L2'.
+%       split.
 
 Theorem perm_commutativity : forall L L',
   perm L L' -> perm L' L.
@@ -94,17 +80,23 @@ Theorem perm_commutativity : forall L L',
 induction on 1. intros.
   case H1.
     search.
-  apply IH to H5.
-    case H3. case H4.
-      backchain perm_with_fm.
-    case H8.   
+  apply IH to H4.
+    case H2. 
+      case H3. 
+        search.
+        search.
+      case H3.
+        search.
+        search.
+% Proof completed
 
-% Theorem perm_transitivity : forall L R S,
-%   perm L R -> perm R S -> perm L S.
+Theorem perm_transitivity : forall L R S,
+  perm L R -> perm R S -> perm L S.
 
-% induction on 1. intros.
-%   case H1.
-%     search.
+induction on 1. intros.
+  case H1.
+    search.
+% NOT completed
 %   apply perm_commutativity to H2.
 
 Theorem split1_perm : forall D2 D1,
