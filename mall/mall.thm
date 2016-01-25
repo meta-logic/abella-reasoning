@@ -15,13 +15,7 @@ Define split : olist -> olist -> olist -> prop by
 
 Define memb_and_rest : o -> olist -> olist -> prop by
   memb_and_rest X (X :: L) L ;
-  memb_and_rest X (Y :: L) (Y :: R) := memb_and_rest X L R.
-
-Define list_same_length : olist -> olist -> prop by
-  list_same_length nil nil ;
-  list_same_length L R :=
-    exists X L' R', memb_and_rest X L L' /\ memb_and_rest X R R' /\
-                    list_same_length L' R'.
+  memb_and_rest X (Y :: L) (Y :: R) := (X = Y -> false) /\ memb_and_rest X L R.
   
 Define perm : olist -> olist -> prop by
   perm nil nil ;
@@ -32,23 +26,7 @@ Define is_list : olist -> prop by
   is_list nil ;
   is_list (X :: L) := is_list L.
 
-Theorem list_same_length_commutativity : forall L R,
-  list_same_length L R -> list_same_length R L.
-
-induction on 1. intros.
-  case H1.
-    search.
-  apply IH to H4.
-    unfold. witness X. witness R'. witness L'.
-      split. search. search. search.
-  
-% Theorem perm_list_same_length : forall L R,
-%   perm L R -> list_same_length L R.
-% 
-% induction on 1. intros. case H1.
-%   search. search.
-
-Theorem perm_with_fm : forall X L R,
+ Theorem perm_with_fm : forall X L R,
   perm L R -> perm (X :: L) (X :: R).
  
 induction on 1. intros.
@@ -57,22 +35,6 @@ induction on 1. intros.
   case H2. 
     search.
     search.
-% Proof completed
-
-% Theorem memb_and_rest_with_fm : forall X1 Y X L R,
-%   memb_and_rest X1 (X :: Y :: L) (Y :: R) -> memb_and_rest X1 (X :: L) R.
-% 
-% induction on 1. intros.
-%   case H1.
-%     search. search.
-
-% Theorem perm_exchange : forall X Y L R,
-%   perm (Y :: X :: L) R -> perm (X :: Y :: L) R.
-% 
-% induction on 1. intros.
-%   case H1.
-%     unfold. witness X1. witness L1'. witness L2'.
-%       split.
 
 Theorem perm_commutativity : forall L L',
   perm L L' -> perm L' L.
@@ -88,16 +50,22 @@ induction on 1. intros.
       case H3.
         search.
         search.
-% Proof completed
 
-Theorem perm_transitivity : forall L R S,
-  perm L R -> perm R S -> perm L S.
+% Theorem perm_transitivity : forall L R S,
+%   perm L R -> perm R S -> perm L S.
 
-induction on 1. intros.
-  case H1.
-    search.
-% NOT completed
-%   apply perm_commutativity to H2.
+% induction on 1. intros.
+%   case H1.
+%     search.
+%   case H4.
+%     case H3.
+%       case H2.
+%         case H7.
+%           case H6.
+%             apply IH to H5 H8.
+%               search.
+%             case H9.
+              
 
 Theorem split1_perm : forall D2 D1,
   split D2 nil D1 -> perm D2 D1.
@@ -105,24 +73,31 @@ Theorem split1_perm : forall D2 D1,
 induction on 1. intros.
   case H1. search.
     apply IH to H2.
-      backchain perm_add_fm.
-
+      search.
+  
 Theorem split2_perm : forall D2 D1,
   split D2 D1 nil -> perm D2 D1.
 
 induction on 1. intros.
   case H1. search.
     apply IH to H2.
-      backchain perm_add_fm.
+      search. 
 
-Theorem split_of_perm : forall D3 D3' D2 D1,
-  split D3 D2 D1 -> perm D3' D3 -> split D3' D2 D1.
+% Theorem split_of_perm : forall D3 D3' D2 D1,
+%   split D3 D2 D1 -> perm D3' D3 -> split D3' D2 D1.
 
-induction on 1. intros.
-  case H1. case H2.
-    search. case H5.
-  case H2.
-
+% induction on 2. intros.
+%   case H2.
+%     search.
+%   case H3.
+%     case H4.
+%       case H1.
+%         apply IH to H6 H5.
+%           search.
+%         apply IH to H6 H5.
+%           search.
+%         case H1.
+    
 Theorem split_implies_lists : forall L R S,
   split L R S -> is_list L /\ is_list R /\ is_list S.
 
@@ -181,7 +156,7 @@ induction on 1. intros.
     search.
   case H2. case H3.
     apply IH to H4 H5 H6.
-      backchain perm_with_fm.
+      search.
 
 Theorem new_split1 : forall L1 L2 L3 X,
   split L1 (X :: L2) L3 -> exists K, split K L2 L3.
@@ -192,26 +167,49 @@ induction on 1. intros.
   apply IH to H2.
     search.
 
-Theorem perm_without_fm : forall D D1 D2 K X,
-  split D (X :: D1) D2 -> split K D1 D2 -> perm (X :: K) D.
+Theorem membrest_ms_eq : forall X L R,
+  memb_and_rest X (X :: L) R -> L = R.
 
 induction on 1. intros.
   case H1.
-    unfold. witness X. witness L3. witness K.
-      split.
-        skip.
-      search.
+    search.
+  skip. % Abella doesn't recognize the contradiction here
+        % We have H2: X = X -> false
+        % Apparently we can't apply case analysis on this kind of hypothesis
+  
+% Theorem perm_with_explicit_fm : forall D D1 D2 D3 K X,
+%   split D (X :: D1) D2 -> split K D1 D2 -> perm D3 K -> perm (X :: D3) D.
 
-Theorem split_rearrangement : forall D' D D1 D2 D3 D4 D5,
-  split D D1 D2 -> split D1 D3 D4 -> split D5 D4 D2 -> split D' D3 D5 -> perm D D'.
+% induction on 1. intros.
+%   case H1.
+%     case H2.
+%       case H3.
+%         case H4.
+%           search.
+%         case H6.
+%       case H3.
+  
+% induction on 3. intros.
+%   case H3. case H2. case H1.
+%     case H4.
+%       search.
+%     case H1.
+%       unfold.
+%         witness X. witness L1'. witness L2'.
+%           split.
+%         backchain membrest_ms_eq.
+  
+% Theorem split_rearrangement : forall D' D D1 D2 D3 D4 D5,
+%   split D D1 D2 -> split D1 D3 D4 -> split D5 D4 D2 -> split D' D3 D5 -> perm D D'.
 
-induction on 1. intros.
-  case H1.
-    case H2. case H3. case H4.
-      search.
-    case H2. apply new_split1 to H4.
-      apply IH to H5 H6 _ _ with D' = K, D5 = D5.
-        unfold. case H7.
+% induction on 1. intros.
+%   case H1.
+%     case H2. case H3. case H4.
+%       search.
+%     case H2. apply new_split1 to H4.
+%       apply IH to H5 H6 _ _ with D' = K, D5 = D5.
+%         apply perm_with_explicit_fm.
+%           search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                                       %%
@@ -249,156 +247,138 @@ Define prove : olist -> prop by
   prove ((par A B) :: Delta) := prove (A :: B :: Delta) ;                                                  % parR
   prove ((with A B) :: Delta) := prove (A :: Delta) /\ prove (B :: Delta) ;                                % withR
   prove ((plus A B) :: Delta) := prove (A :: Delta) \/ prove (B :: Delta) ;                                % plusR
-  prove (A :: B :: nil) := prove (B :: A :: nil).                                                          % exchange
+  prove Delta := exists Delta', perm Delta Delta' /\ prove Delta'.                                         % exchange
 
-Theorem list_eq_adding_2_fm : forall A B D D',
-  prove (A :: B :: D) -> list_eq D' D -> list_eq (A :: B :: D') (A :: B :: D).
+% Theorem list_eq_adding_2_fm : forall A B D D',
+%   prove (A :: B :: D) -> list_eq D' D -> list_eq (A :: B :: D') (A :: B :: D).
+
+% search.
+
+% Theorem list_eq_adding_1_fm : forall A D D',
+%   prove (A :: D) -> list_eq D' D -> list_eq (A :: D') (A :: D).
+
+% search.
+
+% Theorem split_adding_fm_1 : forall A B D D1 D2,
+%   prove (A :: B :: D2) -> split D D1 D2 -> split (B :: D) D1 (B :: D2).
+
+% intros. search.
+
+% Theorem split_adding_fm_2 : forall A B D D1 D2,
+%   prove (A :: B :: D2) -> split D D1 D2 -> split (A :: D) D1 (A :: D2).
+
+% intros. search.
+
+% Theorem rename_list_adding_fm : forall A B D D1 D2,
+%   prove (A :: B :: D2) -> split (B :: D) D1 (B :: D2) -> exists D', prove (A :: D') /\ split (B :: D) D1 D'.
+
+% intros. search.
+
+Theorem perm_provability : forall D2 D1,
+  prove D2 -> perm D1 D2 -> prove D1.
 
 search.
 
-Theorem list_eq_adding_1_fm : forall A D D',
-  prove (A :: D) -> list_eq D' D -> list_eq (A :: D') (A :: D).
-
-search.
-
-Theorem split_adding_fm_1 : forall A B D D1 D2,
-  prove (A :: B :: D2) -> split D D1 D2 -> split (B :: D) D1 (B :: D2).
-
-intros. search.
-
-Theorem split_adding_fm_2 : forall A B D D1 D2,
-  prove (A :: B :: D2) -> split D D1 D2 -> split (A :: D) D1 (A :: D2).
-
-intros. search.
-
-Theorem rename_list_adding_fm : forall A B D D1 D2,
-  prove (A :: B :: D2) -> split (B :: D) D1 (B :: D2) -> exists D', prove (A :: D') /\ split (B :: D) D1 D'.
-
-intros. search.
-
-Theorem list_eq_provability : forall D2 D1,
-  prove D2 -> list_eq D1 D2 -> prove D1.
-
-induction on 1. intros.
-  case H1.
-    case H2. case H3.
-      search.
-    case H2. case H3.
-      search.
-        search.
-    case H2. case H4. case H5.
-      search.
-    case H2. apply IH to H3 H4.
-      search.
-    case H2.
-      unfold. witness D3. witness D4.
-        split. apply split_of_list_eq to H3 H6.
-          search. search. search.
-    case H2.
-      unfold. apply list_eq_adding_2_fm to H3 H4.
-        apply IH to H3 H5.
-          search.
-    case H2. unfold.
-      apply list_eq_adding_1_fm to H3 H5.
-        apply IH to H3 H6.
-          search.
-      apply list_eq_adding_1_fm to H4 H5.
-        apply IH to H4 H6.
-          search.
-    case H2. unfold.
-      case H3.
-        apply list_eq_adding_1_fm to H5 H4.
-          apply IH to H5 H6.
-            search.
-        apply list_eq_adding_1_fm to H5 H4.
-          apply IH to H5 H6.
-            search.
-    case H3.
-      case H2. case H4. case H5.
-        search.
-      case H2. case H5. case H6.
-        search.
-      case H2. case H5. case H6.
-        search.
-      case H2. case H7. case H8.
-        search.
-      case H2. case H5. case H6.
-        search.
-      case H2. case H6. case H7.
-        search.
-      case H2. case H5. case H6.
-        search.
-      case H2. case H5. case H6.
-        search.       
+% induction on 1. intros.
+%   case H1.
+%     % one
+%     case H2. case H4.
+%       case H5. case H3.
+%         search.
+%       case H7. case H7.
+%     % top
+%     case H2. case H4. case H3.
+%       search. search.
+%         search.
+%     % init
+%     case H2. case H5.
+%       case H4. case H6.
+%         case H8. case H7.
+%           search. search.
+%             search. search.
+%               search.
+%     % bot
+%     case H2. case H5. case H4.
+%       apply IH to H3 H6.
+%         search.
+%       case H8.
+%         apply IH to H3 H6.
+%           search. search.
+%             search.
+%     % tensor
+%     case H2. case H7. case H6.
+%       unfold. witness D3. witness D4.
+%         split.
+%           search. search.
   
-Theorem cut_admissibility : forall B C D D1 D2,
-    prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
+% Theorem cut_admissibility : forall B C D D1 D2,
+%     prove (B :: D1) -> prove (C :: D2) -> dual B C -> split D D1 D2 -> prove D.
 
-induction on 1. induction on 2. intros.
-  case H1 (keep). % left premise
-    % B = one
-    case H2 (keep). % right premise
-      case H3. case H3. % trivial
-        case H3. % init
-          case H5. case H5.
-        % C = bot
-        apply split1_list_eq to H4.
-          apply list_eq_provability to H5 H6.
-            search.
-      case H3. case H3. case H3. case H3. % trivial
-    % B = top
-    case H2 (keep).
-      case H3. case H3.
-        case H3. % init
-          case H5. case H6.
-        case H3. case H3. case H3. case H3. case H3.
-    % B = atom (B)
-    case H2 (keep).
-      case H3.
-        case H5. case H6.
-      case H3.
-        case H5. case H6.
-      case H3.
-        case H5. case H5. case H5. case H5. % trivial
-        case H6. case H5. % Remove this later, it's not correct
-        %case H4. case H8. case H9.
-        % Abella shows a hypothesis H: atom (not B). We can not eliminate the case applying case analysis on H, because this is just
-        % an implementation subtlety. (atom (not B)) should be viewed as (not (atom B)). Is it really a subtlety or a mistake? Think about it.
-        % prove (not A :: A :: nil) could be a solution, but is it the best one?
-        case H5. case H5. case H5. case H5. % trivial
-      case H3. % trivial
-        case H5. case H7.
-      case H3. % trivial
-        case H9. case H5.
-      case H3. % trivial
-        case H7. case H5.
-      case H3. % trivial
-        case H8. case H5.
-      case H3. % trivial
-        case H7. case H5.
-    % B = bot
-    case H2 (keep).
-      apply split2_list_eq to H4.
-        apply list_eq_provability to H5 H6.
-          search.
-      case H3. case H3.
-        case H6. case H7.
-      case H3. case H3. case H3.
-      case H3. case H3.
-    % B = tensor A B1
-    case H2 (keep).
-      case H3. case H3. case H3.
-        case H9. case H8.
-      case H3.
-        case H3. % trivial
-      case H3.
-        apply split_implies_lists to H4.
-          apply split_implies_lists to H5.
-            apply split_existence to H15 H13.
-              apply split_adding_fm_1 to H8 H17.
-                apply rename_list_adding_fm to H8 H18.
-                  apply IH to H6 H19 H9 H20.
-                    % Maybe this will work
-                    apply split_implies_lists to H17.
-                      apply split_existence to H16 H22.
-                        apply IH to H7 H21 H10 H25.
+% induction on 1. induction on 2. intros.
+%   case H1 (keep). % left premise
+%     % B = one
+%     case H2 (keep). % right premise
+%       case H3. case H3. % trivial
+%         case H3. % init
+%           case H5. case H5.
+%         % C = bot
+%         apply split1_list_eq to H4.
+%           apply list_eq_provability to H5 H6.
+%             search.
+%       case H3. case H3. case H3. case H3. % trivial
+%     % B = top
+%     case H2 (keep).
+%       case H3. case H3.
+%         case H3. % init
+%           case H5. case H6.
+%         case H3. case H3. case H3. case H3. case H3.
+%     % B = atom (B)
+%     case H2 (keep).
+%       case H3.
+%         case H5. case H6.
+%       case H3.
+%         case H5. case H6.
+%       case H3.
+%         case H5. case H5. case H5. case H5. % trivial
+%         case H6. case H5. % Remove this later, it's not correct
+%         %case H4. case H8. case H9.
+%         % Abella shows a hypothesis H: atom (not B). We can not eliminate the case applying case analysis on H, because this is just
+%         % an implementation subtlety. (atom (not B)) should be viewed as (not (atom B)). Is it really a subtlety or a mistake? Think about it.
+%         % prove (not A :: A :: nil) could be a solution, but is it the best one?
+%         case H5. case H5. case H5. case H5. % trivial
+%       case H3. % trivial
+%         case H5. case H7.
+%       case H3. % trivial
+%         case H9. case H5.
+%       case H3. % trivial
+%         case H7. case H5.
+%       case H3. % trivial
+%         case H8. case H5.
+%       case H3. % trivial
+%         case H7. case H5.
+%     % B = bot
+%     case H2 (keep).
+%       apply split2_list_eq to H4.
+%         apply list_eq_provability to H5 H6.
+%           search.
+%       case H3. case H3.
+%         case H6. case H7.
+%       case H3. case H3. case H3.
+%       case H3. case H3.
+%     % B = tensor A B1
+%     case H2 (keep).
+%       case H3. case H3. case H3.
+%         case H9. case H8.
+%       case H3.
+%         case H3. % trivial
+%       case H3.
+%         apply split_implies_lists to H4.
+%           apply split_implies_lists to H5.
+%             apply split_existence to H15 H13.
+%               apply split_adding_fm_1 to H8 H17.
+%                 apply rename_list_adding_fm to H8 H18.
+%                   apply IH to H6 H19 H9 H20.
+%                     % Maybe this will work
+%                     apply split_implies_lists to H17.
+%                       apply split_existence to H16 H22.
+%                         apply IH to H7 H21 H10 H25.
