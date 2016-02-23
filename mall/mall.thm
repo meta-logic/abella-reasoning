@@ -305,77 +305,95 @@ induction on 1. intros. case H1.
           left. search.
           right. search.
 
+Theorem split_property1 : forall L1 L2 L3 L4 L5,
+  split L1 L2 L3 -> split L4 L3 L5 -> 
+  exists L6, split L6 L1 L5 /\ split L6 L2 L4.
+
+induction on 1. induction on 2. intros.
+case H1 (keep).
+  case H2.
+    exists nil. search.
+    apply IH1 to H1 H3. exists (X :: L7). search.
+  case H2.
+    apply IH1 to H1 H4. exists (X1 :: L9). search.
+    apply IH to H3 H4. exists (X :: L9). search.
+  case H2 (keep).
+    apply IH to H3 H2. exists (X :: L8). search.
+    apply IH to H3 H4. exists (X :: X1 :: L9). search.
+    apply IH to H3 H2. exists (X :: L10). search. 
+
+
 % Theorem tensor_lft_inv : forall G G' D A B,
 %   memb_and_rest (tensor A B) G G' -> prove G D ->
 %   exists G1 G2, memb_and_rest A G1 G2 /\ memb_and_rest B G2 G' /\
 %   prove G1 D.
-
+% 
 % induction on 2. intros.
 %  case H2.
-%    case H3. case H4. case H1. case H7.
-%    case H3. case H1.
+%    case H3. case H1. case H6.
+%    case H1.
 %    apply membrest_implication1 to H1 H3.
 %    case H5. apply IH to H6 H4. rename D2 to G3.
-     
-%      witness G1. witness G2. search.
-%      split. search. search.
+% %    
+% %      witness G1. witness G2. search.
+% %      split. search. search.
 
-Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2,
-  formula C ->
-  prove G1 D1 -> prove G2 D2 ->
-  memb_and_rest C D1 D1' -> memb_and_rest C G2 G2' ->
-  exists G3 D3,
-  split G3 G2' G1 /\ split D3 D2 D1' /\ 
-  prove G3 D3.
-
-induction on 1. induction on 2. induction on 3. intros.
-
-% Tensor case
-case H1 (keep).
-  % Unfolds the induction on the left premise (cut-formula in the succedent)
-  case H2 (keep).
-
-    % init case, trivial
-    case H9. case H4. case H11.
-
-    % oneR case, trivial
-    case H8. case H4. case H10.
-
-    % oneL case, permutes down
-    apply IH1 to H1 H9 H3 H4 H5.
-    apply add_to_split_right to H10 H8.
-    witness L'. witness D3. split.
-      search. search. search.
-
-    % tensorL case, permutes down
-    apply IH1 to H1 H11 H3 H4 H5.
-    apply remove_from_split_right to H12 H9.
-    apply remove_from_split_right to H15 H10.
-    apply add_to_split_right to H17 H8.
-    witness L'. witness D3.
-      search.
-
-    % tensorR case, permutes down
-    apply membrest_implication1 to H4 H8.
-    case H15. 
-      skip. % F = C, i.e., the tensor rule is applied to the cut-formula
-%       % apply IH to H6 H13 H14 H11 H12.
-%       % case H3. case H16. case H5.
-%       %   case H19.
-%       % case H5.
-%     
-      apply split_membrest_disjunction to H9 H16.
-      case H17.
-        apply membrest_implication2 to H11 H18.
-        apply IH1 to H1 H13 H3 H19 H5.
-%     apply membrest_implication1 to H11 H19.
-%     case H23. skip. % A1 = A tensor B
-%     % apply split_implies_list to H20.
-%     % apply split_implies_list to H10.
-%     % apply split_exists to H25 H29.
-%     % apply split_implies_list to H9.
-%     % apply split_implies_list to H21.
-%     apply remove_from_split_right to H21 H24.
-%     apply membrest_implies_list to H12.
-%     apply split_exists to H35 H40.
-%     
+% Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2,
+%   formula C ->
+%   prove G1 D1 -> prove G2 D2 ->
+%   memb_and_rest C D1 D1' -> memb_and_rest C G2 G2' ->
+%   exists G3 D3,
+%   split G3 G2' G1 /\ split D3 D2 D1' /\ 
+%   prove G3 D3.
+% 
+% induction on 1. induction on 2. induction on 3. intros.
+% 
+% % Tensor case
+% case H1 (keep).
+%   % Unfolds the induction on the left premise (cut-formula in the succedent)
+%   case H2 (keep).
+% 
+%     % init case, trivial
+%     case H9. case H4. case H11.
+% 
+%     % oneR case, trivial
+%     case H8. case H4. case H10.
+% 
+%     % oneL case, permutes down
+%     apply IH1 to H1 H9 H3 H4 H5.
+%     apply add_to_split_right to H10 H8.
+%     witness L'. witness D3. split.
+%       search. search. search.
+% 
+%     % tensorL case, permutes down
+%     apply IH1 to H1 H11 H3 H4 H5.
+%     apply remove_from_split_right to H12 H9.
+%     apply remove_from_split_right to H15 H10.
+%     apply add_to_split_right to H17 H8.
+%     witness L'. witness D3.
+%       search.
+% 
+%     % tensorR case, permutes down
+%     apply membrest_implication1 to H4 H8.
+%     case H15. 
+%       skip. % F = C, i.e., the tensor rule is applied to the cut-formula
+% %       % apply IH to H6 H13 H14 H11 H12.
+% %       % case H3. case H16. case H5.
+% %       %   case H19.
+% %       % case H5.
+% %     
+%       apply split_membrest_disjunction to H9 H16.
+%       case H17.
+%         apply membrest_implication2 to H11 H18.
+%         apply IH1 to H1 H13 H3 H19 H5.
+% %     apply membrest_implication1 to H11 H19.
+% %     case H23. skip. % A1 = A tensor B
+% %     % apply split_implies_list to H20.
+% %     % apply split_implies_list to H10.
+% %     % apply split_exists to H25 H29.
+% %     % apply split_implies_list to H9.
+% %     % apply split_implies_list to H21.
+% %     apply remove_from_split_right to H21 H24.
+% %     apply membrest_implies_list to H12.
+% %     apply split_exists to H35 H40.
+% %     
