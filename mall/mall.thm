@@ -218,6 +218,20 @@ induction on 1. intros.
     apply IH to H3 H2.
       witness (X :: L7). search.
 
+Theorem split_lemma : forall X L L1 L2,
+  is_list L ->
+  split (X :: L) (X :: L1) L2
+  -> split L L1 L2.
+
+induction on 1. intros.
+case H1 (keep).
+  case H2.
+    case H3.
+    search.
+  case H2 (keep).
+%    skip. % This case is invalid. We have to find a way to show abella that...
+%    search.
+
 %          L
 % |--------------------|
 %     L1
@@ -226,10 +240,10 @@ induction on 1. intros.
 %      |---------------|
 %             L'
 %
-Theorem subsplit : forall F L L1 L2 L' L1',
-  split L L1 L2 -> memb_and_rest F L L' -> memb_and_rest F L1 L1' ->
-  split L' L1' L2.
-
+% Theorem subsplit : forall F L L1 L2 L' L1',
+%   split L L1 L2 -> memb_and_rest F L L' -> memb_and_rest F L1 L1' ->
+%   split L' L1' L2.
+% 
 
 % Theorem add_to_membrest1 : forall F1 L L' R,
 %   memb_and_rest F1 L L' -> is_list R ->
