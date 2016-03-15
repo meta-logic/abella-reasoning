@@ -1,0 +1,418 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                    %%
+%%       MALL specification in        %%
+%%       Abella (.thm)                %%
+%%                                    %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Multisets
+
+Define is_list : olist -> prop by
+  is_list nil ;
+  is_list (X :: L) := is_list L.
+
+Define split : olist -> olist -> olist -> prop by
+  split nil nil nil ;
+  split (X :: L3) L2 (X :: L1) := split L3 L2 L1 ;
+  split (X :: L3) (X :: L2) L1 := split L3 L2 L1.
+
+Define memb_and_rest : o -> olist -> olist -> prop by
+  memb_and_rest X (X :: L) L := is_list L ;
+  memb_and_rest X (Y :: L) (Y :: R) := memb_and_rest X L R.
+
+Define perm : olist -> olist -> prop by
+  perm nil nil ; 
+  perm L1 L2 := exists F K1 K2, 
+    memb_and_rest F L1 K1 /\ memb_and_rest F L2 K2 /\ perm K1 K2.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MALL
+
+Type a, b, c, d                o.
+Type tensor, par, plus, with   o -> o -> o.
+Type one, bot, zero, top       o.
+Type not, atom                 o -> o.
+
+Define formula : o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (with A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (zero) ; 
+  formula (one) ; 
+  formula (bot) ;
+  formula (top) ; 
+  formula (atom A).
+
+Define prove : olist -> olist -> prop by
+  % Identity rules
+  prove G D := exists A,
+    memb_and_rest (atom A) G nil /\ memb_and_rest (atom A) D nil ; % init
+
+  % Multiplicative rules
+  prove G D := G = nil /\ memb_and_rest one D nil ;                % oneR
+
+  prove G D := exists G',
+    memb_and_rest one G G' /\ prove G' D ;                         % oneL
+
+  prove G D := exists A B G' G1 G2, 
+    memb_and_rest (tensor A B) G G' /\ memb_and_rest A G1 G2 /\
+    memb_and_rest B G2 G' /\ prove G1 D ;                          % tensorL
+
+  prove G D := exists A B D' D1 D2 D1' D2' G1 G2, 
+    memb_and_rest (tensor A B) D D' /\ split D' D1' D2' /\
+    split G G1 G2 /\ memb_and_rest A D1 D1' /\ 
+    memb_and_rest B D2 D2' /\ prove G1 D1 /\ prove G2 D2 ;         % tensorR
+
+  prove G D := D = nil /\ memb_and_rest bot G nil ;                % botL
+
+  prove G D := exists D', 
+    memb_and_rest bot D D' /\ prove G D' ;                         % botR
+
+  prove G D := exists A B D' D1 D2, 
+    memb_and_rest (par A B) D D' /\ memb_and_rest A D' D1 /\
+    memb_and_rest B D1 D2 /\ prove G D' ;                          % parR
+
+  prove G D := exists A B G' G1 G2 G1' G2' D1 D2, 
+    memb_and_rest (par A B) G G' /\ split G' G1 G2 /\
+    split D D1 D2 /\ memb_and_rest A G1 G1' /\ 
+    memb_and_rest B G2 G2' /\ prove G1 D1 /\ prove G2 D2 ;         % parL
+
+  % Additive rules
+  prove G D := exists G', 
+    memb_and_rest zero G G' ;                                      % zeroL
+
+  prove G D := exists D', 
+    memb_and_rest top D D' ;                                       % topR
+
+  prove G D := exists A B G' G1, 
+    memb_and_rest (with A B) G G' /\ memb_and_rest A G' G1 /\
+    prove G' D ;                                                   % withL1
+
+  prove G D := exists A B G' G1, 
+    memb_and_rest (with A B) G G' /\ memb_and_rest B G' G1 /\
+    prove G' D ;                                                   % withL2
+
+  prove G D := exists A B D' D1 D2, 
+    memb_and_rest (with A B) D D' /\ memb_and_rest A D1 D' /\
+    memb_and_rest B D2 D' /\ prove G D1 /\ prove G D2 ;            % withR
+
+  prove G D := exists A B D' D1, 
+    memb_and_rest (plus A B) D D' /\ memb_and_rest A D' D1 /\
+    prove G D' ;                                                   % plusR1
+
+  prove G D := exists A B D' D1, 
+    memb_and_rest (plus A B) D D' /\ memb_and_rest B D' D1 /\
+    prove G D' ;                                                   % plusR2
+
+  prove G D := exists A B G' G1 G2, 
+    memb_and_rest (plus A B) G G' /\ memb_and_rest A G1 G' /\
+    memb_and_rest B G2 G' /\ prove G1 D /\ prove G2 D.             % plusL
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Reasoning
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+% Hack theorem so that we get the predicates we need.
+Theorem split_implies_list : forall L1 L2 L3,
+  split L1 L2 L3 -> is_list L1 /\ is_list L3 /\ is_list L2.
+
+induction on 1. intros.
+case H1.
+  search.
+  apply IH to H2. search.
+  apply IH to H2. search.
+
+Theorem membrest_implies_list : forall F L1 L2,
+  memb_and_rest F L1 L2 -> is_list L1 /\ is_list L2.
+
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2.
+    search.
+
+Theorem split_comm : forall L1 L2 L3,
+  split L3 L2 L1 -> split L3 L1 L2.
+
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2.
+    search.
+  apply IH to H2.
+    search.
+
+Theorem split_exists : forall R S,
+  is_list R -> is_list S -> exists L, split L R S.
+
+induction on 1. induction on 2. intros.
+  case H1 (keep).
+    case H2 (keep).
+      search.
+    apply IH1 to H1 H3.
+      search.
+    apply IH to H3 H2.
+      search.
+
+%             L
+%      |--------------|
+% F :: [ L1 ] :: [ L2 ]
+% |---------|
+%     L1'
+% |-------------------|
+%          L'
+%
+Theorem add_to_split_left : forall L L1 L1' L2 F, 
+  split L L1 L2 -> memb_and_rest F L1' L1 -> 
+  exists L', 
+  split L' L1' L2 /\ memb_and_rest F L' L.
+  
+induction on 1. intros.
+case H1.
+  exists L1'. split.
+    case H2. search.
+    search.
+  apply IH to H3 H2. exists (X :: L'). search.
+  case H2.
+    exists (F :: (X :: L3)). split.
+      search. unfold. apply split_implies_list to H3. search.
+    apply IH to H3 H4. exists (X :: L'). search.
+      
+%        L
+% |--------------|
+% [ L1 ] :: [ L2 ] :: F
+%           |---------|
+%               L2'
+% |-------------------|
+%          L'
+%
+Theorem add_to_split_right : forall L L1 L2 L2' F, 
+  split L L1 L2 -> memb_and_rest F L2' L2 -> 
+  exists L', 
+  split L' L1 L2' /\ memb_and_rest F L' L.
+
+induction on 1. intros.
+case H1.
+  exists L2'. split.
+    case H2. search.
+    search.
+  case H2.
+    exists (F :: (X :: L3)). split.
+      search.
+      apply split_implies_list to H3. search.
+    apply IH to H3 H4. exists (X :: L'). search.
+  apply IH to H3 H2. exists (X :: L'). search.
+
+%           L4
+% |--------------------|
+%      L3
+% |----------|
+%  F :: [ L1 ] :: [ L2 ]
+%       |--------------|
+%             L5
+%
+Theorem remove_from_split_left : forall F L1 L2 L3 L4,
+  split L4 L3 L2 -> memb_and_rest F L3 L1 ->
+  exists L5, split L5 L1 L2 /\ memb_and_rest F L4 L5.
+
+induction on 1. intros.
+  case H1. case H2.
+  apply IH to H3 H2. witness (X :: L6).
+    search.
+  case H2.
+    witness L5. split. 
+      search.
+      apply split_implies_list to H3. search.
+    apply IH to H3 H4.
+      witness (X :: L7). search.
+
+%           L4
+% |--------------------|
+%      L3
+% |----------|
+%  F :: [ L2 ] :: [ L1 ]
+%       |--------------|
+%              L5
+%
+Theorem remove_from_split_right : forall F L1 L2 L3 L4,
+  split L4 L1 L3 -> memb_and_rest F L3 L2 ->
+  exists L5, split L5 L1 L2 /\ memb_and_rest F L4 L5.
+
+induction on 1. intros.
+  case H1. case H2.
+    case H2.
+      apply split_implies_list to H3.
+        witness L5. search.
+      apply IH to H3 H4. witness (X :: L6).
+        search.
+    apply IH to H3 H2.
+      witness (X :: L7). search.
+
+% This theorem should be stronger
+%
+%          L1
+% |--------------------|
+%  F :: [ L4 ] :: [ L2]
+% |-----------|
+%      L3
+%       |--------------|
+%             L5  
+%
+Theorem split_membrest_prop : forall F L1 L2 L3 L4,
+  split L1 L2 L3 -> memb_and_rest F L3 L4 ->
+  exists L5, memb_and_rest F L1 L5.
+
+induction on 1. intros. case H1.
+  case H2.
+  case H2.
+    witness L5. apply split_implies_list to H3.
+      search.
+    apply IH to H3 H4. witness X :: L6. search.
+  apply IH to H3 H2.
+    witness X :: L7. search.
+
+%           D
+% |------------------|
+%  F1 :: [ D2 ] :: F2
+% |-----------|
+%      D1
+%        |-----------|
+%             D'  
+Theorem membrest_implication1 : forall F1 F2 L L' L1,
+  memb_and_rest F1 L L' -> memb_and_rest F2 L L1 ->
+  exists L2, (F1 = F2 /\ L' = L1) \/ memb_and_rest F1 L1 L2.
+
+induction on 1. intros. case H1.
+  case H2. witness L1. left. search.
+  witness R. right. apply membrest_implies_list to H4.
+    search.
+  case H2.
+    witness R. right. search.
+    apply IH to H3 H4.
+    case H5.
+      witness L2. left.
+        search.
+      witness (Y :: L3). right.
+        search.
+
+%       D
+% |-----------|    
+%  F1 :: [ D' ]  where F2 belongs to D'
+%
+%       D'
+% |-----------|
+%  F2 :: [ D1 ]
+%
+Theorem membrest_implication2 : forall F1 F2 D D' D1,
+  memb_and_rest F1 D D' -> memb_and_rest F2 D' D1 ->
+  exists D2, memb_and_rest F2 D D2 /\ memb_and_rest F1 D2 D1.
+
+induction on 1. induction on 2. intros.
+case H1 (keep).
+  case H2 (keep).
+    witness (F1 :: D1). search.
+    case H4 (keep).
+      witness (F1 :: Y :: R). search.
+      witness (F1 :: Y :: Y1 :: R1). split.
+        search.
+        apply membrest_implies_list to H2. search.
+  case H2 (keep).
+    witness L. apply membrest_implies_list to H3. search.
+    apply IH1 to H3 H4. witness (Y :: D2). search.
+ 
+Theorem split_membrest_disjunction : forall F L L1 L2 L3,
+  split L L1 L2 -> memb_and_rest F L L3 ->
+  exists L4 L5, memb_and_rest F L1 L4 \/ memb_and_rest F L2 L5.
+
+induction on 1. intros. case H1.
+  case H2. case H2.
+    witness L3. % Generic variable
+      witness L6. right. unfold.
+        apply split_implies_list to H3.
+          search.
+      apply IH to H3 H4.
+        witness L5. witness (X :: L7). case H5.
+          left. search. right. search.
+  case H2. witness L5. witness L3. % Same
+    left. unfold. apply split_implies_list to H3.
+      search.
+    apply IH to H3 H4.
+      case H5. witness (X :: L6). witness R.
+        left. search.
+    apply IH to H3 H4.
+      witness (X :: L8). witness L9. case H7.
+        left. search.
+        right. search.
+
+Theorem foo : forall F L1 L2 L3 L4 L5,
+  memb_and_rest F L4 L5 -> split L1 L2 L3 -> perm L5 L1.
+    skip.
+
+Theorem foo2 : forall F L1 L2 L3 L4 L5,
+  memb_and_rest F L4 L5 -> split L1 L2 L3 -> L5 = L1.
+    skip.
+
+Theorem prove_implies_list : forall G D,
+  prove G D -> is_list G /\ is_list D. skip.
+  
+
+Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2 G3 D3,
+  formula C ->
+  prove G1 D1 -> prove G2 D2 ->
+  memb_and_rest C D1 D1' -> memb_and_rest C G2 G2' ->
+  split G3 G2' G1 -> split D3 D2 D1' ->
+  prove G3 D3.
+
+IF : induction on 1. LP : induction on 2. RP : induction on 3. intros.
+  % F = A * B
+  case H1 (keep).
+    
+    % init
+    case H2.
+      case H11. case H4. case H13.
+
+    % oneR
+    case H10. case H4. case H12.
+
+    % oneL
+    apply remove_from_split_right to H6 H10.
+    apply LP to H1 H11 H3 H4 H5 H12 H7. search.
+
+    % tensorL
+    apply remove_from_split_right to H6 H10.
+    apply add_to_split_right to H14 H12.
+    apply add_to_split_right to H16 H11.
+    apply LP to H1 H13 H3 H4 H5 H18 H7. search.
+
+    % tensorR
+    apply membrest_implication1 to H4 H10.
+    case H17.
+      skip. % tensor A1 B1 = tensor A B
+      apply split_membrest_disjunction to H11 H18.
+      case H19.
+        % tensor A1 B1 goes to the left premise
+        apply membrest_implication2 to H13 H20.
+        apply membrest_implies_list to H22.
+        apply split_implies_list to H7.
+        apply split_exists to H27 H23.
+        
+        apply split_implies_list to H6.
+        apply split_implies_list to H12.
+        apply split_exists to H31 H34.
+        apply LP to H1 H15 H3 H21 H5 H35 H28.
+        
+        apply split_membrest_prop to H28 H22.
+        apply membrest_implication1 to H10 H4.
+        case H38.
+          skip.
+          apply membrest_implies_list to H37.
+          apply split_implies_list to H11.
+          apply split_exists to H41 H43.
+          apply foo2 to H39 H45.
+
+          apply prove_implies_list to H36.
+          apply split_exists to H46 H33. search.
