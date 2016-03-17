@@ -1,0 +1,64 @@
+Type is_o  o -> prop.
+
+Define is_list : olist -> prop by
+; is_list nil
+; is_list (A :: L) := is_o A /\ is_list L
+.
+
+Define append : olist -> olist -> olist -> prop by
+; append nil L L := is_list L
+; append (A :: J) K (A :: L) := is_o A /\ append J K L
+.
+
+Theorem append_1_is_list : forall J K L,
+  append J K L ->
+  is_list J.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem append_2_is_list : forall J K L,
+  append J K L ->
+  is_list K.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem append_3_is_list : forall J K L,
+  append J K L ->
+  is_list L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem can_append : forall J K,
+  is_list J -> is_list K -> exists L, append J K L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H4 H2. search.
+
+Define rev : olist -> olist -> prop by
+; rev nil nil
+; rev (A :: J) L := exists K, rev J K /\ append K (A :: nil) L
+.
+
+Theorem rev_1_is_list : forall J K,
+  rev J K ->
+  is_list J.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. apply append_2_is_list to H3. case H5. search.
+
+Theorem rev_2_is_list : forall J K,
+  rev J K ->
+  is_list K.
+intros. case H1.
+  search.
+  apply append_3_is_list to H3. search.
+
+Theorem can_rev : forall J, is_list J -> exists K, rev J K.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3.
+   apply can_append to _ _ with J = K, K = A :: nil. apply rev_2_is_list to H4. search.
+   search.
