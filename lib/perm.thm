@@ -1,0 +1,207 @@
+Type is_o  o -> prop.
+
+Import "list" with is_o := is_o.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% adj J A K : K is J with A inserted somewhere
+Define adj : olist -> o -> olist -> prop by
+; adj L A (A :: L) := is_o A /\ is_list L
+; adj (B :: K) A (B :: L) := is_o B /\ adj K A L
+.
+
+Theorem adj_1_is_list : forall K A L, adj K A L -> is_list K.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem adj_2_is_o : forall K A L, adj K A L -> is_o A.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem adj_3_is_list : forall K A L, adj K A L -> is_list L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem adj_swap : forall A J K B L,
+  adj J A K -> adj K B L ->
+  exists U, adj J B U /\ adj U A L.
+induction on 2. intros. case H2.
+  case H1.
+    search.
+    apply adj_1_is_list to H6. search.
+  case H1.
+    apply adj_3_is_list to H4. search.
+    apply IH to H6 H4. search.
+
+Theorem adj_same : forall A L B, adj L A (B :: L) -> A = B.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem adj_append_1 : forall J A K L KL,
+  adj J A K ->
+  append K L KL ->
+  exists JL, append J L JL /\ adj JL A KL.
+induction on 1. intros. case H1.
+  case H2. apply append_2_is_list to H6. apply append_3_is_list to H6. search.
+  case H2. apply IH to H4 H6. search.
+
+Theorem adj_1_append : forall J A K L JL,
+  adj J A K ->
+  append J L JL ->
+  exists KL, append K L KL /\ adj JL A KL.
+induction on 1. intros. case H1.
+  apply append_2_is_list to H2. apply append_3_is_list to H2. search.
+  case H2. apply IH to H4 H6. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% perm J K : J and K have the same elements
+Define perm : olist -> olist -> prop by
+; perm nil nil
+; perm K L :=
+    exists A KK LL, adj KK A K /\ adj LL A L /\ perm KK LL.
+
+Theorem perm_1_is_list : forall K L, perm K L -> is_list K.
+intros. case H1.
+  search.
+  backchain adj_3_is_list.
+
+Theorem perm_2_is_list : forall K L, perm K L -> is_list L.
+intros. case H1.
+  search.
+  backchain adj_3_is_list.
+
+Theorem perm_refl : forall L, is_list L -> perm L L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem perm_sym : forall K L, perm K L -> perm L K.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H4. search.
+
+Theorem perm_cons_1 : forall A K L,
+  perm (A :: K) L ->
+  exists J, adj J A L /\ perm K J.
+induction on 1. intros. case H1.
+  case H2.
+    search.
+    apply IH to H4. apply adj_swap to H7 H3.
+     apply adj_1_is_list to H6. apply adj_1_is_list to H7.
+     search.
+
+Theorem perm_cons_2 : forall A K L,
+  perm K (A :: L) ->
+  exists J, adj J A K /\ perm J L.
+intros. apply perm_sym to *H1. apply perm_cons_1 to *H2.
+apply perm_sym to *H4. search.
+
+Theorem adj_preserves_perm : forall A JJ J KK K,
+  adj JJ A J ->
+  adj KK A K ->
+  perm JJ KK ->
+  perm J K.
+induction on 1. intros. case H1.
+  case H2.
+    search. search.
+  case H2.
+    search.
+    case H3. case H8. case H9.
+      apply IH to H5 H7 H10. apply adj_3_is_list to H5. apply adj_3_is_list to H7. search.
+      apply adj_swap to H14 H7.
+       assert adj (B1 :: K3) A (B1 :: U).
+       apply IH to H5 H17 H10.
+         apply adj_3_is_list to H5. apply adj_3_is_list to H15. apply adj_3_is_list to H14.
+         search.
+      apply perm_cons_1 to *H10.
+        apply adj_3_is_list to H5. apply adj_1_is_list to H13.
+        apply adj_swap to *H13 *H9.
+        assert adj (B1 :: K2) A (B1 :: L1).
+        apply adj_swap to *H18 *H19.
+        apply IH to *H5 *H20 _.
+        search.
+
+Theorem perm_trans_lem : forall J K L, is_list K -> perm J K -> perm K L -> perm J L.
+induction on 1. intros. case H1.
+  case H2. case H3. search.
+    case H4. case H5.
+
+  case H2. case H3.
+    case H7. case H9.
+      apply IH to *H5 *H8 *H11.
+      backchain adj_preserves_perm.
+
+      apply perm_cons_1 to *H11.
+      apply adj_swap to *H16 *H10.
+      apply adj_preserves_perm to *H15 *H18 *H17.
+      apply IH to *H5 *H8 *H20.
+      backchain adj_preserves_perm.
+
+    apply perm_cons_2 to *H8.
+    apply adj_swap to *H14 *H6.
+    apply adj_preserves_perm to *H16 *H13 *H15.
+    apply adj_preserves_perm to *H9 *H10 *H11.
+    apply perm_cons_1 to *H19.
+    apply IH to *H5 *H18 *H21.
+    backchain adj_preserves_perm.
+
+Theorem perm_trans : forall J K L, perm J K -> perm K L -> perm J L.
+intros.
+apply perm_2_is_list to H1.
+backchain perm_trans_lem.
+
+Theorem adj_same_result : forall J K A L,
+  adj J A L ->
+  adj K A L ->
+  perm J K.
+induction on 1. intros. case H1.
+  case H2.
+    backchain perm_refl.
+    apply adj_1_is_list to H6. apply perm_refl to H7. search.
+  case H2.
+    apply adj_1_is_list to H4. apply perm_refl to H7. search.
+    apply IH to H4 H6. apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
+
+Theorem adj_same_result_alt : forall J A K B L,
+  adj J A L ->
+  adj K B L ->
+  (A = B /\ perm J K) \/
+  exists KK, adj KK A K.
+induction on 1. intros. case H1.
+  case H2.
+    apply perm_refl to H4. search.
+    right. witness K1. apply adj_1_is_list to H6. search.
+  case H2.
+    right. search.
+    apply IH to H4 H6. case H7.
+      apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
+      search.
+
+Theorem append_perm : forall J K L JJ KK,
+  append J K L ->
+  perm J JJ ->
+  perm K KK ->
+  exists LL, append JJ KK LL /\ perm L LL.
+induction on 1. intros. case H1.
+  case H2.
+    apply perm_2_is_list to H3. search.
+    case H5.
+  apply perm_cons_1 to *H2. apply IH to H5 H7 H3.
+   apply adj_1_append to H6 H8.
+   apply adj_3_is_list to H11.
+   apply perm_1_is_list to H9. search.
+
+Theorem adj_perm : forall J K JJ A,
+  perm J K ->
+  adj JJ A J ->
+  exists KK, adj KK A K.
+induction on 2. intros. case H2.
+  apply perm_cons_1 to *H1. search.
+  apply perm_cons_1 to *H1.
+   apply IH to H6 H4.
+   apply adj_swap to H7 H5. search.

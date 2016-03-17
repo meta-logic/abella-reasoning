@@ -1,0 +1,37 @@
+Kind atm type.
+
+Type a, b, c, d, e, f atm.
+
+%% We reuse the o type to define LL formulas
+Type atom, natom   atm -> o.
+Type tens, par     o -> o -> o.
+Type one, bot      o.
+
+Define is_fm : o -> prop by
+; is_fm (atom A)
+; is_fm (natom A)
+; is_fm (tens A B) := is_fm A /\ is_fm B
+; is_fm (par A B) := is_fm A /\ is_fm B
+; is_fm one
+; is_fm bot
+.
+
+Define dual : o -> o -> prop by
+; dual (atom A) (natom A)
+% ; dual (natom A) (atom A)
+; dual (tens A B) (par AA BB) := dual A AA /\ dual B BB
+% ; dual (par A B) (tens AA BB) := dual A AA /\ dual B BB
+; dual one bot
+% ; dual bot one
+.
+
+Theorem dual_is : forall A B, dual A B -> is_fm A /\ is_fm B.
+induction on 1. intros. case H1.
+  search.
+%  search.
+  apply IH to *H2. apply IH to *H3. search.
+%  apply IH to *H2. apply IH to *H3. search.
+  search.
+%  search.
+
+Import "perm" with is_o := is_fm.

@@ -1,0 +1,127 @@
+Type is_o  o -> prop.
+
+Import "perm" with is_o := is_o.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Define merge : olist -> olist -> olist -> prop by
+; merge nil nil nil
+; merge J K L :=
+    exists A JJ LL,
+      adj JJ A J /\ adj LL A L /\ merge JJ K LL
+; merge J K L :=
+    exists A KK LL,
+      adj KK A K /\ adj LL A L /\ merge J KK LL
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem perm_invert : forall A J K JJ KK,
+  perm J K ->
+  adj JJ A J ->
+  adj KK A K ->
+  perm JJ KK.
+induction on 1. intros. case H1.
+  case H2.
+  apply adj_same_result_alt to H2 H4. case H7.
+    apply adj_same_result_alt to H3 H5. case H9.
+      apply perm_trans to *H8 *H6. apply perm_sym to *H10. backchain perm_trans.
+      apply adj_same_result to H3 H5. apply perm_trans to *H8 *H6. apply perm_sym to *H11. backchain perm_trans.
+    apply adj_same_result_alt to H3 H5. case H9.
+      apply perm_sym to *H10. apply perm_trans to *H6 *H11.
+       apply adj_same_result to H2 H4. backchain perm_trans.
+      apply IH to H6 H8 H10.
+       apply adj_swap to *H10 *H5. apply adj_swap to *H8 *H4.
+       apply adj_same_result to *H2 *H15. apply adj_same_result to *H13 *H3.
+       apply adj_preserves_perm to *H14 *H12 *H11.
+       apply perm_trans to *H16 *H18. backchain perm_trans.
+
+Theorem perm_merge_1 : forall J K L JJ,
+  merge J K L ->
+  perm J JJ ->
+  merge JJ K L.
+induction on 1. intros. case H1.
+  case H2. search. case H3.
+  apply adj_perm to H2 H3.
+   apply perm_invert to H2 H3 H6.
+   apply IH to H5 H7. search.
+  apply IH to H5 H2. search.
+
+Theorem perm_merge_2 : forall J K L KK,
+  merge J K L ->
+  perm K KK ->
+  merge J KK L.
+induction on 1. intros. case H1.
+  case H2. search. case H3.
+  apply IH to H5 H2. search.
+  apply adj_perm to H2 H3.
+   apply perm_invert to H2 H3 H6.
+   apply IH to H5 H7. search.
+
+Theorem adj_perm_result : forall J K A JJ,
+  perm J K ->
+  adj JJ A J ->
+  exists KK, adj KK A K /\ perm JJ KK.
+induction on 1. intros. case H1.
+  case H2.
+  apply adj_same_result_alt to H2 H3. case H6.
+    apply perm_trans to H7 H5. search.
+    apply IH to H5 H7. apply adj_swap to H7 H3.
+     apply adj_swap to H8 H4. witness U1. split. search.
+     apply adj_same_result to H2 H11.
+     apply adj_preserves_perm to H10 H12 H9.
+     backchain perm_trans.
+
+Theorem perm_merge_3 : forall J K L LL,
+  merge J K L ->
+  perm L LL ->
+  merge J K LL.
+induction on 1. intros. case H1.
+  case H2. search. case H3.
+  apply adj_perm_result to H2 H4.
+   apply IH to H5 H7. search.
+  apply adj_perm_result to H2 H4.
+   apply IH to H5 H7. search.
+
+/*
+Theorem merge_move : forall A JJ J KK K L,
+  adj JJ A J ->
+  adj KK A K ->
+  merge J KK L ->
+  merge JJ K L.
+induction on 3. intros. case H3.
+  case H1.
+  apply adj_same_result_alt to H4 H1. case H7.
+   apply perm_merge_1 to H6 H8. search.
+   apply adj_swap to H8 H1. apply adj_same_result to H4 H10.
+    apply perm_merge_1 to H6 H11.
+*/
+
+Theorem adj_merge : forall A JJ J K LL L,
+  adj LL A L ->
+  merge J K L ->
+  adj JJ A J ->
+  merge JJ K LL.
+induction on 2. intros. case H2.
+  case H3.
+
+  apply adj_same_result_alt to H3 H4. case H7.
+    apply adj_same_result to H1 H5.
+     apply perm_sym to *H8. apply perm_merge_1 to H6 H10.
+     apply perm_sym to *H9. backchain perm_merge_3.
+    apply adj_swap to *H8 *H4.
+     apply adj_same_result to H3 H10.
+     assert merge U K LL.
+       skip.
+
+     apply perm_sym to *H11. backchain perm_merge_1.
+
+  apply adj_same_result_alt to H1 H5. case H7.
+    skip.
+
+    apply adj_swap to H8 H5.
+     apply adj_same_result to H10 H1.
+     apply adj_perm to H11 H9.
+     apply IH to H8 H6 H3.
+     assert merge JJ K U.
+     backchain perm_merge_3.
