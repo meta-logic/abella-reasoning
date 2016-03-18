@@ -1,0 +1,151 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                    %%
+%%       MALL specification in        %%
+%%       Abella (.thm)                %%
+%%                                    %%
+%%       Using merge library          %% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Type a, b, c, d                o.
+Type tensor, par, plus, with   o -> o -> o.
+Type one, bot, zero, top       o.
+Type not, atom                 o -> o.
+
+Define formula : o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (with A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (zero) ; 
+  formula (one) ; 
+  formula (bot) ;
+  formula (top) ; 
+  formula (atom A).
+
+Import "../lib/merge" with is_o := formula.
+
+Define prove : olist -> olist -> prop by
+  % Identity rules
+  prove G D := exists A, adj nil (atom A) G /\ adj nil (atom A) D ;
+
+  % Multiplicative rules
+  % oneR
+  prove G D := G = nil /\ adj nil one D ;
+  % oneL
+  prove G D := exists G', adj G' one G /\ prove G' D ;
+  % tensorL
+  prove G D := exists A B G' G1 G2, 
+    adj G' (tensor A B) G /\ adj G2 A G1 /\ adj G' B G2 /\ prove G1 D ;
+  % tensorR
+  prove G D := exists A B D' D1 D2 D1' D2' G1 G2, 
+    adj D' (tensor A B) D /\ merge D1' D2' D' /\ merge G1 G2 G /\ 
+    adj D1' A D1 /\ adj D2' B D2 /\ prove G1 D1 /\ prove G2 D2 ;
+  % botL
+  prove G D := D = nil /\ adj nil bot G ;
+  % botR
+  prove G D := exists D', adj D' bot D /\ prove G D' ;
+  % parR
+  prove G D := exists A B D' D1 D2, 
+    adj D' (par A B) D /\ adj D1 A D' /\ adj D2 B D1 /\ prove G D' ;
+  % parL
+  prove G D := exists A B G' G1 G2 G1' G2' D1 D2, 
+    adj G' (par A B) G /\ merge G1 G2 G' /\ merge D1 D2 D /\ adj G1' A G1 /\ 
+    adj G2' B G2 /\ prove G1 D1 /\ prove G2 D2 ;
+
+  % Additive rules
+  % zeroL
+  prove G D := exists G', adj G' zero G ;
+  % topR
+  prove G D := exists D', adj D' top D ;
+  % withL1
+  prove G D := exists A B G' G1, 
+    adj G' (with A B) G /\ adj G1 A G' /\ prove G' D ;
+  % withL2
+  prove G D := exists A B G' G1, 
+    adj G' (with A B) G /\ adj G1 B G' /\ prove G' D ;
+  % withR
+  prove G D := exists A B D' D1 D2, 
+    adj D' (with A B) D /\ adj D' A D1 /\ adj D' B D2 /\ prove G D1 /\ prove G D2 ;
+  % plusR1
+  prove G D := exists A B D' D1, 
+    adj D' (plus A B) D /\ adj D1 A D' /\ prove G D' ;
+  % plusR2
+  prove G D := exists A B D' D1, 
+    adj D' (plus A B) D /\ adj D1 B D' /\ prove G D' ;
+  % plusL
+  prove G D := exists A B G' G1 G2, 
+    adj G' (plus A B) G /\ adj G' A G1 /\ adj G' B G2 /\ prove G1 D /\ prove G2 D.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Reasoning
+
+Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2,
+  formula C ->
+  prove G1 D1 -> prove G2 D2 ->
+  adj D1' C D1 -> adj G2' C G2 ->
+  exists G3 D3,
+  merge G2' G1 G3 /\ merge D2 D1' D3 /\ 
+  prove G3 D3.
+
+induction on 1. induction on 2. induction on 3. intros.
+
+% Tensor case
+case H1 (keep).
+  % Unfolds the induction on the left premise (cut-formula in the succedent)
+  case H2 (keep).
+
+    % init case, trivial
+    case H9. case H4. case H13.
+
+    % oneR case, trivial
+    case H8. case H4. case H12.
+
+    % oneL case, permutes down
+    apply IH1 to H1 H9 H3 H4 H5.
+%     apply add_to_split_right to H10 H8.
+%     witness L'. witness D3. split.
+%       search. search. search.
+% 
+%     % tensorL case, permutes down
+%     apply IH1 to H1 H11 H3 H4 H5.
+%     apply remove_from_split_right to H12 H9.
+%     apply remove_from_split_right to H15 H10.
+%     apply add_to_split_right to H17 H8.
+%     witness L'. witness D3.
+%       search.
+% 
+%     % tensorR case, permutes down
+%     apply membrest_implication1 to H4 H8.
+%     case H15. skip. % F = C, i.e., the tensor rule is applied to the cut-formula
+%       % case H3.
+%       % case H16. case H5. case H19. case H5.
+%       % apply membrest_implication1 to H5 H16.
+%       % case H18.
+%     apply split_membrest_disjunction to H9 H16.
+%     case H17.
+%       apply membrest_implication2 to H11 H18.
+%       apply IH1 to H1 H13 H3 H19 H5.
+%     % apply membrest_implication1 to H11 H19.
+%     % case H24. skip. % A1 = A tensor B
+%     apply remove_from_split_right to H22 H20.
+%     apply split_property1 to H21 H10.
+%     rename D1' to D1minusC.
+%     rename D' to D1minusA1*B1.
+%     rename D1'1 to D3minusA1.
+%     rename D2' to D4minusB1.
+%     rename L2 to D1minusA1*B1minusC.
+%     rename L4 to D3minusA1minusC.
+%     rename D5 to D3minusC.
+%     rename D6 to D2plusD3minusC.
+%     rename L1 to D2plusD3minusCminusA1.
+% 
+%     apply split_implies_list to H24.
+%     apply membrest_implies_list to H12.
+%     apply split_exists to H28 H32.
+%     apply split_property2 to H33 H24.
+%     apply add_to_split_left to H34 H18.
