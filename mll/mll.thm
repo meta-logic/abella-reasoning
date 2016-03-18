@@ -34,4 +34,4 @@ induction on 1. intros. case H1.
   search.
 %  search.
 
-Import "perm" with is_o := is_fm.
+Import "../lib/perm" with is_o := is_fm.
