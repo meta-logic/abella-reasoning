@@ -4,6 +4,7 @@ Import "perm" with is_o := is_o.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% merge J K L : J union K equals L.
 Define merge : olist -> olist -> olist -> prop by
 ; merge nil nil nil
 ; merge J K L :=
@@ -155,3 +156,12 @@ Theorem merge_invert_2 : forall A J KK K LL L,
 intros. apply merge_sym to *H1.
 apply merge_invert_1 to *H4 *H2 *H3.
 backchain merge_sym.
+
+% TODO
+% Theorem add_to_merge_right : forall A J K KK L,
+%   adj KK A K ->
+%   merge J KK LL ->
+%   exists M, merge J KK M /\ adj LL A M.
+% induction on 2. intros. 
+% case H2.
+%  exists KK. search.
