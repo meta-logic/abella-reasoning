@@ -167,7 +167,7 @@ induction on 1. intros. case H1.
     apply adj_1_is_list to H4. apply perm_refl to H7. search.
     apply IH to H4 H6. apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
 
-Theorem adj_same_result_alt : forall J A K B L,
+Theorem adj_same_result_diff : forall J A K B L,
   adj J A L ->
   adj K B L ->
   (A = B /\ perm J K) \/
@@ -181,6 +181,43 @@ induction on 1. intros. case H1.
     apply IH to H4 H6. case H7.
       apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
       search.
+
+Theorem perm_invert : forall A J K JJ KK,
+  perm J K ->
+  adj JJ A J ->
+  adj KK A K ->
+  perm JJ KK.
+induction on 1. intros. case H1.
+  case H2.
+  apply adj_same_result_diff to H2 H4. case H7.
+    apply adj_same_result_diff to H3 H5. case H9.
+      apply perm_trans to *H8 *H6. apply perm_sym to *H10. backchain perm_trans.
+      apply adj_same_result to H3 H5. apply perm_trans to *H8 *H6. apply perm_sym to *H11. backchain perm_trans.
+    apply adj_same_result_diff to H3 H5. case H9.
+      apply perm_sym to *H10. apply perm_trans to *H6 *H11.
+       apply adj_same_result to H2 H4. backchain perm_trans.
+      apply IH to H6 H8 H10.
+       apply adj_swap to *H10 *H5. apply adj_swap to *H8 *H4.
+       apply adj_same_result to *H2 *H15. apply adj_same_result to *H13 *H3.
+       apply adj_preserves_perm to *H14 *H12 *H11.
+       apply perm_trans to *H16 *H18. backchain perm_trans.
+
+Theorem adj_perm_result : forall J K A JJ,
+  perm J K ->
+  adj JJ A J ->
+  exists KK, adj KK A K /\ perm JJ KK.
+induction on 1. intros. case H1.
+  case H2.
+  apply adj_same_result_diff to H2 H3. case H6.
+    apply perm_trans to H7 H5. search.
+    apply IH to H5 H7. apply adj_swap to H7 H3.
+     apply adj_swap to H8 H4. witness U1. split. search.
+     apply adj_same_result to H2 H11.
+     apply adj_preserves_perm to H10 H12 H9.
+     backchain perm_trans.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% append and perm
 
 Theorem append_perm : forall J K L JJ KK,
   append J K L ->
