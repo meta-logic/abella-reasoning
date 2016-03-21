@@ -34,4 +34,124 @@ induction on 1. intros. case H1.
   search.
 %  search.
 
-Import "../lib/perm" with is_o := is_fm.
+Import "../lib/merge" with is_o := is_fm.
+
+Define mll : olist -> prop by
+; mll L :=
+    exists A, adj (natom A :: nil) (atom A) L
+
+; mll L :=
+    exists A B LL JJ KK J K,
+      adj LL (tens A B) L /\
+      merge JJ KK LL /\
+      adj JJ A J /\ mll J /\
+      adj KK B K /\ mll K
+
+; mll (one :: nil)
+
+; mll L :=
+    exists A B LL J K,
+      adj LL (par A B) L /\
+      adj LL A J /\
+      adj J B K /\
+      mll K
+
+; mll L :=
+    exists LL,
+      adj LL bot L /\
+      mll LL
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem generalized_id : forall A B, dual A B -> mll (A :: B :: nil).
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. apply IH to H3.
+   apply dual_is to H2. apply dual_is to H3.
+   unfold 4. witness AA. witness BB. witness tens A1 B1 :: nil.
+   witness tens A1 B1 :: AA :: nil.
+   witness tens A1 B1 :: AA :: BB :: nil.
+   split. search. search. search.
+   unfold 2. witness A1. witness B1.
+   witness AA :: BB :: nil.
+   witness AA :: nil. witness BB :: nil.
+   witness A1 :: AA :: nil. witness B1 :: BB :: nil.
+   search.
+  search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem adj_nil_1 : forall A L, adj nil A L -> L = A :: nil.
+intros. case H1. search.
+
+Theorem perm_nil_1 : forall L, perm nil L -> L = nil.
+intros. case H1. search. case H2.
+
+Theorem mll_perm : forall K L,
+  mll K -> perm K L -> mll L.
+induction on 1. intros. case H1.
+  case H3.
+    apply perm_cons_1 to *H2.
+     apply perm_cons_1 to *H7. case H9. case H8. search. case H10.
+    apply perm_cons_1 to *H2. apply adj_nil_1 to *H5.
+     apply perm_cons_1 to *H7. apply adj_swap to *H8 *H6.
+     apply perm_nil_1 to *H9. apply adj_nil_1 to *H10.
+     unfold 1. search.
+
+  apply adj_2_is_o to H5. apply adj_1_is_list to H5.
+   apply adj_2_is_o to H7. apply adj_1_is_list to H7.
+   assert perm J (A :: JJ).
+     apply perm_refl to H10. search.
+   assert perm K1 (B :: KK).
+     apply perm_refl to H12. search.
+   apply IH to *H6 *H13.
+   apply IH to *H8 *H14.
+   apply adj_perm_full to H2 H3. apply perm_merge_3 to *H4 *H18.
+   unfold 2. search.
+
+  case H2. case H3.
+    apply perm_nil_1 to *H5. apply adj_nil_1 to *H4. search.
+    case H7.
+
+  apply adj_perm_full to *H2 *H3.
+   assert perm J (A :: KK).
+     apply adj_1_is_list to H7. apply adj_2_is_o to H4. search.
+   assert perm K1 (B :: A :: KK).
+     apply adj_1_is_list to H7. apply adj_2_is_o to H4. apply adj_2_is_o to H5.
+      search.
+   apply IH to *H6 *H10.
+   apply adj_1_is_list to H7. apply adj_2_is_o to H4. apply adj_2_is_o to H5.
+   unfold 4. search.
+
+  apply adj_perm_full to *H2 *H3.
+   apply IH to *H4 *H6.
+   unfold 5. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem cut : forall A B JJ J KK K LL,
+  dual A B ->
+  adj JJ A J -> mll J ->
+  adj KK B K -> mll K ->
+  merge JJ KK LL ->
+  mll LL.
+induction on 1. induction on 3. intros. case H3.
+  %% identity
+  apply adj_same_result_diff to H2 H7. case H8.
+    %% Cut formula principal
+    case H1. case H9. case H11.
+      apply adj_same_result to H2 H7. case H15. case H12.
+       case H10.
+       apply merge_move_12 to _ H4 H6.
+       apply merge_nil_perm to H21. backchain mll_perm.
+        case H20.
+      case H14.
+    %% Cut formula is not principal -- impossible
+    case H9. case H1. case H11.
+
+  %% tensor
+  apply adj_same_result_diff to H2 H7. case H13.
+    %% cut formula is the tensor
+    case H1.
+abort.

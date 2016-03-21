@@ -242,3 +242,14 @@ induction on 2. intros. case H2.
   apply perm_cons_1 to *H1.
    apply IH to H6 H4.
    apply adj_swap to H7 H5. search.
+
+Theorem adj_perm_full : forall J K JJ A,
+  perm J K ->
+  adj JJ A J ->
+  exists KK, adj KK A K /\ perm JJ KK.
+induction on 2. intros. case H2.
+  apply perm_cons_1 to *H1. search.
+  apply perm_cons_1 to *H1.
+    apply IH to H6 H4.
+    apply adj_swap to H7 H5.
+    apply adj_1_is_list to H4. search.

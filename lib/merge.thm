@@ -157,6 +157,15 @@ intros. apply merge_sym to *H1.
 apply merge_invert_1 to *H4 *H2 *H3.
 backchain merge_sym.
 
+Theorem merge_nil_perm : forall K L,
+  merge nil K L -> perm K L.
+induction on 1. intros. case H1.
+  search.
+  case H2.
+  apply IH to H4. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % TODO
 % Theorem add_to_merge_right : forall A J K KK L,
 %   adj KK A K ->
@@ -165,4 +174,3 @@ backchain merge_sym.
 % induction on 2. intros. 
 % case H2 (keep).
 %   case H1. search.
-
