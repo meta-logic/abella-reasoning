@@ -129,6 +129,118 @@ induction on 1. intros. case H1.
    unfold 5. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Inversion theorems
+
+Theorem merge_unadj_1 : forall J K L JJ A,
+  merge J K L -> adj JJ A J -> exists LL, adj LL A L /\ merge JJ K LL.
+induction on 1. intros. case H1.
+  case H2.
+  apply adj_same_result_diff to H2 H3. case H6.
+    apply perm_sym to *H7. apply perm_merge_1 to *H5 *H8. search.
+    apply IH to *H5 H7. apply adj_swap to H8 H4. apply adj_swap to H7 H3.
+     assert merge U1 K U. apply adj_same_result to H13 H2.
+     apply perm_merge_1 to *H14 *H15. search.
+  apply IH to H5 H2. apply adj_swap to H6 H4. assert merge JJ K U. search.
+
+Theorem merge_unadj_2 : forall J K L KK A,
+  merge J K L -> adj KK A K -> exists LL, adj LL A L /\ merge J KK LL.
+intros. apply merge_sym to *H1. apply merge_unadj_1 to *H3 *H2.
+ apply merge_sym to *H5. search.
+
+Theorem merge_unadj_3 : forall J K L LL A,
+  merge J K L -> adj LL A L ->
+  (exists JJ, adj JJ A J /\ merge JJ K LL)
+  \/ (exists KK, adj KK A K /\ merge J KK LL).
+induction on 1. intros. case H1.
+  case H2.
+
+  apply adj_same_result_diff to H4 H2. case H6.
+    apply perm_merge_3 to *H5 *H7. search.
+    apply adj_swap to H7 H2. apply adj_same_result to H9 H4.
+     apply adj_perm to H10 H8. apply IH to H5 H11. case H12.
+       apply adj_swap to H13 H3.
+        assert merge U1 K LL.
+          apply adj_swap to H11 H4.
+          apply adj_same_result to H18 H2.
+          backchain perm_merge_3.
+        search.
+       apply adj_swap to H11 H4.
+        assert merge J KK2 U1.
+        apply adj_same_result to H16 H2. apply perm_merge_3 to *H17 *H18.
+        search.
+
+  apply adj_same_result_diff to H4 H2. case H6.
+    apply perm_merge_3 to *H5 *H7. search.
+    apply adj_swap to H7 H2. apply adj_same_result to H9 H4.
+     apply adj_perm to H10 H8. apply IH to H5 H11. case H12.
+       apply adj_swap to H11 H4.
+        assert merge JJ K U1.
+        apply adj_same_result to H16 H2. apply perm_merge_3 to *H17 *H18.
+        search.
+       apply adj_swap to H13 H3.
+        assert merge J U1 LL.
+          apply adj_swap to H11 H4.
+          apply adj_same_result to H18 H2.
+          backchain perm_merge_3.
+        search.
+
+Theorem bot_inv : forall J L,
+  mll L -> adj J bot L -> mll J.
+induction on 1. intros. case H1.
+  apply adj_same_result_diff to H2 H3. case H4.
+   case H5. case H7.
+
+  apply adj_same_result_diff to H2 H3. case H9.
+   apply merge_unadj_3 to H4 H10. case H11.
+    apply adj_swap to H12 H5. apply IH to *H6 H15.
+     apply merge_unadj_1 to H4 H12.
+     apply adj_swap to H17 H3.
+     assert mll U1. apply adj_same_result to H20 H2. backchain mll_perm with K = U1.
+
+    apply merge_unadj_2 to *H4 H12. apply adj_same_result to H14 H10.
+     apply perm_merge_3 to *H15 *H16.
+     apply adj_swap to H12 H7. apply IH to *H8 H19.
+     apply adj_swap to H10 H3. assert mll U1.
+     apply adj_same_result to H22 H2. backchain mll_perm with K = U1.
+
+  case H2. case H4.
+
+  apply adj_same_result_diff to H2 H3. case H7.
+   apply adj_swap to H8 H4.  apply adj_swap to H10 H5.
+   apply IH to *H6 H12.
+   apply adj_swap to H8 H3. assert mll U2.
+   apply adj_same_result to H15 H2. backchain mll_perm with K = U2.
+
+  apply adj_same_result to H3 H2. backchain mll_perm.
+
+Theorem par_inv : forall L JJ A B,
+  mll L -> adj JJ (par A B) L ->
+  exists KK LL, adj JJ A KK /\ adj KK B LL /\ mll LL.
+induction on 1. intros. case H1.
+  apply adj_same_result_diff to H2 H3. case H4.
+   case H5. case H7.
+
+  apply adj_same_result_diff to H2 H3. case H9.
+  apply merge_unadj_3 to *H4 H10. case H11.
+    apply adj_swap to H12 *H5. apply IH to *H6 *H15.
+     apply adj_swap to *H14 *H16. apply adj_swap to *H20 *H17.
+     apply adj_1_is_list to H10. apply adj_2_is_o to H19. apply adj_2_is_o to H21.
+     assert merge U2 KK (A :: B :: KK1).
+     apply adj_2_is_o to H3.
+     assert mll (tens A1 B1 :: A :: B :: KK1).
+     apply adj_swap to *H10 *H3.
+     apply adj_same_result to H30 H2. apply adj_perm_full to H31 H29.
+     apply adj_1_is_list to *H2.
+     assert perm (tens A1 B1 :: A :: B :: KK1) (A :: B :: JJ).
+     apply mll_perm to *H28 *H35.
+     witness A :: JJ. witness A :: B :: JJ. search.
+
+    %% symmetric case
+
+  % other cases
+abort.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem cut : forall A B JJ J KK K LL,
   dual A B ->
