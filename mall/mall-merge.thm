@@ -97,29 +97,28 @@ induction on 1. induction on 2. induction on 3. intros.
 % Tensor case
 case H1 (keep).
   % Unfolds the induction on the left premise (cut-formula in the succedent)
+  % Each case is a possible rule applied to the left premise.
   case H2 (keep).
 
-    % init case, trivial
+    % init case -- invalid (contexts need to be empty)
     case H9. case H4. case H13.
 
-    % oneR case, trivial
+    % oneR case -- invalid (contexts need to be empty)
     case H8. case H4. case H12.
 
-    % oneL case, permutes down
-    apply IH1 to H1 H9 H3 H4 H5.
-%     apply add_to_split_right to H10 H8.
-%     witness L'. witness D3. split.
-%       search. search. search.
-% 
-%     % tensorL case, permutes down
-%     apply IH1 to H1 H11 H3 H4 H5.
-%     apply remove_from_split_right to H12 H9.
-%     apply remove_from_split_right to H15 H10.
-%     apply add_to_split_right to H17 H8.
-%     witness L'. witness D3.
-%       search.
-% 
-%     % tensorR case, permutes down
+    % oneL case -- permutes down
+    apply IH1 to H1 H9 H3 H4 H5. %% Up to here is fine.
+    apply add_to_merge_right to H8 H10.
+    search.
+
+    % tensorL case -- permutes down
+    apply IH1 to H1 H11 H3 H4 H5.
+    apply merge_unadj_2 to H12 H9.
+    apply merge_unadj_2 to H16 H10.
+    apply add_to_merge_right to H8 H18.
+    search.
+
+    % tensorR case -- permutes down
 %     apply membrest_implication1 to H4 H8.
 %     case H15. skip. % F = C, i.e., the tensor rule is applied to the cut-formula
 %       % case H3.
