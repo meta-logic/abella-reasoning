@@ -200,3 +200,18 @@ Theorem add_to_merge_right : forall A J K KK L,
   merge J KK L ->
   exists M, merge J K M /\ adj L A M.
 intros. apply add_to_merge_right_lem to H1 H2. search.
+
+Theorem add_to_merge_left_lem : forall A J JJ K L,
+  adj JJ A J ->
+  merge JJ K L ->
+  exists M, adj L A M.
+intros.
+  apply adj_2_is_o to H1.
+  apply merge_3_is_list to H2.
+  search.
+
+Theorem add_to_merge_left : forall A J JJ K L,
+  adj JJ A J ->
+  merge JJ K L ->
+  exists M, merge J K M /\ adj L A M.
+intros. apply add_to_merge_left_lem to H1 H2. search.
