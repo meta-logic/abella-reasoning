@@ -131,59 +131,6 @@ induction on 1. intros. case H1.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inversion theorems
 
-Theorem merge_unadj_1 : forall J K L JJ A,
-  merge J K L -> adj JJ A J -> exists LL, adj LL A L /\ merge JJ K LL.
-induction on 1. intros. case H1.
-  case H2.
-  apply adj_same_result_diff to H2 H3. case H6.
-    apply perm_sym to *H7. apply perm_merge_1 to *H5 *H8. search.
-    apply IH to *H5 H7. apply adj_swap to H8 H4. apply adj_swap to H7 H3.
-     assert merge U1 K U. apply adj_same_result to H13 H2.
-     apply perm_merge_1 to *H14 *H15. search.
-  apply IH to H5 H2. apply adj_swap to H6 H4. assert merge JJ K U. search.
-
-Theorem merge_unadj_2 : forall J K L KK A,
-  merge J K L -> adj KK A K -> exists LL, adj LL A L /\ merge J KK LL.
-intros. apply merge_sym to *H1. apply merge_unadj_1 to *H3 *H2.
- apply merge_sym to *H5. search.
-
-Theorem merge_unadj_3 : forall J K L LL A,
-  merge J K L -> adj LL A L ->
-  (exists JJ, adj JJ A J /\ merge JJ K LL)
-  \/ (exists KK, adj KK A K /\ merge J KK LL).
-induction on 1. intros. case H1.
-  case H2.
-
-  apply adj_same_result_diff to H4 H2. case H6.
-    apply perm_merge_3 to *H5 *H7. search.
-    apply adj_swap to H7 H2. apply adj_same_result to H9 H4.
-     apply adj_perm to H10 H8. apply IH to H5 H11. case H12.
-       apply adj_swap to H13 H3.
-        assert merge U1 K LL.
-          apply adj_swap to H11 H4.
-          apply adj_same_result to H18 H2.
-          backchain perm_merge_3.
-        search.
-       apply adj_swap to H11 H4.
-        assert merge J KK2 U1.
-        apply adj_same_result to H16 H2. apply perm_merge_3 to *H17 *H18.
-        search.
-
-  apply adj_same_result_diff to H4 H2. case H6.
-    apply perm_merge_3 to *H5 *H7. search.
-    apply adj_swap to H7 H2. apply adj_same_result to H9 H4.
-     apply adj_perm to H10 H8. apply IH to H5 H11. case H12.
-       apply adj_swap to H11 H4.
-        assert merge JJ K U1.
-        apply adj_same_result to H16 H2. apply perm_merge_3 to *H17 *H18.
-        search.
-       apply adj_swap to H13 H3.
-        assert merge J U1 LL.
-          apply adj_swap to H11 H4.
-          apply adj_same_result to H18 H2.
-          backchain perm_merge_3.
-        search.
-
 Theorem bot_inv : forall J L,
   mll L -> adj J bot L -> mll J.
 induction on 1. intros. case H1.
