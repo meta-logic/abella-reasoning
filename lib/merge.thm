@@ -17,6 +17,26 @@ Define merge : olist -> olist -> olist -> prop by
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Theorem merge_1_is_list : forall J K L, merge J K L -> is_list J.
+induction on 1. intros. case H1.
+  search.
+  backchain adj_3_is_list.
+  backchain IH.
+
+Theorem merge_2_is_list : forall J K L, merge J K L -> is_list K.
+induction on 1. intros. case H1.
+  search.
+  backchain IH.
+  backchain adj_3_is_list.
+
+Theorem merge_3_is_list : forall J K L, merge J K L -> is_list L.
+intros. case H1.
+  search.
+  backchain adj_3_is_list.
+  backchain adj_3_is_list.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 Theorem perm_merge_1 : forall J K L JJ,
   merge J K L ->
   perm J JJ ->
@@ -166,11 +186,17 @@ induction on 1. intros. case H1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TODO
-% Theorem add_to_merge_right : forall A J K KK L,
-%   adj KK A K ->
-%   merge J KK L ->
-%   exists M, merge J K M /\ adj L A M.
-% induction on 2. intros. 
-% case H2 (keep).
-%   case H1. search.
+Theorem add_to_merge_right_lem : forall A J K KK L,
+  adj KK A K ->
+  merge J KK L ->
+  exists M, adj L A M.
+intros.
+  apply adj_2_is_o to H1.
+  apply merge_3_is_list to *H2.
+  search.
+
+Theorem add_to_merge_right : forall A J K KK L,
+  adj KK A K ->
+  merge J KK L ->
+  exists M, merge J K M /\ adj L A M.
+intros. apply add_to_merge_right_lem to H1 H2. search.
