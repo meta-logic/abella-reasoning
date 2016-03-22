@@ -107,7 +107,7 @@ case H1 (keep).
     case H8. case H4. case H12.
 
     % oneL case -- permutes down
-    apply IH1 to H1 H9 H3 H4 H5. %% Up to here is fine.
+    apply IH1 to H1 H9 H3 H4 H5.
     apply add_to_merge_right to H8 H10.
     search.
 
@@ -118,7 +118,31 @@ case H1 (keep).
     apply add_to_merge_right to H8 H18.
     search.
 
-    % tensorR case -- permutes down
+    % tensorR case -- principal or permutes down
+    apply adj_same_result_diff to H4 H8.
+    case H15.
+      % 1. the cut-formula is principal. TODO
+      skip.
+      % 2. the tensorR is applied to another formula -- permutes down
+      apply merge_unadj_3 to H9 H16.
+      case H17.
+        % 1. Cut-formula goes to the left premise of tensorR.
+        apply adj_swap to H18 H11.
+        apply IH1 to H1 H13 H3 H21 H5. 
+        apply merge_unadj_2 to H23 H20.
+        apply merge_3_is_list to H26. apply merge_2_is_list to H9.
+        apply merge_exists to H27 H28.
+        apply merge_3_is_list to H29. apply adj_2_is_o to H8.
+        apply adj_exists to H31 H30.
+        apply merge_2_is_list to H10. apply merge_3_is_list to H22.
+        apply merge_exists to H33 H34.
+        exists L1. exists M.
+        % TODO: continue.
+        % 2. Cut-formula goes to the right premise of tensorR.
+
+
+
+
 %     apply membrest_implication1 to H4 H8.
 %     case H15. skip. % F = C, i.e., the tensor rule is applied to the cut-formula
 %       % case H3.

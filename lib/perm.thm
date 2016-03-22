@@ -25,6 +25,11 @@ induction on 1. intros. case H1.
   search.
   apply IH to H3. search.
 
+Theorem adj_exists : forall A L,
+  is_o A -> is_list L ->
+  exists M, adj L A M.
+intros. search.
+
 Theorem adj_swap : forall A J K B L,
   adj J A K -> adj K B L ->
   exists U, adj J B U /\ adj U A L.
