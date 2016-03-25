@@ -274,3 +274,25 @@ induction on 1. intros. case H1.
   apply merge_nil_equal to H2. search.
   apply IH to H4 H2. assert (adj L A (A :: L)).
     apply add_to_merge_left to H6 H5. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Associativity
+
+Theorem merge_assoc : forall J K L JK KL JKL1 JKL2,
+  merge J K JK -> merge K L KL ->
+  merge J KL JKL1 -> merge JK L JKL2 ->
+  perm JKL1 JKL2.
+induction on 1. intros. case H1.
+  apply merge_nil_perm to *H2. apply merge_nil_perm to *H3. apply merge_nil_perm to *H4.
+   backchain perm_trans with K = L. backchain perm_sym. backchain perm_trans.
+
+  apply merge_unadj_1 to *H4 H6.
+   apply merge_unadj_1 to *H3 H5.
+   apply IH to *H7 *H2 *H11 *H9.
+   search.
+
+  apply merge_unadj_1 to *H2 H5.
+   apply merge_unadj_1 to *H4 H6.
+   apply merge_unadj_2 to *H3 H8.
+   apply IH to *H7 *H9 *H13 *H11.
+   search.
