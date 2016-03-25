@@ -275,6 +275,26 @@ induction on 1. intros. case H1.
   apply IH to H4 H2. assert (adj L A (A :: L)).
     apply add_to_merge_left to H6 H5. search.
 
+Theorem merge_head_lemma : forall L A,
+  is_o A -> is_list L -> merge L (A :: nil) (A :: L).
+induction on 2. intros. case H2 (keep).
+  assert (is_list (A :: nil)). apply merge_nil_equal to H3. search.
+  assert (adj L1 A1 (A1 :: L1)). 
+   apply IH to H1 H4.
+   apply add_to_merge_left to H5 H6.
+   search.
+
+% Note: the contrary is not true, since adj is order-sensitive
+Theorem adj_implies_merge : forall L J A,
+  adj L A J -> merge L (A :: nil) J.
+induction on 1. intros. case H1.
+  apply merge_head_lemma to H2 H3. search.
+  apply IH to H3.
+   apply adj_1_is_list to H3.
+   assert (adj K B (B :: K)).
+   apply add_to_merge_left to H6 H4.
+   apply adj_3_is_list to H3. search.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Associativity
 
@@ -296,3 +316,38 @@ induction on 1. intros. case H1.
    apply merge_unadj_2 to *H3 H8.
    apply IH to *H7 *H9 *H13 *H11.
    search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem merge_preserves_perm : forall L LL J K,
+  merge L J K ->
+  merge LL J K ->
+  perm L LL.
+skip. % TODO :(
+% induction on 1. induction on 2. intros.
+%   case H1 (keep).
+%     case H2.
+%       search.
+%       case H4.
+%       case H4.
+%     case H2 (keep).
+%       case H4.
+
+% This needs a better name...
+Theorem merge_sub : forall J K L JK JL JKL,
+  merge J K JK ->
+  merge JK L JKL ->
+  merge JL K JKL ->
+  merge J L JL.
+intros.
+  apply merge_1_is_list to H1. apply merge_2_is_list to H2.
+  apply merge_exists to H4 H5.
+  apply merge_sym to H1.
+  apply merge_2_is_list to H1. apply merge_3_is_list to H6.
+  apply merge_exists to H8 H9.
+  apply merge_assoc to H7 H6 H10 H2.
+  apply merge_sym to H10.
+  apply perm_merge_3 to H12 H11.
+  apply merge_preserves_perm to H13 H3.
+  apply perm_merge_3 to H6 H14.
+  search.

@@ -137,38 +137,38 @@ case H1 (keep).
         apply merge_2_is_list to H10. apply merge_3_is_list to H22.
         apply merge_exists to H33 H34.
         exists L1. exists M.
-        % TODO: continue.
+        split.
+          % merge of antecedents
+          apply merge_sym to H35.
+          apply merge_1_is_list to H22. apply merge_3_is_list to H10.
+          apply merge_exists to H37 H38.
+          apply merge_assoc to H22 H10 H39 H36.
+          apply perm_merge_3 to H39 H40. search. 
+
+          % merge of succeedents
+          apply merge_1_is_list to H23. apply merge_3_is_list to H19.
+          apply merge_exists to H36 H37.
+          apply merge_assoc to H26 H19 H38 H29. 
+          apply merge_3_is_list to H38.
+          apply adj_exists to H31 H40.
+          apply adj_preserves_perm to H41 H32 H39.
+          apply adj_implies_merge to H41.
+          apply adj_implies_merge to H16. 
+          apply adj_implies_merge to H8. 
+          apply adj_implies_merge to H4.
+          apply merge_sub to H44 H45 H46.
+          apply merge_1_is_list to H38.
+          apply adj_1_is_list to H4.
+          apply merge_exists to H48 H49.
+          apply merge_assoc to H38 H47 H50 H43. 
+          apply perm_merge_3 to H50 H51.
+          apply perm_merge_3 to H52 H42.
+          search.
+
+          % provability of conclusion
+          unfold 5. exists A1. exists B1. exists L. exists D5. exists D4.
+          exists LL. exists D2'. exists G5. exists G4.
+          apply merge_sym to H35. search.
+
         % 2. Cut-formula goes to the right premise of tensorR.
 
-
-
-
-%     apply membrest_implication1 to H4 H8.
-%     case H15. skip. % F = C, i.e., the tensor rule is applied to the cut-formula
-%       % case H3.
-%       % case H16. case H5. case H19. case H5.
-%       % apply membrest_implication1 to H5 H16.
-%       % case H18.
-%     apply split_membrest_disjunction to H9 H16.
-%     case H17.
-%       apply membrest_implication2 to H11 H18.
-%       apply IH1 to H1 H13 H3 H19 H5.
-%     % apply membrest_implication1 to H11 H19.
-%     % case H24. skip. % A1 = A tensor B
-%     apply remove_from_split_right to H22 H20.
-%     apply split_property1 to H21 H10.
-%     rename D1' to D1minusC.
-%     rename D' to D1minusA1*B1.
-%     rename D1'1 to D3minusA1.
-%     rename D2' to D4minusB1.
-%     rename L2 to D1minusA1*B1minusC.
-%     rename L4 to D3minusA1minusC.
-%     rename D5 to D3minusC.
-%     rename D6 to D2plusD3minusC.
-%     rename L1 to D2plusD3minusCminusA1.
-% 
-%     apply split_implies_list to H24.
-%     apply membrest_implies_list to H12.
-%     apply split_exists to H28 H32.
-%     apply split_property2 to H33 H24.
-%     apply add_to_split_left to H34 H18.
