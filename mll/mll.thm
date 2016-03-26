@@ -273,7 +273,7 @@ induction on 1. induction on 3. intros. case H3.
 
   %% tensor
   apply adj_same_result_diff to H2 H7. case H13.
-    %% cut formula is the tensor
+    %% cut formula is the tensor -- rank decreases
     case H1. apply par_inv to H5 H4.
       apply adj_1_is_list to H18. apply adj_1_is_list to H11. apply merge_exists to *H21 *H20.
       apply IH to H16 H11 H12 H18 H19 H22.
@@ -281,4 +281,113 @@ induction on 1. induction on 3. intros. case H3.
       apply adj_1_is_list to H24. apply adj_1_is_list to H9. apply merge_exists to *H27 *H26.
       apply IH to H15 H9 H10 H24 H23 H28.
       apply perm_sym to *H14. apply perm_merge_3 to *H8 *H30.
-abort.
+      apply merge_assoc to *H31 *H25 *H28 *H6. backchain mll_perm with K = L1.
+   %% cut formula is some other formula -- height decreases
+   apply merge_unadj_3 to H8 H14. case H15.
+     %% cut formula goes to left operand
+     apply adj_swap to H16 H9.
+     apply add_to_merge_left to H18 H17. rename M to UKK1.
+     ass : assert 0 exists UKK, merge U KK UKK.
+       apply adj_1_is_list to H19. apply adj_1_is_list to H4.
+       apply merge_exists to H22 H23. search.
+       case ass.
+     Hi : apply IH1 to H1 H19 H10 H4 H5 H22.
+     apply merge_unadj_1 to H22 H18.
+     ass : assert 0 exists V, merge LL2 KK1 V.
+       apply adj_1_is_list to H23. apply adj_1_is_list to H11. apply merge_exists to H25 H26.
+       search. case ass.
+     ass : assert 0 exists VT, adj V (tens A1 B1) VT.
+       apply merge_3_is_list to H25. apply adj_2_is_o to H7. apply adj_exists to H27 H26.
+       search. case ass.
+     assert mll VT.
+     apply adj_swap to H14 H7. apply adj_same_result to H2 *H29.
+     apply perm_merge_1 to *H6 *H30.
+     apply merge_unadj_1 to H31 H28.
+     assert 0 perm VT LL.
+       unfold. witness tens A1 B1. witness V. witness LL3. split. search. search.
+       assert merge KK1 JJ2 KK2. backchain merge_sym.
+       assert merge KK1 LL2 V. backchain merge_sym.
+       backchain merge_assoc with J = KK1, K = JJ2, L = KK, JK = KK2, KL = LL2.
+     backchain mll_perm with K = VT.
+
+     %% cut formula goes to the right operand
+     apply adj_swap to H16 H11.
+     apply add_to_merge_right to H18 H17. rename M to UJJ1.
+     ass : assert 0 exists UKK, merge U KK UKK.
+       apply adj_1_is_list to H19. apply adj_1_is_list to H4.
+       apply merge_exists to H22 H23. search.
+       case ass.
+     Hi : apply IH1 to H1 H19 H12 H4 H5 H22.
+     apply merge_unadj_1 to H22 H18.
+     ass : assert 0 exists V, merge JJ1 LL2 V.
+       apply adj_1_is_list to H9. apply adj_1_is_list to H23. apply merge_exists to H25 H26.
+       search. case ass.
+     ass : assert 0 exists VT, adj V (tens A1 B1) VT.
+       apply merge_3_is_list to H25. apply adj_2_is_o to H7. apply adj_exists to H27 H26.
+       search. case ass.
+     assert mll VT.
+     apply adj_swap to H14 H7. apply adj_same_result to H2 *H29.
+     apply perm_merge_1 to *H6 *H30.
+     apply merge_unadj_1 to H31 H28.
+     assert 0 perm VT LL.
+       unfold. witness tens A1 B1. witness V. witness LL3. split. search. search.
+       backchain merge_assoc with J = JJ1, K = KK3, L = KK, JK = KK2, KL = LL2.
+     backchain mll_perm with K = VT.
+
+  %% one
+  case H2.
+    case H1. apply merge_nil_perm to H6.
+    apply bot_inv to H5 H4.
+    backchain mll_perm with K = KK.
+
+    case H8.
+
+  %% par
+  apply adj_same_result_diff to H2 H7. case H11.
+    %% left cut formula cannot be a par because it is positive
+    case H1.
+
+    %% cut formula goes up in left premise
+    apply adj_swap to H12 *H8.
+    apply adj_swap to *H14 *H9.
+    ass : assert 0 exists V, merge U1 KK V.
+      apply adj_1_is_list to H16. apply adj_1_is_list to H4. apply merge_exists to H17 H18.
+      search. case ass.
+    Hi : apply IH1 to H1 H16 H10 H4 H5 H17.
+    apply merge_unadj_1 to *H17 *H15.
+    apply merge_unadj_1 to *H19 *H13.
+    ass : assert 0 exists VV, adj LL3 (par A1 B1) VV.
+      apply adj_1_is_list to H20. apply adj_2_is_o to H7. apply adj_exists to H23 H22.
+      search. case ass.
+    assert mll VV.
+    assert 0 perm VV LL.
+      apply adj_swap to *H12 *H7.
+      apply adj_same_result to *H2 *H25.
+      apply perm_merge_1 to *H6 *H26.
+      apply merge_unadj_1 to H27 H24.
+      unfold. witness par A1 B1. witness LL3. witness LL4. split. search. search.
+      backchain merge_perm_det.
+    backchain mll_perm with K = VV.
+
+  %% bot
+  apply adj_same_result_diff to H2 H7. case H9.
+    %% left cut formula cannot be bot because it is positive.
+    case H1.
+
+    %% cut formula goes up in left premise
+    ass : assert 0 exists V, merge KK1 KK V.
+      apply adj_1_is_list to H10. apply adj_1_is_list to H4. apply merge_exists to H11 H12.
+      search. case ass.
+    Hi : apply IH1 to H1 H10 H8 H4 H5 H11.
+    ass : assert 0 exists VV, adj V bot VV.
+      apply merge_3_is_list to H11. apply adj_exists to _ H12 with A = bot.
+      search. case ass.
+    assert mll VV.
+    assert 0 perm VV LL.
+      apply adj_swap to *H10 *H7.
+      apply adj_same_result to *H2 *H15.
+      apply perm_merge_1 to *H6 *H16.
+      apply merge_unadj_1 to H17 H14.
+      unfold. witness bot. witness V. witness LL2. split. search. search.
+      backchain merge_perm_det.
+    backchain mll_perm with K = VV.

@@ -319,6 +319,22 @@ induction on 1. intros. case H1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Theorem merge_perm_det : forall J K L1 L2,
+  merge J K L1 ->
+  merge J K L2 ->
+  perm L1 L2.
+induction on 1. intros. case H1.
+  backchain merge_nil_perm.
+  apply merge_unadj_1 to H2 H3.
+   apply IH to H5 H7.
+   search.
+  apply merge_unadj_2 to H2 H3.
+   apply IH to H5 H7.
+   search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% STAGING
+
 Theorem merge_preserves_perm : forall L LL J K,
   merge L J K ->
   merge LL J K ->
