@@ -683,4 +683,92 @@ induction on 1. induction on 3. intros. case H3.
       backchain merge_perm_det.
     backchain mll_perm with K = VV.
 
-abort.
+  %% with
+  apply adj_same_result_diff to H2 H7. case H12.
+    %% left cut formula cannot be with
+    case H1.
+
+    %% cut formula goes up in left premise
+    Ht : apply adj_2_is_o to H7. Hfm1 : case Ht.
+    Hfm1 : apply adj_2_is_o to H2.
+    Hfm1 : apply adj_2_is_o to H4.
+    apply adj_1_is_list to H13. apply adj_1_is_list to H4.
+    Ht : assert 0 exists V, merge KK1 KK V.
+      apply merge_exists to H14 H15.
+      search. case Ht.
+    apply merge_3_is_list to H16. apply perm_refl to H17.
+    assert 0 mll (wth A1 B1 :: V).
+      apply adj_swap to H13 *H8.
+      apply IH1 to H1 H20 *H9 H4 H5 _ with LL = A1 :: V.
+      apply adj_swap to H13 *H10.
+      apply IH1 to H1 H23 *H11 H4 H5 _ with LL = B1 :: V.
+      search.
+    assert perm (wth A1 B1 :: V) LL.
+      apply adj_swap to H13 H7.
+      apply adj_same_result to *H2 *H21.
+      apply perm_merge_1 to *H6 *H22.
+      apply merge_unadj_1 to H23 H20.
+      unfold. witness wth A1 B1, V, LL2. split. search. search.
+      backchain merge_perm_det.
+    backchain mll_perm with K = wth A1 B1 :: V.
+
+  %% top
+  apply adj_same_result_diff to H2 H7. case H8. case H1.
+    apply adj_swap to H9 H7. apply adj_same_result to H2 H11.
+    apply perm_merge_1 to *H6 H12.
+    apply merge_unadj_1 to *H13 *H10.
+    search.
+
+  %% plus_1
+  apply adj_same_result_diff to H2 H7. case H10.
+    %% cut formula is A1 + B1
+    case H1. apply wth_inv to *H5 *H4.
+    apply perm_merge_1 to *H6 *H11.
+    backchain IH.
+
+    %% left cut formula moves up
+    apply adj_1_is_list to H11. apply adj_1_is_list to H4.
+    Ht : assert 0 exists V, merge KK1 KK V.
+      apply merge_exists to H12 H13. search.
+      case Ht.
+    apply merge_3_is_list to H14. apply perm_refl to H15.
+    Ht : apply adj_2_is_o to H7. Hfm1 : case Ht.
+    assert 0 mll (plus A1 B1 :: V).
+      apply adj_swap to H11 *H8.
+      apply IH1 to H1 H18 *H9 H4 H5 _ with LL = A1 :: V.
+      search.
+    assert perm (plus A1 B1 :: V) LL.
+      apply adj_swap to H11 H7.
+      apply adj_same_result to *H2 *H19.
+      apply perm_merge_1 to *H6 *H20.
+      apply merge_unadj_1 to H21 H18.
+      unfold. witness plus A1 B1, V, LL2. split. search. search.
+      backchain merge_perm_det.
+    backchain mll_perm with K = plus A1 B1 :: V.
+
+  %% plus_2
+  apply adj_same_result_diff to H2 H7. case H10.
+    %% cut formula is A1 + B1
+    case H1. apply wth_inv to *H5 *H4.
+    apply perm_merge_1 to *H6 *H11.
+    backchain IH with A = B1, B = BB.
+
+    %% left cut formula moves up
+    apply adj_1_is_list to H11. apply adj_1_is_list to H4.
+    Ht : assert 0 exists V, merge KK1 KK V.
+      apply merge_exists to H12 H13. search.
+      case Ht.
+    apply merge_3_is_list to H14. apply perm_refl to H15.
+    Ht : apply adj_2_is_o to H7. Hfm1 : case Ht.
+    assert 0 mll (plus A1 B1 :: V).
+      apply adj_swap to H11 *H8.
+      apply IH1 to H1 H18 *H9 H4 H5 _ with LL = B1 :: V.
+      search.
+    assert perm (plus A1 B1 :: V) LL.
+      apply adj_swap to H11 H7.
+      apply adj_same_result to *H2 *H19.
+      apply perm_merge_1 to *H6 *H20.
+      apply merge_unadj_1 to H21 H18.
+      unfold. witness plus A1 B1, V, LL2. split. search. search.
+      backchain merge_perm_det.
+    backchain mll_perm with K = plus A1 B1 :: V.
