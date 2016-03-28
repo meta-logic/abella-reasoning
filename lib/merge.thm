@@ -333,21 +333,28 @@ induction on 1. intros. case H1.
    search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% STAGING
+
+Theorem merge_preserves_perm_lem : forall L LL J K,
+  is_list J ->
+  merge L J K ->
+  merge LL J K ->
+  perm L LL.
+induction on 1. intros. case H1.
+  apply merge_sym to H2. apply merge_nil_perm to *H4.
+   apply merge_sym to H3. apply merge_nil_perm to *H6.
+   apply perm_sym to *H7. backchain perm_trans.
+
+  apply merge_unadj_2 to H2 _. apply merge_unadj_2 to H3 _.
+   apply adj_same_result to H8 H6.
+   apply perm_merge_3 to *H9 *H10.
+   apply IH to *H5 *H7 *H11. search.
 
 Theorem merge_preserves_perm : forall L LL J K,
   merge L J K ->
   merge LL J K ->
   perm L LL.
-skip. % TODO :(
-% induction on 1. induction on 2. intros.
-%   case H1 (keep).
-%     case H2.
-%       search.
-%       case H4.
-%       case H4.
-%     case H2 (keep).
-%       case H4.
+intros. apply merge_2_is_list to H1.
+backchain merge_preserves_perm_lem.
 
 % This needs a better name...
 Theorem merge_sub : forall J K L JK JL JKL,
