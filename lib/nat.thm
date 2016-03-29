@@ -1,0 +1,147 @@
+Kind nat type.
+
+Type z nat.
+Type s nat -> nat.
+
+Define is_nat : nat -> prop by
+; is_nat z
+; is_nat (s X) := is_nat X.
+
+Close nat.
+
+Define plus : nat -> nat -> nat -> prop by
+; plus z X X := is_nat X
+; plus (s X) Y (s Z) := plus X Y Z
+.
+
+Define leq : nat -> nat -> prop by
+; leq z X := is_nat X
+; leq (s X) (s Y) := leq X Y
+.
+
+Theorem plus_1_is_nat : forall X Y Z,
+  plus X Y Z -> is_nat X.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_2_is_nat : forall X Y Z,
+  plus X Y Z -> is_nat Y.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_3_is_nat : forall X Y Z,
+  plus X Y Z -> is_nat Z.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem leq_1_is_nat : forall X Y,
+  leq X Y -> is_nat X.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem leq_2_is_nat : forall X Y,
+  leq X Y -> is_nat Y.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_z : forall X,
+  is_nat X -> plus X z X.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_z_char : forall X Y,
+  plus Y X Y -> X = z.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_s : forall X Y Z,
+  plus X Y Z -> plus X (s Y) (s Z).
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem plus_comm : forall X Y Z,
+  plus X Y Z -> plus Y X Z.
+induction on 1. intros. case H1.
+  backchain plus_z.
+  apply IH to H2. backchain plus_s.
+
+Theorem leq_refl : forall X,
+  is_nat X -> leq X X.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem leq_trans : forall X Y Z,
+  leq X Y -> leq Y Z -> leq X Z.
+induction on 1. intros. case H1.
+  apply leq_2_is_nat to H2. search.
+  case H2. apply IH to H3 H4. search.
+
+Theorem leq_s : forall X,
+  is_nat X -> leq X (s X).
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+
+Theorem leq_antisym : forall X Y,
+  leq X Y -> leq Y X -> X = Y.
+induction on 1. intros. case H1.
+  case H2. search.
+  case H2. apply IH to H3 H4. search.
+
+Theorem leq_total : forall X Y,
+  is_nat X -> is_nat Y -> leq X Y \/ leq Y X.
+induction on 1. intros. case H1.
+  search.
+  case H2.
+    search.
+    apply IH to *H3 *H4. case H5.
+      search. search.
+
+Theorem one_nleq_zero_lem : forall X,
+  is_nat X -> leq (s X) X -> false.
+induction on 1. intros. case H1.
+  case H2.
+  case H2. backchain IH.
+
+Theorem one_nleq_zero : forall X,
+  leq (s X) X -> false.
+intros. apply leq_2_is_nat to H1.
+backchain one_nleq_zero_lem.
+
+Theorem plus_leq : forall X Y Z,
+  plus X Y Z -> leq X Z /\ leq Y Z.
+induction on 1. intros. case H1.
+  apply leq_refl to H2. search.
+  apply IH to H2.
+   apply leq_2_is_nat to H4. apply leq_s to *H5.
+   apply leq_trans to H4 *H6.
+   search.
+
+Theorem plus_det_1 : forall X1 X2 Y Z,
+  plus X1 Y Z -> plus X2 Y Z -> X1 = X2.
+induction on 1. intros. case H1.
+  apply plus_comm to *H2. apply plus_z_char to *H4. search.
+  case H2.
+    apply plus_leq to *H3. apply one_nleq_zero to H6.
+    apply IH to H3 H4. search.
+
+Theorem plus_det_2 : forall X Y1 Y2 Z,
+  plus X Y1 Z -> plus X Y2 Z -> Y1 = Y2.
+intros.
+apply plus_comm to *H1. apply plus_comm to *H2.
+backchain plus_det_1.
+
+Theorem plus_det_3 : forall X Y Z1 Z2,
+  plus X Y Z1 -> plus X Y Z2 -> Z1 = Z2.
+induction on 1. intros. case H1.
+  case H2. search.
+  case H2. apply IH to H3 H4. search.
