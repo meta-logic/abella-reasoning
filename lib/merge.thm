@@ -80,103 +80,6 @@ induction on 1. intros. case H1.
   apply IH to H4. search.
   apply IH to H4. search.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Theorem merge_move_12 : forall A JJ J KK K L,
-  adj JJ A J ->
-  adj KK A K ->
-  merge J KK L ->
-  merge JJ K L.
-induction on 3. intros. case H3.
-  case H1.
-  apply adj_same_result_diff to H4 H1. case H7.
-    apply perm_merge_1 to H6 H8. search.
-    apply adj_swap to H8 H1. apply adj_same_result to H10 H4.
-     apply adj_perm to H11 H9.
-     apply adj_swap to H12 H4. apply adj_same_result to H14 H1.
-     apply IH to H12 H2 H6.
-     assert merge U1 K L. backchain perm_merge_1.
-  apply adj_swap to H4 H2.
-   apply IH to H1 H7 H6. search.
-
-Theorem merge_invert_1 : forall A JJ J K LL L,
-  merge J K L ->
-  adj JJ A J ->
-  adj LL A L ->
-  merge JJ K LL.
-induction on 1. intros. case H1.
-  % nil case is impossible since J is non-empty
-  case H2.
-
-  % J = A1 + JJ1, L = A1 + LL1
-  apply adj_same_result_diff to H4 H2. case H7.
-
-    % A1 = A, in which case JJ ~ JJ1
-    apply adj_same_result to *H5 *H3.
-     apply perm_merge_1 to *H6 *H8.
-     backchain perm_merge_3.
-
-    % A1 = A not known, in which case, for some KK, JJ = A1 + KK
-    apply adj_swap to H8 H2.
-     apply adj_same_result to H4 H10.
-     apply adj_same_result_diff to H3 H5. case H12.
-
-      % A1 = A and LL ~ LL1
-      apply adj_same_result to H10 H2.
-       apply perm_trans to H11 H14.
-       apply perm_merge_1 to H6 H15.
-       apply perm_sym to H13.
-       backchain perm_merge_3.
-
-      % A1 = A not known, but LL1 = A + KK1
-      apply perm_sym to H11.
-       apply adj_perm to H14 H9.
-       apply IH to H6 H15 H13.
-       apply adj_swap to H13 H5.
-       apply adj_same_result to H18 H3.
-       backchain perm_merge_3.
-       assert merge KK K KK1.
-         assert perm KK2 KK.
-           backchain perm_invert.
-           backchain perm_merge_1.
-       search.
-
-  % K = A1 + KK1, L = A1 + LL1
-  apply adj_same_result_diff to H5 H3. case H7.
-
-    % A = A1, LL1 ~ LL
-    apply perm_merge_3 to *H6 *H8.
-     backchain merge_move_12.
-
-    % A = A1 not known, LL = KK1 + A1
-    rename KK1 to LLL.
-     apply adj_swap to H8 H3.
-     apply adj_same_result to H10 H5.
-     apply adj_perm to H11 H9.
-     apply IH to H6 H2 H12.
-     apply adj_swap to H12 H5.
-     assert merge JJ K U1.
-     apply adj_same_result to H15 H3.
-     backchain perm_merge_3.
-
-Theorem merge_move_21 : forall A JJ J KK K L,
-  adj JJ A J ->
-  adj KK A K ->
-  merge JJ K L ->
-  merge J KK L.
-intros. apply merge_sym to *H3.
-apply merge_move_12 to *H2 *H1 *H4.
-backchain merge_sym.
-
-Theorem merge_invert_2 : forall A J KK K LL L,
-  merge J K L ->
-  adj KK A K ->
-  adj LL A L ->
-  merge J KK LL.
-intros. apply merge_sym to *H1.
-apply merge_invert_1 to *H4 *H2 *H3.
-backchain merge_sym.
-
 Theorem merge_nil_perm : forall K L,
   merge nil K L -> perm K L.
 induction on 1. intros. case H1.
@@ -238,6 +141,40 @@ induction on 1. intros. case H1.
           apply adj_same_result to H18 H2.
           backchain perm_merge_3.
         search.
+
+%% some simple consequences
+
+Theorem merge_invert_1 : forall A JJ J K LL L,
+  merge J K L ->
+  adj JJ A J ->
+  adj LL A L ->
+  merge JJ K LL.
+intros. apply merge_unadj_1 to H1 H2.
+apply adj_same_result to *H4 *H3.
+backchain perm_merge_3.
+
+Theorem merge_invert_2 : forall A J KK K LL L,
+  merge J K L ->
+  adj KK A K ->
+  adj LL A L ->
+  merge J KK LL.
+intros. apply merge_sym to *H1.
+apply merge_invert_1 to *H4 *H2 *H3.
+backchain merge_sym.
+
+Theorem merge_move_12 : forall A JJ J KK K L,
+  adj JJ A J ->
+  adj KK A K ->
+  merge J KK L ->
+  merge JJ K L.
+intros. apply merge_unadj_1 to H3 H1. search.
+
+Theorem merge_move_21 : forall A JJ J KK K L,
+  adj JJ A J ->
+  adj KK A K ->
+  merge JJ K L ->
+  merge J KK L.
+intros. apply merge_unadj_2 to H3 H2. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
