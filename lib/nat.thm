@@ -145,3 +145,41 @@ Theorem plus_det_3 : forall X Y Z1 Z2,
 induction on 1. intros. case H1.
   case H2. search.
   case H2. apply IH to H3 H4. search.
+
+Define max : nat -> nat -> nat -> prop by
+; max z X X := is_nat X
+; max X z X := is_nat X
+; max (s X) (s Y) (s Z) := max X Y Z
+.
+
+Theorem max_1_is : forall X Y Z,
+  max X Y Z -> is_nat X /\ is_nat Y /\ is_nat Z.
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply IH to H2. search.
+
+Theorem max_exists : forall X Y,
+  is_nat X -> is_nat Y ->
+  exists Z, max X Y Z.
+induction on 1. intros. case H1.
+  search.
+  case H2.
+    search.
+    apply IH to H3 H4. search.
+
+Theorem max_eq : forall X Y Z,
+  max X Y Z -> Z = X \/ Z = Y.
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply IH to H2. case H3.
+    search.
+    search.
+
+Theorem max_leq : forall X Y Z,
+  max X Y Z -> leq X Z /\ leq Y Z.
+induction on 1. intros. case H1.
+  apply leq_refl to H2. search.
+  apply leq_refl to H2. search.
+  apply IH to H2. search.

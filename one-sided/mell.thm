@@ -1,0 +1,702 @@
+Kind nat type.
+Import "../lib/nat".
+
+Kind atm type.
+
+Type a, b, c, d, e, f atm.
+
+%% We reuse the o type to define LL formulas
+Type atom, natom   atm -> o.
+Type tens, par     o -> o -> o.
+Type one, bot      o.
+Type bang, qm      o -> o.
+
+Define is_fm : o -> prop by
+; is_fm (atom A)
+; is_fm (natom A)
+; is_fm (tens A B) := is_fm A /\ is_fm B
+; is_fm (par A B) := is_fm A /\ is_fm B
+; is_fm one
+; is_fm bot
+; is_fm (bang A) := is_fm A
+; is_fm (qm A) := is_fm A
+.
+
+Define dual : o -> o -> prop by
+; dual (atom A) (natom A)
+; dual (tens A B) (par AA BB) := dual A AA /\ dual B BB
+; dual one bot
+; dual (bang A) (qm AA) := dual A AA
+.
+
+Theorem dual_is : forall A B, dual A B -> is_fm A /\ is_fm B.
+induction on 1. intros. case H1.
+  search.
+  apply IH to *H2. apply IH to *H3. search.
+  search.
+  apply IH to *H2. search.
+
+Import "../lib/merge" with is_o := is_fm.
+
+Define mell : nat -> olist -> olist -> prop by
+%% 1
+; mell (s X) QL L :=
+    is_nat X /\ is_list QL /\
+    exists A, adj (natom A :: nil) (atom A) L
+
+%% 2
+; mell (s X) QL L :=
+    exists A B LL, adj LL (tens A B) L /\
+    exists JJ KK, merge JJ KK LL /\
+      (exists J, adj JJ A J /\ mell X QL J) /\
+      (exists K, adj KK B K /\ mell X QL K)
+
+%% 3
+; mell (s X) QL (one :: nil) := is_nat X /\ is_list QL
+
+%% 4
+; mell (s X) QL L :=
+    exists A B LL, adj LL (par A B) L /\
+    exists J, adj LL A J /\
+    exists K, adj J B K /\
+    mell X QL K
+
+%% 5
+; mell (s X) QL L :=
+    exists LL, adj LL bot L /\
+    mell X QL LL
+
+%% 6
+; mell (s X) QL (bang A :: nil) :=
+    mell X QL (A :: nil)
+
+%% 7
+; mell (s X) QL L :=
+    exists A LL, adj LL (qm A) L /\
+    exists QK, adj QL A QK /\
+    mell X QK LL
+
+%% 8
+; mell (s X) QL L :=
+    exists A QK, adj QK A QL /\
+    exists J, adj L A J /\
+    mell X QL J
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Structure
+
+Theorem mell_is : forall X QL L,
+  mell X QL L ->
+  is_nat X /\ is_list QL /\ is_list L.
+induction on 1. intros. case H1.
+  apply adj_3_is_list to H4. search.
+  apply IH to H5. apply adj_3_is_list to H2. search.
+  search.
+  apply IH to H5. apply adj_3_is_list to H2. search.
+  apply IH to H3. apply adj_3_is_list to H2. search.
+  apply IH to H2. case H5. search.
+  apply IH to H4. apply adj_3_is_list to H2. apply adj_1_is_list to H3. search.
+  apply IH to H4. apply adj_1_is_list to H3. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Height weakening
+
+Theorem mell_weaken_height : forall X Y QL L,
+  mell X QL L ->
+  leq X Y ->
+  mell Y QL L.
+induction on 1. intros. case H1.
+  case H2. apply leq_2_is_nat to H6. search.
+  case H2. apply IH to *H6 H9. apply IH to *H8 H9. search.
+  case H2. apply leq_2_is_nat to H5. search.
+  case H2. apply IH to *H6 H7. search.
+  case H2. apply IH to *H4 H5. search.
+  case H2. apply IH to *H3 H4. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H5 H6. search.
+
+Theorem mell_equalize_height : forall X QK K Y QL L,
+  mell X QK K ->
+  mell Y QL L ->
+  exists Z, mell Z QK K /\ mell Z QL L.
+intros. apply mell_is to H1. apply mell_is to H2.
+apply max_exists to H3 H6. apply max_leq to H9.
+apply mell_weaken_height to H1 H10.
+apply mell_weaken_height to H2 H11.
+search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Unbounded context weakening
+
+Theorem mell_weaken_q : forall X QJ QK QL J,
+  mell X QJ J ->
+  merge QJ QK QL ->
+  mell X QL J.
+induction on 1. intros. apply merge_3_is_list to H2. case H1.
+  search.
+  apply IH to *H7 H2. apply IH to *H9 H2. search.
+  search.
+  apply IH to *H7 H2. search.
+  apply IH to *H5 H2. search.
+  apply IH to *H4 H2. search.
+  apply adj_2_is_o to H5. apply adj_exists to H7 H3.
+   assert merge QK1 QK M.
+   apply IH to *H6 H9.
+   search.
+  apply IH to *H6 H2. apply merge_unadj_1 to H2 H4.
+   search.
+
+Theorem mell_weaken_q1 : forall X QJ J A QL,
+  mell X QJ J ->
+  adj QJ A QL ->
+  mell X QL J.
+intros. assert merge QJ (A :: nil) QL.
+  apply adj_2_is_o to H2.
+   apply adj_1_is_list to H2.
+   apply merge_nil_equal to H4. apply merge_sym to *H5.
+   search.
+  backchain mell_weaken_q.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem mell_perm_q : forall X QK QL L,
+  mell X QK L ->
+  perm QK QL ->
+  mell X QL L.
+induction on 1. intros. case H1.
+  apply perm_2_is_list to H2. search.
+  apply IH to H6 H2. apply IH to H8 H2. search.
+  apply perm_2_is_list to H2. search.
+  apply IH to H6 H2. search.
+  apply IH to H4 H2. search.
+  apply IH to H3 H2. search.
+  Ht : assert 0 exists QL1, adj QL A QL1.
+    apply perm_2_is_list to H2. apply adj_2_is_o to H4.
+    apply adj_exists to H7 H6. search.
+    case Ht.
+   apply adj_preserves_perm to H4 H6 H2.
+   apply IH to H5 H7. search.
+  apply IH to H5 H2.
+   apply adj_perm to H2 H3. search.
+
+Theorem adj_nil_1 : forall A L, adj nil A L -> L = A :: nil.
+intros. case H1. search.
+
+Theorem perm_nil_1 : forall L, perm nil L -> L = nil.
+intros. case H1. search. case H2.
+
+Theorem mell_perm_l : forall X QL K L,
+  mell X QL K ->
+  perm K L ->
+  mell X QL L.
+induction on 1. intros. case H1.
+  apply adj_perm_full to H2 H5.
+   apply perm_cons_1 to *H7. apply perm_nil_1 to *H9. case H8.
+   search.
+
+  apply adj_perm_full to *H2 *H3.
+   apply perm_merge_3 to *H4 H10.
+   search.
+
+  apply perm_cons_1 to *H2. apply perm_nil_1 to *H6. case H5.
+    search.
+
+  apply adj_perm_full to *H2 *H3. unfold 4.
+    witness A, B, KK. split. search.
+    apply adj_2_is_o to H4. apply adj_1_is_list to H7.
+    apply adj_exists to *H9 *H10.
+    witness M. split. search.
+    apply adj_preserves_perm to *H4 H11 *H8.
+    apply adj_2_is_o to H5. apply perm_2_is_list to H12.
+    apply adj_exists to *H13 *H14.
+    witness M1. split. search.
+    apply adj_preserves_perm to *H5 H15 *H12.
+    backchain IH.
+
+  apply adj_perm_full to *H2 *H3. unfold 5.
+    witness KK. split. search.
+    backchain IH.
+
+  apply perm_cons_1 to *H2. apply perm_nil_1 to *H5. case H4.
+   search.
+
+  apply adj_perm_full to *H2 *H3. unfold 7.
+    witness A, KK. split. search.
+    witness QK. split. search.
+    backchain IH.
+
+  unfold 8. witness A, QK. split. search.
+    apply adj_2_is_o to H3. apply perm_2_is_list to H2.
+    apply adj_exists to *H6 *H7.
+    apply adj_preserves_perm to *H4 H8 *H2.
+    witness M. split. search.
+    backchain IH.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Inversion Lemmas
+
+Theorem bot_inv : forall X QL J L,
+  mell X QL L -> adj J bot L ->
+  mell X QL J.
+induction on 1. intros. case H1.
+  %% atom (impossible)
+  case H5. case H2. case H9. case H11.
+    case H2. case H7. case H9. case H13.
+  %% tensor
+  apply adj_same_result_diff to H2 H3. case H9.
+  apply merge_unadj_3 to *H4 H10. case H11.
+    apply adj_swap to *H12 *H5.
+     apply IH to *H6 *H15.
+     apply adj_swap to *H10 *H3.
+     apply adj_same_result to *H18 *H2.
+     backchain mell_perm_l with K = U1.
+    apply adj_swap to *H12 *H7.
+     apply IH to *H8 *H15.
+     apply adj_swap to *H10 *H3.
+     apply adj_same_result to *H18 *H2.
+     backchain mell_perm_l with K = U1.
+  %% one (impossible)
+  case H2. case H6.
+  %% par
+  apply adj_same_result_diff to H2 H3. case H7.
+  apply adj_swap to H8 *H4. apply adj_swap to *H10 *H5.
+  apply IH to *H6 *H12.
+  apply adj_swap to *H8 *H3.
+  apply adj_same_result to *H15 *H2.
+  backchain mell_perm_l with K = U2.
+  %% bot
+  apply adj_same_result to *H3 *H2.
+  apply mell_is to H4. apply leq_s to *H6.
+  apply mell_weaken_height to *H4 *H9.
+  backchain mell_perm_l with K = LL.
+  %% bang (impossible)
+  case H2. case H5.
+  %% qm
+  apply adj_same_result_diff to H2 H3. case H6.
+  apply IH to *H5 H7.
+  apply adj_swap to H7 H3. apply adj_same_result to H10 H2.
+  backchain mell_perm_l with K = U.
+  %% dl
+  apply adj_swap to H2 H4.
+  apply IH to H5 H7.
+  search.
+
+Theorem par_inv : forall A B X QL L J KA KAB,
+  mell X QL L -> adj J (par A B) L ->
+  adj J A KA -> adj KA B KAB ->
+  mell X QL KAB.
+induction on 1. intros. case H1.
+  %% atom (impossible)
+  case H7. case H2. case H11. case H13.
+    case H2. case H9. case H11. case H15.
+  %% tensor
+  apply adj_same_result_diff to H2 H5. case H11.
+  apply adj_swap to H12 *H5. apply adj_same_result to *H14 *H2.
+  apply merge_unadj_3 to *H6 *H12. case H16.
+    %% par in left branch
+    apply adj_swap to *H17 *H7.
+     Ht : assert 0 exists UA UAB, adj U1 A UA /\ adj UA B UAB.
+       apply adj_2_is_o to H3. apply adj_1_is_list to H20.
+       apply adj_exists to H21 H22. apply adj_3_is_list to H23.
+       apply adj_2_is_o to H4. apply adj_exists to H25 H24.
+       search. case Ht.
+     apply IH to *H8 *H20 H21 H22.
+     apply adj_swap to *H19 *H21. apply adj_swap to *H25 *H22.
+     Ht : assert 0 exists KKA KKAB, adj KK1 A KKA /\ adj KKA B KKAB /\ merge U3 KK KKAB.
+       apply adj_2_is_o to H3. apply merge_3_is_list to H18.
+       apply adj_exists to H28 H29. apply adj_3_is_list to H30.
+       apply adj_2_is_o to H4. apply adj_exists to H32 H31.
+       search. case Ht.
+     Ht : assert 0 exists KKABU, adj KKAB (tens A1 B1) KKABU.
+       apply adj_2_is_o to H13. apply merge_3_is_list to H30.
+       apply adj_exists to H31 H32. search. case Ht.
+     assert perm KKABU KAB.
+       apply adj_perm_full to *H15 *H13.
+       apply adj_swap to *H32 *H3. apply adj_swap to *H35 *H4.
+       search.
+     backchain mell_perm_l with K = KKABU.
+    %% par in right branch
+    apply adj_swap to *H17 *H9.
+     Ht : assert 0 exists UA UAB, adj U1 A UA /\ adj UA B UAB.
+       apply adj_2_is_o to H3. apply adj_1_is_list to H20.
+       apply adj_exists to H21 H22. apply adj_3_is_list to H23.
+       apply adj_2_is_o to H4. apply adj_exists to H25 H24.
+       search. case Ht.
+     apply IH to *H10 *H20 H21 H22.
+     apply adj_swap to *H19 *H21. apply adj_swap to *H25 *H22.
+     Ht : assert 0 exists KKA KKAB, adj KK1 A KKA /\ adj KKA B KKAB /\ merge JJ U3 KKAB.
+       apply adj_2_is_o to H3. apply merge_3_is_list to H18.
+       apply adj_exists to H28 H29. apply adj_3_is_list to H30.
+       apply adj_2_is_o to H4. apply adj_exists to H32 H31.
+       search. case Ht.
+     Ht : assert 0 exists KKABU, adj KKAB (tens A1 B1) KKABU.
+       apply adj_2_is_o to H13. apply merge_3_is_list to H30.
+       apply adj_exists to H31 H32. search. case Ht.
+     assert perm KKABU KAB.
+       apply adj_perm_full to *H15 *H13.
+       apply adj_swap to *H32 *H3. apply adj_swap to *H35 *H4.
+       search.
+     backchain mell_perm_l with K = KKABU.
+  %% one (impossible)
+  case H2. case H8.
+  %% par
+  apply adj_same_result_diff to H2 H5. case H9.
+    %% same par
+    apply perm_sym to *H10.
+    apply adj_preserves_perm to *H6 *H3 *H11.
+    apply adj_preserves_perm to *H7 *H4 *H12.
+    apply mell_perm_l to *H8 *H13.
+    backchain mell_weaken_height with X = X1.
+    backchain leq_s. apply mell_is to H14. search.
+    %% different par
+    apply adj_swap to H10 *H5. apply adj_same_result to *H12 *H2.
+    apply adj_swap to *H10 *H6. apply adj_swap to *H15 *H7.
+    Ht : assert 0 exists UA UAB, adj U2 A UA /\ adj UA B UAB.
+      apply adj_2_is_o to H17. case H18.
+      apply adj_1_is_list to H17. apply adj_exists to H19 H21.
+      apply adj_3_is_list to H22. apply adj_exists to H20 H23.
+      search. case Ht.
+    apply IH to *H8 *H17 H18 H19.
+    apply adj_swap to *H16 *H18. apply adj_swap to *H22 *H19.
+    apply adj_swap to *H14 *H21. apply adj_swap to *H26 *H23.
+    Ht : assert 0 exists V, adj U6 (par A1 B1) V.
+      apply adj_2_is_o to H11. apply adj_1_is_list to H28.
+      apply adj_exists to H29 H30. search. case Ht.
+    assert perm V KAB.
+      apply adj_perm_full to *H13 *H11.
+      apply adj_swap to *H30 *H3. apply adj_swap to *H33 *H4.
+      search.
+    backchain mell_perm_l with K = V.
+  %% bot
+  apply adj_same_result_diff to H2 H5. case H7.
+  apply adj_swap to H8 *H5. apply adj_same_result to *H10 *H2.
+  apply adj_perm_full to *H11 *H9.
+  apply adj_swap to *H12 *H3. apply adj_swap to *H15 *H4.
+  Ht : assert 0 exists KKA KKAB, adj KK A KKA /\ adj KKA B KKAB.
+    apply adj_2_is_o to H8. case H18.
+    apply adj_1_is_list to H8. apply adj_exists to *H19 H21.
+    apply adj_3_is_list to H22. apply adj_exists to *H20 *H23.
+    search. case Ht.
+  apply IH to *H6 H8 H18 H19.
+  Ht : assert 0 exists V, adj KKAB bot V.
+    apply adj_3_is_list to H19.
+    apply adj_exists to _ H21 with A = bot. search. case Ht.
+  assert perm V KAB.
+  backchain mell_perm_l with K = V.
+  %% bang (impossible)
+  case H2. case H7.
+  %% qm
+  apply adj_same_result_diff to H2 H5. case H8.
+  apply adj_swap to H9 *H5. apply adj_same_result to *H11 *H2.
+  apply adj_perm_full to *H12 *H10.
+  apply adj_swap to *H13 *H3. apply adj_swap to *H16 *H4.
+  Ht : assert 0 exists KKA KKAB, adj KK A KKA /\ adj KKA B KKAB.
+    apply adj_2_is_o to H9. case H19.
+    apply adj_1_is_list to H9. apply adj_exists to H20 H22.
+    apply adj_3_is_list to H23. apply adj_exists to H21 H24.
+    search. case Ht.
+  apply IH to *H7 H9 H19 H20.
+  Ht : assert 0 exists V, adj KKAB (qm A1) V.
+    apply adj_3_is_list to H20. apply adj_2_is_o to H18.
+    apply adj_exists to H23 H22. search. case Ht.
+  assert perm V KAB.
+  backchain mell_perm_l with K = V.
+  %% dl
+  apply adj_swap to *H2 *H6.
+  Ht : assert 0 exists UA UAB, adj U A UA /\ adj UA B UAB.
+    apply adj_2_is_o to H9. case H10. apply adj_1_is_list to H9.
+    apply adj_exists to H11 H13. apply adj_3_is_list to H14.
+    apply adj_exists to H12 H15. search. case Ht.
+  apply IH to *H7 H9 H10 H11.
+  apply adj_swap to *H8 *H10. apply adj_swap to *H14 *H11.
+  assert perm U2 KAB.
+    apply adj_1_is_list to H3. apply perm_refl to H17.
+    search.
+  backchain mell_perm_l with K = U2.
+
+Theorem qm_inv : forall A X QL L J QK,
+  mell X QL L -> adj J (qm A) L -> adj QL A QK ->
+  mell X QK J.
+induction on 1. intros. case H1.
+  %% atom (impossible)
+  case H6. case H2. case H10. case H12.
+    case H2. case H8. case H10. case H14.
+  %% tensor
+  apply adj_same_result_diff to H2 H4. case H10.
+  apply adj_swap to H11 *H4. apply adj_same_result to *H13 *H2.
+  apply merge_unadj_3 to *H5 *H11. case H15.
+    apply adj_swap to *H16 *H6.
+     apply IH to *H7 *H19 H3.
+     apply mell_weaken_q1 to *H9 *H3.
+     backchain mell_perm_l with K = U.
+    apply adj_swap to *H16 *H8.
+     apply IH to *H9 *H19 H3.
+     apply mell_weaken_q1 to *H7 *H3.
+     backchain mell_perm_l with K = U.
+  %% one (impossible)
+  case H2. case H7.
+  %% par
+  apply adj_same_result_diff to H2 H4. case H8.
+  apply adj_swap to H9 *H4. apply adj_same_result to *H11 *H2.
+  apply adj_swap to *H9 *H5. apply adj_swap to *H14 *H6.
+  apply IH to *H7 *H16 *H3.
+  backchain mell_perm_l with K = U.
+  %% bot
+  apply adj_same_result_diff to H2 H4. case H6.
+  apply adj_swap to H7 *H4. apply adj_same_result to *H9 *H2.
+  apply IH to *H5 *H7 *H3.
+  backchain mell_perm_l with K = U.
+  %% bang (impossible)
+  case H2. case H6.
+  %% qm
+  apply adj_same_result_diff to H2 H4. case H7.
+    %% inverted formula is principal
+    apply perm_sym to *H8. apply mell_perm_l to *H6 *H9.
+     assert perm QK1 QK.
+       apply adj_1_is_list to H3. apply perm_refl to H11. search.
+     apply mell_perm_q to *H10 *H11.
+     assert leq X1 (s X1). apply mell_is to H12. backchain leq_s.
+     backchain mell_weaken_height.
+    %% inverted formula is not principal
+    apply adj_swap to H8 *H4. apply adj_same_result to *H10 *H2.
+     Ht : assert 0 exists QK2, adj QK1 A QK2.
+       apply adj_2_is_o to H3. apply adj_3_is_list to H5.
+       apply adj_exists to *H12 *H13. search. case Ht.
+     apply IH to *H6 *H8 H12.
+     apply adj_swap to *H5 *H12.
+     assert mell (s X1) U1 U.
+     apply mell_perm_l to *H16 *H11.
+     assert 0 perm U1 QK.
+       apply adj_1_is_list to H3. apply perm_refl to H18. search.
+     backchain mell_perm_q.
+  %% dl
+  apply adj_swap to *H2 *H5.
+  apply IH to *H6 *H8 H3.
+  apply adj_swap to *H4 *H3.
+  search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Nested induction
+
+Kind weight type.
+
+Type heavy, light weight.
+
+Define is_weight : weight -> prop by
+; is_weight light
+; is_weight heavy := is_weight light.
+
+Theorem $cut_admit : forall A B X W,
+  dual A B -> is_weight W -> is_nat X ->
+     (W = light /\
+      forall JJ J KK K QL Y LL,
+        adj JJ A J -> mell X QL J ->
+        adj KK B K -> mell Y QL K ->
+        merge JJ KK LL ->
+        exists Z, mell Z QL LL)
+  \/ (W = heavy /\
+      forall QL QQ K Y,
+        mell X QL (A :: nil) ->
+        adj QL B QQ -> mell Y QQ K ->
+        exists Z, mell Z QL K).
+IHrk : induction on 1.
+IHht : induction on 3.
+IHwt : induction on 2.
+intros. case H2 (keep). left. split. search.
+intros. case H5.
+  % id
+  case H3. IH : apply IHht to H1 _ *H12 with W = light. IH : case IH. clear IHrk IHht IHwt.
+  apply adj_same_result_diff to H4 H11. case H13.
+    %% cut formula is part of the identity rule
+    case H1. apply perm_cons_2 to *H14. apply perm_sym to *H16. apply perm_nil_1 to *H17. case H15.
+    apply merge_unadj_1 to *H8 _. apply merge_nil_perm to *H21.
+    assert perm K LL. apply mell_perm_l to *H7 *H23. search.
+    %% cut formula is not part of the identity
+    case H14. case H1. case H16.
+  % tensor
+  case H3. IHht : apply *IHht to H1 _ H15 with W = light. IHht : case IHht. clear IHwt.
+  apply adj_same_result_diff to H4 H9. case H16.
+    %% cut formula is principal
+    case H1.
+    IHrk1 : apply IHrk to *H18 _ H15 with W = light. IHrk1 : case IHrk1.
+    IHrk2 : apply IHrk to *H19 _ H15 with W = light. IHrk2 : case IHrk2. clear IHrk.
+    Hi : assert 0 exists KKA KKB, adj KK AA KKA /\ adj KKA BB KKB /\ mell Y QL KKB.
+      apply adj_2_is_o to H6. case H20. apply adj_1_is_list to H6.
+      apply adj_exists to H21 H23. apply adj_3_is_list to H24. apply adj_exists to H22 H25.
+      apply par_inv to H7 H6 H24 H26. search.
+      Hi1 : case Hi.
+    apply perm_merge_1 to *H8 H17.
+    Ht : assert 0 exists U, merge KK1 KKA U.
+      apply adj_1_is_list to H13. apply adj_1_is_list to Hi2. apply merge_exists to H21 H22. search.
+      case Ht.
+    apply *IHrk2 to H13 H14 Hi2 Hi3 H21.
+    apply merge_unadj_2 to H21 Hi1.
+    Ht : assert 0 exists V, merge JJ1 LL2 V.
+      apply adj_1_is_list to H11. apply adj_1_is_list to H23. apply merge_exists to H25 H26. search.
+      case Ht.
+    apply *IHrk1 to H11 H12 H23 H22 H25.
+    apply merge_assoc to *H10 *H24 *H25 *H20.
+    apply mell_perm_l to *H26 *H27. search.
+    %% cut formula is not principal
+    apply adj_swap to H17 H9. apply adj_same_result to H4 H19.
+    apply perm_merge_1 to *H8 *H20.
+    apply merge_unadj_1 to H21 H18.
+    apply merge_unadj_3 to H10 H17. case H24.
+      %% cut formula goes to the left
+      apply adj_swap to *H25 *H11.
+      Ht : assert 0 exists V, merge U1 KK V.
+        apply adj_1_is_list to H28. apply adj_1_is_list to H6. apply merge_exists to H29 H30. search.
+        case Ht.
+      apply IHht to H28 H12 H6 H7 H29.
+      apply merge_unadj_1 to H29 H27.
+      apply mell_equalize_height to *H30 *H14.
+      assert 0 merge LL3 KK1 LL2.
+        apply merge_sym to *H26.
+        apply merge_1_is_list to H35. apply merge_3_is_list to H32. apply merge_exists to *H36 *H37.
+        apply merge_assoc to *H35 *H32 H38 *H23.
+        apply merge_sym to *H38. backchain perm_merge_3.
+      search.
+      %% cut formula goes to the right
+      apply adj_swap to *H25 *H13.
+      Ht : assert 0 exists V, merge U1 KK V.
+        apply adj_1_is_list to H28. apply adj_1_is_list to H6. apply merge_exists to H29 H30. search.
+        case Ht.
+      apply IHht to H28 H14 H6 H7 H29.
+      apply merge_unadj_1 to H29 H27.
+      apply mell_equalize_height to *H30 *H12.
+      assert 0 merge JJ1 LL3 LL2.
+        apply merge_1_is_list to H26. apply merge_3_is_list to H32. apply merge_exists to *H35 *H36.
+        apply merge_assoc to *H26 *H32 H37 *H23.
+        backchain perm_merge_3.
+      search.
+   % one
+  case H4.
+    %% cut formula is the one
+    case H1.
+    apply merge_nil_perm to *H8.
+    apply bot_inv to H7 H6.
+    apply mell_perm_l to *H14 H13. search.
+   %% cut formula isn't the one
+   case H12.
+  % par
+  case H3. IH : apply IHht to H1 _ *H13 with W = light. IH : case IH. clear IHrk IHht IHwt.
+  apply adj_same_result_diff to H4 H9. case H14.
+    case H1.
+    %% cut formula is not principal
+    apply adj_swap to H15 H9. apply adj_same_result to H4 H17.
+    apply perm_merge_1 to *H8 *H18.
+    apply merge_unadj_1 to H19 H16.
+    apply adj_swap to *H15 *H10. apply adj_swap to *H23 *H11.
+    Ht : assert exists LL3, adj LL2 A1 LL3.
+      apply adj_2_is_o to H22. apply merge_3_is_list to H21. backchain adj_exists.
+      case Ht.
+    Ht : assert exists LL4, adj LL3 B1 LL4.
+      apply adj_2_is_o to H24. apply adj_3_is_list to H26. backchain adj_exists.
+      case Ht.
+    assert merge U2 KK LL4.
+    apply IH to H25 H12 H6 H7 H28.
+    search.
+  % bot
+  case H3. IH : apply IHht to H1 _ *H11 with W = light. IH : case IH. clear IHrk IHht IHwt.
+  apply adj_same_result_diff to H4 H9. case H12.
+    case H1.
+    %% cut formula is not principal
+    apply adj_swap to H13 H9. apply adj_same_result to H4 H15.
+    apply perm_merge_1 to *H8 *H16.
+    apply merge_unadj_1 to H17 H14.
+    apply IH to H13 H10 H6 H7 H19.
+    search.
+  % bang
+  Ht : assert JJ = nil.
+    case H4. search. case H11.
+    case Ht.
+  case H4. case H1.
+  Ht : assert exists QQ, adj QL AA QQ /\ mell Y QQ KK.
+    apply dual_is to H12. apply mell_is to H7.
+    apply adj_exists to H14 H16.
+    apply qm_inv to H7 H6 H18. search.
+    case Ht.
+  case H3.
+  Hc : apply IHrk to H12 _ H15 with W = heavy. Hc : case Hc.
+  apply Hc to H9 H13 H14.
+  apply merge_nil_perm to H8.
+  apply mell_perm_l to *H16 *H17. search.
+  % qm
+  apply adj_same_result_diff to H4 H9. case H12.
+    case H1.
+    apply adj_swap to H13 H9. apply adj_same_result to H4 H15.
+     apply perm_merge_1 to *H8 H16.
+     case H3.
+     IH : apply IHht to H1 _ *H18 with W = light. IH : case IH.
+     apply mell_weaken_q1 to *H7 H10.
+     apply merge_unadj_1 to H17 H14.
+     apply IH to H13 H11 H6 H19 H21.
+     assert mell (s Z) QL LL. search.
+  % dl
+  case H3. IH : apply IHht to H1 _ *H12 with W = light. IH : case IH. clear IHrk IHht IHwt.
+   apply adj_swap to H4 H10.
+   Ht : assert 0 exists LLA1, adj LL A1 LLA1.
+     apply adj_2_is_o to H10. apply merge_3_is_list to H8. backchain adj_exists. case Ht.
+   assert merge U KK LLA1.
+   apply IH to H14 H11 H6 H7 H16.
+   search.
+
+right. split. search.
+  apply IHwt to H1 H4 H3. Hc : case H5.
+  IHqc : induction on 3. intros. case H8.
+    % id
+    apply adj_1_is_list to H7. search.
+    % tensor
+    apply IHqc to H6 H7 *H12. apply IHqc to H6 H7 *H14.
+     apply mell_equalize_height to *H15 *H16. search.
+    % one
+    apply adj_1_is_list to H7. search.
+    % par
+    apply IHqc to H6 H7 *H12. search.
+    % bot
+    apply IHqc to H6 H7 *H10. search.
+    % bang
+    apply IHqc to H6 H7 *H9. search.
+    % qm
+    apply adj_swap to *H7 *H10.
+     apply mell_weaken_q1 to *H6 H12.
+     apply IHqc to *H14 *H13 *H11.
+     search.
+    % dl
+    apply adj_same_result_diff to H7 H9. case H12.
+      %% The cut formula is also derelicted.
+      apply IHqc to H6 H7 *H11.
+      apply dual_is to H1.
+       assert adj nil A (A :: nil).
+       assert merge nil K K.
+         apply adj_1_is_list to H10. backchain merge_nil_equal.
+       apply Hc to H17 H6 H10 H14 H18.
+       search.
+      %% the cut formula is not derelicted
+      rename KK to QKK. apply adj_swap to *H13 *H9.
+       apply adj_same_result to H7 H15.
+       apply mell_perm_q to *H6 H16.
+       apply IHqc to *H17 H15 *H11.
+       apply perm_sym to *H16. apply mell_perm_q to *H18 H19.
+       apply adj_perm to H19 H14.
+       search.
+
+Theorem cut_admit_linear : forall A B X Y JJ J KK K QL LL,
+  dual A B ->
+  adj JJ A J -> mell X QL J ->
+  adj KK B K -> mell Y QL K ->
+  merge JJ KK LL ->
+  exists Z, mell Z QL LL.
+intros. apply mell_is to H3.
+apply $cut_admit to H1 _ H7 with W = light. case H10.
+backchain H11.
+
+Theorem cut_admit_exponential : forall A B X Y QL QQ K,
+  dual A B ->
+  mell X QL (A :: nil) ->
+  adj QL B QQ -> mell Y QQ K ->
+  exists Z, mell Z QL K.
+intros. apply mell_is to H2.
+apply $cut_admit to H1 _ H5 with W = heavy. case H8.
+backchain H9.

@@ -160,6 +160,11 @@ intros.
 apply perm_2_is_list to H1.
 backchain perm_trans_lem.
 
+Theorem adj_same_source : forall J A K L,
+  adj J A K -> adj J A L ->
+  perm K L.
+intros. apply adj_1_is_list to H1. apply perm_refl to H3. search.
+
 Theorem adj_same_result : forall J K A L,
   adj J A L ->
   adj K A L ->
@@ -258,3 +263,32 @@ induction on 2. intros. case H2.
     apply IH to H6 H4.
     apply adj_swap to H7 H5.
     apply adj_1_is_list to H4. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% set theoretic semantics of adj and perm
+
+Theorem adj_member : forall J A L,
+  adj J A L -> member A L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem adj_preserves_member_lem : forall A J B L,
+  is_list J -> member A J -> adj J B L -> member A L.
+induction on 2. intros. case H2.
+  case H3. search. search.
+  case H3. search.
+    case H1. apply IH to H8 H4 H6. search.
+
+Theorem adj_preserves_member : forall A J B L,
+  member A J -> adj J B L -> member A L.
+intros. apply adj_1_is_list to H2. backchain adj_preserves_member_lem.
+
+Theorem perm_preserves_member : forall A K L,
+  perm K L ->
+  member A K -> member A L.
+induction on 2. intros. case H2.
+  apply perm_cons_1 to *H1. backchain adj_member.
+  apply perm_cons_1 to *H1.
+   apply IH to *H5 *H3.
+   backchain adj_preserves_member.
