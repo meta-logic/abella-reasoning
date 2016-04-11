@@ -169,5 +169,52 @@ case H1 (keep).
           exists LL. exists D2'. exists G5. exists G4.
           apply merge_sym to H35. search.
 
-        % 2. Cut-formula goes to the right premise of tensorR.
+        % 2. Cut-formula goes to the right premise of tensorR. TODO (fetch from
+        % the other computer)
+        skip.
+
+    % botL case -- invalid (contexts need to be empty)
+    case H4.
+
+    % botR case -- permutes down
+    apply adj_same_result_diff to H4 H8.
+    case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply adj_same_result to H4 H16.
+    apply add_to_merge_right to H15 H13.
+    exists G3. exists M. split.
+      search.
+      apply perm_sym to H17. apply perm_merge_2 to H18 H20. search. 
+      search.
+    
+    % parR case
+    skip.
+
+    % parL case
+    skip.
+
+    % zeroL case
+    skip.
+
+    % topR case
+    skip.
+
+    % withL1 case
+    skip.
+
+    % withL2 case
+    skip.
+
+    % withR case
+    skip.
+
+    % plusR1 case
+    skip.
+
+    % plusR2 case
+    skip.
+
+    % plusL case
+    skip.
 
