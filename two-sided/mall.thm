@@ -29,54 +29,54 @@ Define formula : o -> prop by
 Import "../lib/merge" with is_o := formula.
 
 Define prove : olist -> olist -> prop by
-  % Identity rules
+  % 1. Identity
   prove G D := exists A, adj nil (atom A) G /\ adj nil (atom A) D ;
 
   % Multiplicative rules
-  % oneR
+  % 2. oneR
   prove G D := G = nil /\ adj nil one D ;
-  % oneL
+  % 3. oneL
   prove G D := exists G', adj G' one G /\ prove G' D ;
-  % tensorL
+  % 4. tensorL
   prove G D := exists A B G' G1 G2, 
     adj G' (tensor A B) G /\ adj G2 A G1 /\ adj G' B G2 /\ prove G1 D ;
-  % tensorR
+  % 5. tensorR
   prove G D := exists A B D' D1 D2 D1' D2' G1 G2, 
     adj D' (tensor A B) D /\ merge D1' D2' D' /\ merge G1 G2 G /\ 
     adj D1' A D1 /\ adj D2' B D2 /\ prove G1 D1 /\ prove G2 D2 ;
-  % botL
+  % 6. botL
   prove G D := D = nil /\ adj nil bot G ;
-  % botR
+  % 7. botR
   prove G D := exists D', adj D' bot D /\ prove G D' ;
-  % parR
+  % 8. parR
   prove G D := exists A B D' D1 D2, 
     adj D' (par A B) D /\ adj D1 A D' /\ adj D2 B D1 /\ prove G D' ;
-  % parL
+  % 9. parL
   prove G D := exists A B G' G1 G2 G1' G2' D1 D2, 
     adj G' (par A B) G /\ merge G1 G2 G' /\ merge D1 D2 D /\ adj G1' A G1 /\ 
     adj G2' B G2 /\ prove G1 D1 /\ prove G2 D2 ;
 
   % Additive rules
-  % zeroL
+  % 10. zeroL
   prove G D := exists G', adj G' zero G ;
-  % topR
+  % 11. topR
   prove G D := exists D', adj D' top D ;
-  % withL1
+  % 12. withL1
   prove G D := exists A B G' G1, 
     adj G' (with A B) G /\ adj G1 A G' /\ prove G' D ;
-  % withL2
+  % 13. withL2
   prove G D := exists A B G' G1, 
     adj G' (with A B) G /\ adj G1 B G' /\ prove G' D ;
-  % withR
+  % 14. withR
   prove G D := exists A B D' D1 D2, 
     adj D' (with A B) D /\ adj D' A D1 /\ adj D' B D2 /\ prove G D1 /\ prove G D2 ;
-  % plusR1
+  % 15. plusR1
   prove G D := exists A B D' D1, 
     adj D' (plus A B) D /\ adj D1 A D' /\ prove G D' ;
-  % plusR2
+  % 16. plusR2
   prove G D := exists A B D' D1, 
     adj D' (plus A B) D /\ adj D1 B D' /\ prove G D' ;
-  % plusL
+  % 17. plusL
   prove G D := exists A B G' G1 G2, 
     adj G' (plus A B) G /\ adj G' A G1 /\ adj G' B G2 /\ prove G1 D /\ prove G2 D.
 
@@ -135,10 +135,10 @@ case H1 (keep).
         apply adj_exists to H31 H30.
         apply merge_2_is_list to H10. apply merge_3_is_list to H22.
         apply merge_exists to H33 H34.
+        apply merge_sym to H35.
         exists L1. exists M.
         split.
           % merge of antecedents
-          apply merge_sym to H35.
           apply merge_1_is_list to H22. apply merge_3_is_list to H10.
           apply merge_exists to H37 H38.
           apply merge_assoc to H22 H10 H39 H36.
@@ -146,28 +146,26 @@ case H1 (keep).
 
           % merge of succeedents
           apply merge_1_is_list to H23. apply merge_3_is_list to H19.
-          apply merge_exists to H36 H37.
-          apply merge_assoc to H26 H19 H38 H29. 
-          apply merge_3_is_list to H38.
-          apply adj_exists to H31 H40.
-          apply adj_preserves_perm to H41 H32 H39.
-          apply adj_implies_merge to H41.
+          apply merge_exists to H37 H38.
+          apply merge_assoc to H26 H19 H39 H29. 
+          apply merge_3_is_list to H39.
+          apply adj_exists to H31 H41.
+          apply adj_preserves_perm to H42 H32 H40.
+          apply adj_implies_merge to H42.
           apply adj_implies_merge to H16. 
           apply adj_implies_merge to H8. 
           apply adj_implies_merge to H4.
-          apply merge_sub to H44 H45 H46.
-          apply merge_1_is_list to H38.
+          apply merge_sub to H45 H46 H47.
+          apply merge_1_is_list to H39.
           apply adj_1_is_list to H4.
-          apply merge_exists to H48 H49.
-          apply merge_assoc to H38 H47 H50 H43. 
-          apply perm_merge_3 to H50 H51.
-          apply perm_merge_3 to H52 H42.
+          apply merge_exists to H49 H50.
+          apply merge_assoc to H39 H48 H51 H44. 
+          apply perm_merge_3 to H51 H52.
+          apply perm_merge_3 to H53 H43.
           search.
 
           % provability of conclusion
-          unfold 5. exists A1. exists B1. exists L. exists D5. exists D4.
-          exists LL. exists D2'. exists G5. exists G4.
-          apply merge_sym to H35. search.
+          unfold 5. search.
 
         % 2. Cut-formula goes to the right premise of tensorR.
         apply adj_swap to H18 H12.
@@ -197,65 +195,66 @@ case H1 (keep).
           apply merge_3_is_list to H38.
           apply adj_exists to H31 H42.
           apply adj_preserves_perm to H43 H32 H41.
-
-%           apply adj_implies_merge to H41.
-%           apply adj_implies_merge to H16. 
-%           apply adj_implies_merge to H8. 
-%           apply adj_implies_merge to H4.
-%           apply merge_sub to H44 H45 H46.
-%           apply merge_1_is_list to H38.
-%           apply adj_1_is_list to H4.
-%           apply merge_exists to H48 H49.
-%           apply merge_assoc to H38 H47 H50 H43. 
-%           apply perm_merge_3 to H50 H51.
-%           apply perm_merge_3 to H52 H42.
-%           search.
-
+          apply adj_implies_merge to H16. 
+          apply adj_implies_merge to H8. 
+          apply adj_implies_merge to H4.
+          apply merge_sub to H45 H46 H47.
+          apply merge_1_is_list to H38.
+          apply adj_1_is_list to H4.
+          apply merge_exists to H49 H50.
+          apply adj_implies_merge to H43.
+          apply merge_assoc to H38 H48 H51 H52. 
+          apply perm_sym to H44. apply perm_sym to H53.
+          apply perm_trans to H54 H55.
+          apply perm_sym to H56.
+          apply perm_merge_3 to H51 H57.
+          search.
 
           % provability of conclusion
+          unfold 5. search.
 
-%     % botL case -- invalid (contexts need to be empty)
-%     case H4.
-% 
-%     % botR case -- permutes down
-%     apply adj_same_result_diff to H4 H8.
-%     case H10.
-%     apply IH1 to H1 H9 H3 H11 H5.
-%     apply adj_swap to H11 H8.
-%     apply adj_same_result to H4 H16.
-%     apply add_to_merge_right to H15 H13.
-%     exists G3. exists M. split.
-%       search.
-%       apply perm_sym to H17. apply perm_merge_2 to H18 H20. search. 
-%       search.
-%     
-%     % parR case
-%     skip.
-% 
-%     % parL case
-%     skip.
-% 
-%     % zeroL case
-%     skip.
-% 
-%     % topR case
-%     skip.
-% 
-%     % withL1 case
-%     skip.
-% 
-%     % withL2 case
-%     skip.
-% 
-%     % withR case
-%     skip.
-% 
-%     % plusR1 case
-%     skip.
-% 
-%     % plusR2 case
-%     skip.
-% 
-%     % plusL case
-%     skip.
-% 
+    % botL case -- invalid (contexts need to be empty)
+    case H4.
+
+    % botR case -- permutes down
+    apply adj_same_result_diff to H4 H8.
+    case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply adj_same_result to H4 H16.
+    apply add_to_merge_right to H15 H13.
+    exists G3. exists M. split.
+      search.
+      apply perm_sym to H17. apply perm_merge_2 to H18 H20. search. 
+      search.
+    
+    % parR case
+    skip.
+
+    % parL case
+    skip.
+
+    % zeroL case
+    skip.
+
+    % topR case
+    skip.
+
+    % withL1 case
+    skip.
+
+    % withL2 case
+    skip.
+
+    % withR case
+    skip.
+
+    % plusR1 case
+    skip.
+
+    % plusR2 case
+    skip.
+
+    % plusL case
+    skip.
+
