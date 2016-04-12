@@ -18,21 +18,15 @@ Define is_fm : o -> prop by
 
 Define dual : o -> o -> prop by
 ; dual (atom A) (natom A)
-% ; dual (natom A) (atom A)
 ; dual (tens A B) (par AA BB) := dual A AA /\ dual B BB
-% ; dual (par A B) (tens AA BB) := dual A AA /\ dual B BB
 ; dual one bot
-% ; dual bot one
 .
 
 Theorem dual_is : forall A B, dual A B -> is_fm A /\ is_fm B.
 induction on 1. intros. case H1.
   search.
-%  search.
   apply IH to *H2. apply IH to *H3. search.
-%  apply IH to *H2. apply IH to *H3. search.
   search.
-%  search.
 
 Import "../lib/merge" with is_o := is_fm.
 
