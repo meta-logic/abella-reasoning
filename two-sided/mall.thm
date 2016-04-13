@@ -93,14 +93,17 @@ Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2,
 
 induction on 1. induction on 2. induction on 3. intros.
 
-% Tensor case
+% Induction on the size of the cut-formula
 case H1 (keep).
+
+% Tensor case
+
   % Unfolds the induction on the left premise (cut-formula in the succedent)
   % Each case is a possible rule applied to the left premise.
   case H2 (keep).
 
     % init case -- invalid (contexts need to be empty)
-   case H9. case H4. case H13.
+    case H9. case H4. case H13.
 
     % oneR case -- invalid (contexts need to be empty)
     case H8. case H4. case H12.
@@ -314,4 +317,28 @@ case H1 (keep).
 
     % plusL case
     skip.
+
+% Plus case
+skip.
+
+% With case
+skip.
+
+% Par case
+skip.
+
+% Zero case
+skip.
+
+% One case
+skip.
+
+% Bot case
+skip.
+
+% Top case
+skip.
+
+% Atom case
+skip.
 
