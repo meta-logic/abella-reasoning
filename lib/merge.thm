@@ -254,15 +254,14 @@ induction on 1. intros. case H1.
    apply IH to *H7 *H9 *H13 *H11.
    search.
 
-% TODO: avoid the creation of the new set.
 Theorem change_merge_order : forall J K L JK KL JKL1,
   merge JK L JKL1 -> merge J K JK -> merge K L KL ->
-  exists JKL2, perm JKL1 JKL2 /\ merge J KL JKL2.
+  merge J KL JKL1.
 intros.
   apply merge_1_is_list to H2. apply merge_3_is_list to H3.
   apply merge_exists to H4 H5.
   apply merge_assoc to H2 H3 H6 H1.
-  apply perm_sym to H7.
+  apply perm_merge_3 to H6 H7.
   search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
