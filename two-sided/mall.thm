@@ -100,7 +100,7 @@ case H1 (keep).
   case H2 (keep).
 
     % init case -- invalid (contexts need to be empty)
-    case H9. case H4. case H13.
+   case H9. case H4. case H13.
 
     % oneR case -- invalid (contexts need to be empty)
     case H8. case H4. case H12.
@@ -120,8 +120,94 @@ case H1 (keep).
     % tensorR case -- principal or permutes down
     apply adj_same_result_diff to H4 H8.
     case H15.
-      % 1. the cut-formula is principal. TODO
-      skip.
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case -- invalid (context needs to be empty)
+        case H17. case H5. case H22.
+
+        % oneR case -- invalid (context needs to be empty)
+        case H5.
+
+        % oneL case -- permutes down
+        apply adj_same_result_diff to H5 H17. case H19.
+        apply IH2 to H1 H2 H18 H4 H20.
+        apply adj_swap to H20 H17.
+        apply add_to_merge_left to H24 H21.
+        apply adj_same_result to H5 H25. apply perm_sym to H28.
+        apply perm_merge_1 to H26 H29.
+        search.
+
+        % tensorL case -- principal or permutes down
+        apply adj_same_result_diff to H5 H17.
+        case H21.
+          % 1. the cut formula is principal -- reduce complexity.
+          apply IH to H6 H13 H20 H11 H18. % cut on A
+          apply merge_unadj_1 to H23 H19.
+          apply IH to H7 H14 H25 H12 H26. % cut on B
+          exists G8. exists D6.
+          split.
+            % merge antecedents
+            apply change_merge_order to H28 H27 H10.
+            apply perm_sym to H22. apply perm_sym to H31.
+            apply perm_merge_1 to H32 H33.
+            apply perm_merge_3 to H35 H34.
+            search.
+
+            % merge succedents
+            apply change_merge_order to H29 H24 H9.
+            apply perm_sym to H16. apply perm_sym to H31.
+            apply perm_merge_2 to H32 H33.
+            apply perm_merge_3 to H35 H34.
+            search.
+
+            % prove conclusion.
+            search.
+
+          % 2. the tensorL is applied to another formula -- permutes down
+          skip.
+
+        % tensorR case
+        skip.
+
+        % botL case
+        skip.
+
+        % botR case
+        skip.
+
+        % parR case
+        skip.
+   
+        % parL case
+        skip.
+   
+        % zeroL case
+        skip.
+   
+        % topR case
+        skip.
+   
+        % withL1 case
+        skip.
+   
+        % withL2 case
+        skip.
+   
+        % withR case
+        skip.
+   
+        % plusR1 case
+        skip.
+   
+        % plusR2 case
+        skip.
+   
+        % plusL case
+        skip.
+
       % 2. the tensorR is applied to another formula -- permutes down
       apply merge_unadj_3 to H9 H16.
       case H17.
@@ -142,12 +228,14 @@ case H1 (keep).
           apply merge_1_is_list to H22. apply merge_3_is_list to H10.
           apply merge_exists to H37 H38.
           apply merge_assoc to H22 H10 H39 H36.
+          % TODO use change_merge_order
           apply perm_merge_3 to H39 H40. search. 
 
           % merge of succeedents
           apply merge_1_is_list to H23. apply merge_3_is_list to H19.
           apply merge_exists to H37 H38.
           apply merge_assoc to H26 H19 H39 H29. 
+          % TODO use change_merge_order
           apply merge_3_is_list to H39.
           apply adj_exists to H31 H41.
           apply adj_preserves_perm to H42 H32 H40.
@@ -185,6 +273,7 @@ case H1 (keep).
           apply merge_exists to H37 H38.
           apply merge_sym to H10.
           apply merge_assoc to H22 H40 H39 H36.
+          % TODO use change_merge_order
           apply perm_merge_3 to H39 H41. search. 
 
           % merge of succedents
@@ -192,6 +281,7 @@ case H1 (keep).
           apply merge_exists to H36 H37.
           apply merge_sym to H19. apply merge_sym to H29.
           apply merge_assoc to H26 H39 H38 H40. 
+          % TODO use change_merge_order
           apply merge_3_is_list to H38.
           apply adj_exists to H31 H42.
           apply adj_preserves_perm to H43 H32 H41.
