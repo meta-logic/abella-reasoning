@@ -213,43 +213,34 @@ case H1 (keep).
       case H17.
         % 1. Cut-formula goes to the left premise of tensorR.
         apply adj_swap to H18 H11.
-        apply IH1 to H1 H13 H3 H21 H5. 
+        apply IH1 to H1 H13 H3 H21 H5. % cut with left branch of tensor 
         apply merge_unadj_2 to H23 H20.
         apply merge_3_is_list to H26. apply merge_2_is_list to H9.
         apply merge_exists to H27 H28.
         apply merge_3_is_list to H29. apply adj_2_is_o to H8.
         apply adj_exists to H31 H30.
         apply merge_2_is_list to H10. apply merge_3_is_list to H22.
-        apply merge_exists to H33 H34.
-        apply merge_sym to H35.
+        apply merge_exists to H34 H33.
         exists L1. exists M.
         split.
           % merge of antecedents
-          apply merge_1_is_list to H22. apply merge_3_is_list to H10.
-          apply merge_exists to H37 H38.
-          apply merge_assoc to H22 H10 H39 H36.
-          % TODO use change_merge_order
-          apply perm_merge_3 to H39 H40. search. 
+          apply change_merge_order to H35 H22 H10.
+          apply perm_sym to H36.
+          apply perm_merge_3 to H37 H38.
+          search.
 
           % merge of succeedents
-          apply merge_1_is_list to H23. apply merge_3_is_list to H19.
-          apply merge_exists to H37 H38.
-          apply merge_assoc to H26 H19 H39 H29. 
-          % TODO use change_merge_order
-          apply merge_3_is_list to H39.
-          apply adj_exists to H31 H41.
-          apply adj_preserves_perm to H42 H32 H40.
-          apply adj_implies_merge to H42.
-          apply adj_implies_merge to H16. 
-          apply adj_implies_merge to H8. 
+          apply change_merge_order to H29 H26 H19.
+          apply perm_sym to H36.
+          apply perm_merge_3 to H37 H38.
           apply adj_implies_merge to H4.
-          apply merge_sub to H45 H46 H47.
-          apply merge_1_is_list to H39.
-          apply adj_1_is_list to H4.
-          apply merge_exists to H49 H50.
-          apply merge_assoc to H39 H48 H51 H44. 
-          apply perm_merge_3 to H51 H52.
-          apply perm_merge_3 to H53 H43.
+          apply adj_implies_merge to H8.
+          apply adj_implies_merge to H16.
+          apply merge_sub to H42 H41 H40.
+          apply adj_implies_merge to H32.
+          apply change_merge_order to H44 H39 H43.
+          apply perm_sym to H45.
+          apply perm_merge_3 to H46 H47.
           search.
 
           % provability of conclusion
@@ -257,50 +248,40 @@ case H1 (keep).
 
         % 2. Cut-formula goes to the right premise of tensorR.
         apply adj_swap to H18 H12.
-        apply IH1 to H1 H14 H3 H21 H5.
+        apply IH1 to H1 H14 H3 H21 H5. % cut with the right branch of tensor
         apply merge_unadj_2 to H23 H20.
         apply merge_3_is_list to H26. apply merge_1_is_list to H9.
         apply merge_exists to H28 H27.
         apply merge_3_is_list to H29. apply adj_2_is_o to H8.
         apply adj_exists to H31 H30.
         apply merge_1_is_list to H10. apply merge_3_is_list to H22.
-        apply merge_exists to H33 H34.
+        apply merge_exists to H34 H33.
         exists L1. exists M.
         split.
           % merge of antecedents
-          apply merge_sym to H35.
-          apply merge_1_is_list to H22. apply merge_3_is_list to H10.
-          apply merge_exists to H37 H38.
           apply merge_sym to H10.
-          apply merge_assoc to H22 H40 H39 H36.
-          % TODO use change_merge_order
-          apply perm_merge_3 to H39 H41. search. 
-
-          % merge of succedents
-          apply merge_1_is_list to H23. apply merge_3_is_list to H19.
-          apply merge_exists to H36 H37.
-          apply merge_sym to H19. apply merge_sym to H29.
-          apply merge_assoc to H26 H39 H38 H40. 
-          % TODO use change_merge_order
-          apply merge_3_is_list to H38.
-          apply adj_exists to H31 H42.
-          apply adj_preserves_perm to H43 H32 H41.
-          apply adj_implies_merge to H16. 
-          apply adj_implies_merge to H8. 
-          apply adj_implies_merge to H4.
-          apply merge_sub to H45 H46 H47.
-          apply merge_1_is_list to H38.
-          apply adj_1_is_list to H4.
-          apply merge_exists to H49 H50.
-          apply adj_implies_merge to H43.
-          apply merge_assoc to H38 H48 H51 H52. 
-          apply perm_sym to H44. apply perm_sym to H53.
-          apply perm_trans to H54 H55.
-          apply perm_sym to H56.
-          apply perm_merge_3 to H51 H57.
+          apply change_merge_order to H35 H22 H36.
+          apply perm_sym to H37.
+          apply perm_merge_3 to H38 H39.
           search.
 
+          % merge of succedents
+          apply merge_sym to H29. apply merge_sym to H19.
+          apply change_merge_order to H36 H26 H37.
+          apply perm_sym to H38.
+          apply perm_merge_3 to H39 H40.
+          apply adj_implies_merge to H4.
+          apply adj_implies_merge to H8.
+          apply adj_implies_merge to H16.
+          apply merge_sub to H44 H43 H42.
+          apply adj_implies_merge to H32.
+          apply change_merge_order to H46 H41 H45.
+          apply perm_sym to H47.
+          apply perm_merge_3 to H48 H49.
+          search.
+ 
           % provability of conclusion
+          apply merge_sym to H35.
           unfold 5. search.
 
     % botL case -- invalid (contexts need to be empty)
