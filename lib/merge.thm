@@ -254,9 +254,9 @@ induction on 1. intros. case H1.
    apply IH to *H7 *H9 *H13 *H11.
    search.
 
-Theorem change_merge_order : forall J K L JK KL JKL1,
-  merge JK L JKL1 -> merge J K JK -> merge K L KL ->
-  merge J KL JKL1.
+Theorem change_merge_order : forall J K L JK KL JKL,
+  merge JK L JKL -> merge J K JK -> merge K L KL ->
+  merge J KL JKL.
 intros.
   apply merge_1_is_list to H2. apply merge_3_is_list to H3.
   apply merge_exists to H4 H5.
