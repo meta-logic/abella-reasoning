@@ -123,6 +123,8 @@ case H1 (keep).
     % tensorR case -- principal or permutes down
     apply adj_same_result_diff to H4 H8.
     case H15.
+      rename D1'1 to D3'.
+      rename D2' to D4'.
       % 1. the cut-formula is principal
       % Unfolds the right premise (cut-formula in the antecedent)
       % Each case is a possible rule applied to the right premise
@@ -168,16 +170,48 @@ case H1 (keep).
             search.
 
           % 2. the tensorL is applied to another formula -- permutes down
-          skip.
+          apply adj_swap to H22 H19.
+          apply adj_swap to H24 H18.
+          apply IH2 to H1 H2 H20 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_unadj_1 to H31 H23.
+          apply adj_swap to H22 H17.
+          apply add_to_merge_left to H34 H33.
+          exists M. exists D5.
+          split.
+          
+            % merge antecedents
+            apply adj_same_result to H35 H5.
+            apply perm_merge_1 to H36 H38.
+            search.
+            
+            % merge succedents
+            search.
+            
+            % prove conclusion
+            search.
 
-        % tensorR case
+        % tensorR case -- permutes down
         skip.
+        % rename D1'1 to D5'.
+        % rename D2' to D6'.
+        % rename D'1 to D2'.
+        % apply merge_unadj_3 to H19 H5.
+        % case H24.
+          % 1. Cut-formula goes to the left premise of tensorR.
+          % apply IH2 to H1 H2 H22 H4 H25.
+          % apply merge_unadj_1 to H28 H20.
+          % apply adj_1_is_list to H30.
+          % apply adj_1_is_list to H21.
+          % apply merge_exists to H32 H33.
 
-        % botL case
-        skip.
+        % botL case -- permutes down
+        case H17. case H5. case H21.
 
         % botR case
-        skip.
+        apply IH2 to H1 H2 H18 H4 H5.
+        apply add_to_merge_left to H17 H20.
+        search.
 
         % parR case
         skip.
