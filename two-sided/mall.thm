@@ -192,18 +192,73 @@ case H1 (keep).
             search.
 
         % tensorR case -- permutes down
-        skip.
-        % rename D1'1 to D5'.
-        % rename D2' to D6'.
-        % rename D'1 to D2'.
-        % apply merge_unadj_3 to H19 H5.
-        % case H24.
+        apply merge_unadj_3 to H19 H5.
+        case H24.
           % 1. Cut-formula goes to the left premise of tensorR.
-          % apply IH2 to H1 H2 H22 H4 H25.
-          % apply merge_unadj_1 to H28 H20.
-          % apply adj_1_is_list to H30.
-          % apply adj_1_is_list to H21.
-          % apply merge_exists to H32 H33.
+          apply IH2 to H1 H2 H22 H4 H25.
+          apply merge_unadj_1 to H28 H20.
+          apply adj_1_is_list to H30.
+          apply adj_1_is_list to H21.
+          apply merge_exists to H32 H33.
+          apply merge_3_is_list to H27.
+          apply merge_2_is_list to H26.
+          apply merge_exists to H35 H36.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H34.
+          apply adj_exists to H38 H39.
+          exists L1. exists M.
+          split.
+          
+            % merge antecedents
+            apply merge_sym to *H27.
+            apply change_merge_order to H37 H41 H26.
+            apply merge_sym to *H42.
+            search.
+            
+            % merge succedents
+            apply merge_sym to *H31.
+            apply change_merge_order to H34 H41 H18.
+            apply merge_sym to *H42.
+            apply add_to_merge_left to H17 H43. 
+            search.
+            
+            % prove conclusion
+            search.
+
+          % 2. Cut-formula goes to the right premise of tensorR.
+          apply IH2 to H1 H2 H23 H4 H25.
+          apply merge_unadj_1 to H28 H21.
+          apply adj_1_is_list to H30.
+          apply adj_1_is_list to H20.
+          apply merge_exists to H33 H32.
+          apply merge_3_is_list to H27.
+          apply merge_1_is_list to H26.
+          apply merge_exists to H36 H35.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H34.
+          apply adj_exists to H38 H39.
+          exists L1. exists M.
+          split.
+
+            % merge antecedents
+            apply merge_sym to *H37.
+            apply merge_sym to *H27.
+            apply merge_sym to *H26.
+            apply change_merge_order to H41 H42 H43.
+            apply merge_sym to *H44.
+            search.
+            
+            % merge succedents
+            apply merge_sym to *H34.
+            apply merge_sym to *H18.
+            apply merge_sym to *H31.
+            apply change_merge_order to H41 H43 H42.
+            apply merge_sym to *H44.
+            apply add_to_merge_left to H17 H45.
+            search.
+            
+            % prove conclusion
+            search.
 
         % botL case -- permutes down
         case H17. case H5. case H21.
