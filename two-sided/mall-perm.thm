@@ -1,0 +1,4809 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                    %%
+%%       MALL specification in        %%
+%%       Abella (.thm)                %%
+%%                                    %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Kind atm type.
+Type a, b, c, d                atm.
+
+Type tensor, par, plus, wth    o -> o -> o.
+Type one, bot, zero, top       o.
+Type not                       o -> o.
+Type atom                      atm -> o.
+
+Define formula : o -> prop by
+  formula (tensor A B) := formula A /\ formula B ;
+  formula (plus A B) := formula A /\ formula B ;
+  formula (wth A B) := formula A /\ formula B ;
+  formula (par A B) := formula A /\ formula B ;
+  formula (zero) ;
+  formula (one) ;
+  formula (bot) ;
+  formula (top) ;
+  formula (atom A).
+
+Import "../lib/merge" with is_o := formula.
+
+Define prove : olist -> olist -> prop by
+  % 1. Identity
+  prove (atom A :: nil) (atom A :: nil) ;
+
+  % Multiplicative rules
+  % 2. oneR
+  prove nil (one :: nil) ;
+  % 3. oneL
+  prove G D :=
+    exists GG, adj GG one G /\ prove GG D ;
+
+  % 4. tensorL
+  prove G D :=
+    exists A B GG, adj GG (tensor A B) G /\
+    exists G1, adj GG A G1 /\
+    exists G2, adj G1 B G2 /\
+    prove G2 D ;
+  % 5. tensorR
+  prove G D :=
+    exists A B DD, adj DD (tensor A B) D /\
+    exists G1 G2, merge G1 G2 G /\
+    exists DD1 DD2, merge DD1 DD2 DD /\
+    (exists D1, adj DD1 A D1 /\ prove G1 D1) /\
+    (exists D2, adj DD2 B D2 /\ prove G2 D2) ;
+
+  % 6. botL
+  prove (bot :: nil) nil ;
+  % 7. botR
+  prove G D :=
+    exists DD, adj DD bot D /\
+    prove G DD ;
+
+  % 8. parR
+  prove G D :=
+    exists A B DD, adj DD (par A B) D /\
+    exists D1, adj DD A D1 /\
+    exists D2, adj D1 B D2 /\
+    prove G D2 ;
+  % 9. parL
+  prove G D :=
+    exists A B GG, adj GG (par A B) G /\
+    exists GG1 GG2, merge GG1 GG2 GG /\
+    exists D1 D2, merge D1 D2 D /\
+    (exists G1, adj GG1 A G1 /\ prove G1 D1) /\
+    (exists G2, adj GG2 B G2 /\ prove G2 D2) ;
+
+  % Additive rules
+  % 10. zeroL
+  prove G D :=
+    exists GG, adj GG zero G /\ is_list D ;
+
+  % 11. topR
+  prove G D :=
+    exists DD, adj DD top D /\ is_list G ;
+
+  % 12. wthL1
+  prove G D :=
+    exists A B GG, adj GG (wth A B) G /\
+    exists G1, adj GG A G1 /\ prove G1 D ;
+  % 13. wthL2
+  prove G D :=
+    exists A B GG, adj GG (wth A B) G /\
+    exists G1, adj GG B G1 /\ prove G1 D ;
+  % 14. wthR
+  prove G D :=
+    exists A B DD, adj DD (wth A B) D /\
+    (exists D1, adj DD A D1 /\ prove G D1) /\
+    (exists D2, adj DD B D2 /\ prove G D2) ;
+
+  % 15. plusR1
+  prove G D :=
+    exists A B DD, adj DD (plus A B) D /\
+    exists D1, adj DD A D1 /\ prove G D1 ;
+  % 16. plusR2
+  prove G D :=
+    exists A B DD, adj DD (plus A B) D /\
+    exists D1, adj DD B D1 /\ prove G D1 ;
+  % 17. plusL
+  prove G D :=
+    exists A B GG, adj GG (plus A B) G /\
+    (exists G1, adj GG A G1 /\ prove G1 D) /\
+    (exists G2, adj GG B G2 /\ prove G2 D).
+
+Theorem prove_is_list : forall G D,
+  prove G D -> is_list G /\ is_list D.
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply adj_3_is_list to H2. apply IH to H3.
+    search.
+  apply adj_3_is_list to H2. apply IH to H5.
+    search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H3.
+    search.
+  search.
+  apply adj_3_is_list to H2. apply IH to H3.
+    search.
+  apply adj_3_is_list to H2. apply IH to H5.
+    search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H4.
+    search.
+  apply adj_3_is_list to H2.
+    search.
+  apply adj_3_is_list to H2.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+  apply adj_3_is_list to H2. apply IH to H4.
+    search.
+
+Theorem perm_single : forall A L,
+  perm (A :: nil) L -> L = A :: nil.
+intros. case H1. case H2.
+  case H4. case H3. search. case H7.
+  case H6.
+
+Theorem mall_perm : forall G D GG DD,
+  prove G D -> perm G GG -> perm D DD ->
+  prove GG DD.
+induction on 1. intros. case H1.
+  apply perm_single to *H2. apply perm_single to *H3. search.
+  apply perm_single to *H3. case H2. search. case H4.
+  apply adj_perm_result to *H2 *H4.
+   apply IH to *H5 *H7 *H3. search.
+  apply adj_perm_result to *H2 *H4.
+   apply adj_perm_source to *H9 *H5.
+   apply adj_perm_source to *H11 *H6.
+   apply IH to *H7 *H13 *H3.
+   search.
+  apply adj_perm_result to *H3 *H4.
+   apply perm_merge_3 to *H6 *H12.
+   apply perm_merge_3 to *H5 *H2.
+   search.
+  apply perm_single to *H2. case H3. search. case H4.
+  apply adj_perm_result to *H3 *H4.
+   apply IH to *H5 *H2 *H7. search.
+  apply adj_perm_result to *H3 *H4.
+   apply adj_perm_source to *H9 *H5.
+   apply adj_perm_source to *H11 *H6.
+   apply IH to *H7 *H2 *H13.
+   search.
+  apply adj_perm_result to *H2 *H4.
+   apply perm_merge_3 to *H5 *H12.
+   apply perm_merge_3 to *H6 *H3.
+   search.
+  apply adj_perm_result to *H2 *H4.
+   apply perm_2_is_list to *H3. search.
+  apply adj_perm_result to *H3 *H4.
+   apply perm_2_is_list to *H2. search.
+  apply adj_perm_result to *H2 *H4.
+   apply adj_perm_source to *H8 *H5.
+   apply IH to *H6 *H10 *H3.
+   search.
+  apply adj_perm_result to *H2 *H4.
+   apply adj_perm_source to *H8 *H5.
+   apply IH to *H6 *H10 *H3.
+   search.
+  apply adj_perm_result to *H3 *H4.
+   apply adj_perm_source to H10 *H5.
+   apply adj_perm_source to H10 *H7.
+   apply IH to *H6 H2 *H12.
+   apply IH to *H8 *H2 *H14.
+   search.
+  apply adj_perm_result to *H3 *H4.
+   apply adj_perm_source to *H8 *H5.
+   apply IH to *H6 *H2 *H10.
+   search.
+  apply adj_perm_result to *H3 *H4.
+   apply adj_perm_source to *H8 *H5.
+   apply IH to *H6 *H2 *H10.
+   search.
+  apply adj_perm_result to *H2 *H4.
+   apply adj_perm_source to H10 *H5.
+   apply adj_perm_source to H10 *H7.
+   apply IH to *H6 *H12 H3.
+   apply IH to *H8 *H14 *H3.
+   search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Up to here
+
+Theorem perm_merge_1_nil : forall L L',
+  perm L L' -> merge nil L L'.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H4.
+  apply add_to_merge_right to H2 H5.
+  apply adj_same_source to H7 H3.
+  apply perm_merge_3 to H6 H8.
+  search.
+
+Theorem perm_merge_2_nil : forall L L',
+  perm L L' -> merge L nil L'.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H4.
+  apply add_to_merge_left to H2 H5.
+  apply adj_same_source to H3 H7.
+  apply perm_sym to *H8.
+  apply perm_merge_3 to H6 H9.
+  search.
+
+Theorem list_merge_1 : forall L,
+  is_list L -> merge L nil L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+Theorem list_merge_2 : forall L,
+  is_list L -> merge nil L L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H3. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Reasoning
+
+Theorem cut_admissibility : forall C G1 D1 D1' G2 G2' D2,
+  formula C ->
+  prove G1 D1 -> prove G2 D2 ->
+  adj D1' C D1 -> adj G2' C G2 ->
+  exists G3 D3,
+  merge G2' G1 G3 /\ merge D2 D1' D3 /\
+  prove G3 D3.
+
+induction on 1. induction on 2. induction on 3. intros.
+
+% Induction on the size of the cut-formula
+case H1 (keep).
+
+  % Unfolds the induction on the left premise (cut-formula in the succedent)
+  % Each case is a possible rule applied to the left premise.
+
+  %% 1. Tensor case
+  case H2 (keep).
+
+    % init case -- invalid (contexts need to be empty)
+    case H9. case H4. case H13.
+
+    % oneR case -- invalid (contexts need to be empty)
+    case H8. case H4. case H12.
+
+    % oneL case -- permutes down
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply add_to_merge_right to H8 H10.
+    search.
+
+    % tensorL case -- permutes down
+    apply IH1 to H1 H11 H3 H4 H5.
+    apply merge_unadj_2 to H12 H9.
+    apply merge_unadj_2 to H16 H10.
+    apply add_to_merge_right to H8 H18.
+    search.
+
+    % tensorR case -- principal or permutes down
+    apply adj_same_result_diff to H4 H8.
+    case H15.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case -- invalid (context needs to be empty)
+        case H17. case H5. case H22.
+
+        % oneR case -- invalid (context needs to be empty)
+        case H5.
+
+        % oneL case -- permutes down
+        apply adj_same_result_diff to H5 H17. case H19.
+        apply IH2 to H1 H2 H18 H4 H20.
+        apply adj_swap to H20 H17.
+        apply add_to_merge_left to H24 H21.
+        apply adj_same_result to H5 H25. apply perm_sym to H28.
+        apply perm_merge_1 to H26 H29.
+        search.
+
+        % tensorL case -- principal or permutes down
+        apply adj_same_result_diff to H5 H17.
+        case H21.
+
+          % 1. the cut formula is principal -- reduce complexity.
+          apply IH to H6 H13 H20 H11 H18. % cut on A
+          apply merge_unadj_1 to H23 H19.
+          apply IH to H7 H14 H25 H12 H26. % cut on B
+          exists G8. exists D6.
+          split.
+            % merge antecedents
+            apply change_merge_order to H28 H27 H10.
+            apply perm_sym to H22.
+            apply perm_merge_1 to H31 H32.
+            search.
+
+            % merge succedents
+            apply change_merge_order to H29 H24 H9.
+            apply perm_sym to H16.
+            apply perm_merge_2 to H31 H32.
+            search.
+
+            % prove conclusion.
+            search.
+
+          % 2. the tensorL is applied to another formula -- permutes down
+          apply adj_swap to H22 H19.
+          apply adj_swap to H24 H18.
+          apply IH2 to H1 H2 H20 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_unadj_1 to H31 H23.
+          apply adj_swap to H22 H17.
+          apply add_to_merge_left to H34 H33.
+          exists M. exists D5.
+          split.
+
+            % merge antecedents
+            apply adj_same_result to H35 H5.
+            apply perm_merge_1 to H36 H38.
+            search.
+
+            % merge succedents
+            search.
+
+            % prove conclusion
+            search.
+
+        % tensorR case -- permutes down
+        apply merge_unadj_3 to H19 H5.
+        case H24.
+
+          % 1. cut-formula goes to the left premise of tensorR.
+          apply IH2 to H1 H2 H22 H4 H25.
+          apply merge_unadj_1 to H28 H20.
+          apply adj_1_is_list to H30.
+          apply adj_1_is_list to H21.
+          apply merge_exists to H32 H33.
+          apply merge_3_is_list to H27.
+          apply merge_2_is_list to H26.
+          apply merge_exists to H35 H36.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H34.
+          apply adj_exists to H38 H39.
+          exists L1. exists M.
+          split.
+
+            % merge antecedents
+            apply merge_sym to *H27.
+            apply change_merge_order to H37 H41 H26.
+            apply merge_sym to *H42.
+            search.
+
+            % merge succedents
+            apply merge_sym to *H31.
+            apply change_merge_order to H34 H41 H18.
+            apply merge_sym to *H42.
+            apply add_to_merge_left to H17 H43.
+            search.
+
+            % prove conclusion
+            search.
+
+          % 2. cut-formula goes to the right premise of tensorR.
+          apply IH2 to H1 H2 H23 H4 H25.
+          apply merge_unadj_1 to H28 H21.
+          apply adj_1_is_list to H30.
+          apply adj_1_is_list to H20.
+          apply merge_exists to H33 H32.
+          apply merge_3_is_list to H27.
+          apply merge_1_is_list to H26.
+          apply merge_exists to H36 H35.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H34.
+          apply adj_exists to H38 H39.
+          exists L1. exists M.
+          split.
+
+            % merge antecedents
+            apply merge_sym to *H37.
+            apply merge_sym to *H27.
+            apply merge_sym to *H26.
+            apply change_merge_order to H41 H42 H43.
+            apply merge_sym to *H44.
+            search.
+
+            % merge succedents
+            apply merge_sym to *H34.
+            apply merge_sym to *H18.
+            apply merge_sym to *H31.
+            apply change_merge_order to H41 H43 H42.
+            apply merge_sym to *H44.
+            apply add_to_merge_left to H17 H45.
+            search.
+
+            % prove conclusion
+            search.
+
+        % botL case -- permutes down
+        case H17. case H5. case H21.
+
+        % botR case -- permutes down
+        apply IH2 to H1 H2 H18 H4 H5.
+        apply add_to_merge_left to H17 H20.
+        search.
+
+        % parR case -- permutes down
+        apply IH2 to H1 H2 H20 H4 H5.
+        apply merge_unadj_1 to H22 H18.
+        apply merge_unadj_1 to H25 H19.
+        apply add_to_merge_left to H17 H27.
+        search.
+
+        % parL case -- permutes down
+        apply adj_same_result_diff to H5 H17. case H24.
+        apply merge_unadj_3 to H18 H25. case H26.
+
+          % 1. the cut-formula goes to the left premise of parL.
+          apply adj_swap to H27 H20.
+          apply IH2 to H1 H2 H22 H4 H30.
+          apply merge_unadj_1 to H31 H29.
+          apply merge_3_is_list to H35.
+          apply merge_2_is_list to H18.
+          apply merge_exists to *H36 *H37.
+          apply merge_3_is_list to H32.
+          apply merge_2_is_list to H19.
+          apply merge_exists to *H39 *H40.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H38.
+          apply adj_exists to H42 H43.
+          exists M. exists L1.
+          split.
+
+            % merge antecedents
+            apply merge_sym to *H35.
+            apply change_merge_order to H38 H45 H28.
+            apply merge_sym to *H46.
+            apply adj_swap to H25 H17.
+            apply add_to_merge_left to H48 H47.
+            apply adj_same_result to H5 H49.
+            apply perm_sym to *H52.
+            apply perm_merge_1 to H50 H53.
+            apply adj_same_source to H44 H51.
+            apply perm_sym to *H55.
+            apply perm_merge_3 to H54 H56.
+            search.
+
+            % merge succedents
+            apply merge_sym to *H32.
+            apply change_merge_order to *H41 *H45 *H19.
+            apply merge_sym to *H46.
+            search.
+
+            % prove conclusion
+            search.
+
+          % 2. the cut-formula goes to the right premise of parL.
+          apply adj_swap to H27 H21.
+          apply IH2 to H1 H2 H23 H4 H30.
+          apply merge_unadj_1 to H31 H29.
+          apply merge_3_is_list to H35.
+          apply merge_1_is_list to H18.
+          apply merge_exists to *H36 *H37.
+          apply merge_3_is_list to H32.
+          apply merge_1_is_list to H19.
+          apply merge_exists to *H39 *H40.
+          apply adj_2_is_o to H17.
+          apply merge_3_is_list to H38.
+          apply adj_exists to H42 H43.
+          exists M. exists L1.
+          split.
+
+            % merge antecedents
+            apply merge_sym to H35.
+            apply merge_sym to H28.
+            apply change_merge_order to H38 H45 H46.
+            apply adj_swap to H25 H17.
+            apply add_to_merge_right to H48 H47.
+            apply adj_same_result to H5 H49.
+            apply perm_sym to H52.
+            apply perm_merge_2 to H50 H53.
+            apply merge_sym to H54.
+            apply adj_same_source to H44 H51.
+            apply perm_sym to H56.
+            apply perm_merge_3 to H55 H57.
+            search.
+
+            % merge succedents
+            apply merge_sym to H32.
+            apply merge_sym to H19.
+            apply change_merge_order to H41 H45 H46.
+            apply merge_sym to H47.
+            search.
+
+            % prove conclusion
+            apply merge_sym to *H38.
+            apply merge_sym to *H41.
+            search.
+
+        % zeroL case
+        apply adj_same_result_diff to H17 H5. case H19.
+        apply adj_1_is_list to H4.
+        apply merge_exists to H18 H21.
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to H23 H24.
+        apply merge_unadj_1 to H26 H20.
+        apply merge_3_is_list to H22.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to H19 H20.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H17.
+        apply merge_exists to H24 H23.
+        apply merge_unadj_1 to H25 H17.
+        apply merge_3_is_list to H22.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H17. case H20.
+        apply adj_swap to H21 H18.
+        apply IH2 to H1 H2 H19 H4 H23.
+        apply merge_unadj_1 to H24 H22.
+        apply adj_swap to H21 H17.
+        apply add_to_merge_left to H29 H28.
+        apply adj_same_result to H5 H30.
+        apply perm_sym to *H33.
+        apply perm_merge_1 to H31 H34.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H17. case H20.
+        apply adj_swap to H21 H18.
+        apply IH2 to H1 H2 H19 H4 H23.
+        apply merge_unadj_1 to H24 H22.
+        apply adj_swap to H21 H17.
+        apply add_to_merge_left to H29 H28.
+        apply adj_same_result to H5 H30.
+        apply perm_sym to *H33.
+        apply perm_merge_1 to H31 H34.
+        search.
+
+        % wthR case
+        rename D'1 to D5'. rename D2'1 to D6'.
+
+          % 1. Create left premise of wthR
+          apply perm_sym to *H23.
+          apply adj_perm_result to H25 H5.
+          apply IH2 to H1 H2 H20 H4 H26.
+          apply merge_unadj_1 to H29 H18.
+
+          % 2. Create right premise of wthR
+          apply perm_sym to *H24.
+          apply adj_perm_result to H33 H5.
+          apply IH2 to H1 H2 H21 H4 H34.
+          apply merge_unadj_1 to H37 H19.
+
+          % 3. Relate antecedents
+          apply perm_sym to *H27.
+          apply perm_merge_1 to H28 H41.
+          apply perm_sym to *H35.
+          apply perm_merge_1 to H36 H43.
+          apply merge_perm_det to H44 H42.
+          apply perm_2_is_list to H45.
+          apply perm_refl to *H46.
+
+          % 4. Relate succecedents
+          apply perm_merge_1 to H40 H22.
+          apply merge_perm_det to H48 H32.
+          apply perm_2_is_list to H49.
+          apply add_to_merge_left to H17 H32.
+
+          % 5. prove conclusion
+          search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H19 H4 H5.
+        apply merge_unadj_1 to H21 H18.
+        apply add_to_merge_left to H17 H24.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H19 H4 H5.
+        apply merge_unadj_1 to H21 H18.
+        apply add_to_merge_left to H17 H24.
+        search.
+
+        % plusL case
+        rename G' to G5'. rename G2'1 to G6'.
+        apply adj_same_result_diff to H5 H17. case H25.
+
+          % 1. Create left premise of wthR
+          apply adj_swap to H26 H18.
+          apply IH2 to H1 H2 H20 H4 H28.
+          apply merge_unadj_1 to H29 H27.
+
+          % 2. Create right premise of wthR
+          apply perm_sym to *H22.
+          apply adj_perm_result to H34 H26.
+          apply adj_swap to H35 H19.
+          apply IH2 to H1 H2 H21 H4 H38.
+          apply merge_unadj_1 to H39 H37.
+
+          % 3. Relate antecedents
+          apply perm_merge_1 to H33 H36.
+          apply merge_perm_det to H43 H44.
+          apply adj_swap to H26 H17.
+          apply add_to_merge_left to H46 H33.
+          apply adj_same_result to H47 H5.
+          apply perm_merge_1 to H48 H50.
+
+          % 4. Relate succedents
+          apply perm_merge_1 to H30 H23.
+          apply perm_merge_1 to H40 H24.
+          apply merge_perm_det to H53 H52.
+          apply perm_2_is_list to H54.
+          apply perm_refl to *H55.
+
+          % 5. Prove conclusion
+          search.
+
+      % 2. the tensorR is applied to another formula -- permutes down
+      apply merge_unadj_3 to H9 H16.
+      case H17.
+
+        % 1. cut-formula goes to the left premise of tensorR.
+        apply adj_swap to H18 H11.
+        apply IH1 to H1 H13 H3 H21 H5. % cut wth left branch of tensor
+        apply merge_unadj_2 to H23 H20.
+        apply merge_3_is_list to H26. apply merge_2_is_list to H9.
+        apply merge_exists to H27 H28.
+        apply merge_3_is_list to H29. apply adj_2_is_o to H8.
+        apply adj_exists to H31 H30.
+        apply merge_2_is_list to H10. apply merge_3_is_list to H22.
+        apply merge_exists to H34 H33.
+        exists L1. exists M.
+        split.
+          % merge of antecedents
+          apply change_merge_order to H35 H22 H10.
+          search.
+
+          % merge of succeedents
+          apply change_merge_order to H29 H26 H19.
+          apply adj_implies_merge to H4.
+          apply adj_implies_merge to H8.
+          apply adj_implies_merge to H16.
+          apply merge_sub to H39 H38 H37.
+          apply adj_implies_merge to H32.
+          apply change_merge_order to H41 H36 H40.
+          search.
+
+          % provability of conclusion
+          unfold 5. search.
+
+        % 2. cut-formula goes to the right premise of tensorR.
+        apply adj_swap to H18 H12.
+        apply IH1 to H1 H14 H3 H21 H5. % cut wth the right branch of tensor
+        apply merge_unadj_2 to H23 H20.
+        apply merge_3_is_list to H26. apply merge_1_is_list to H9.
+        apply merge_exists to H28 H27.
+        apply merge_3_is_list to H29. apply adj_2_is_o to H8.
+        apply adj_exists to H31 H30.
+        apply merge_1_is_list to H10. apply merge_3_is_list to H22.
+        apply merge_exists to H34 H33.
+        exists L1. exists M.
+        split.
+
+          % merge of antecedents
+          apply merge_sym to H10.
+          apply change_merge_order to H35 H22 H36.
+          search.
+
+          % merge of succedents
+          apply merge_sym to H29. apply merge_sym to H19.
+          apply change_merge_order to H36 H26 H37.
+          apply adj_implies_merge to H4.
+          apply adj_implies_merge to H8.
+          apply adj_implies_merge to H16.
+          apply merge_sub to H41 H40 H39.
+          apply adj_implies_merge to H32.
+          apply change_merge_order to H43 H38 H42.
+          search.
+
+          % provability of conclusion
+          apply merge_sym to H35.
+          unfold 5. search.
+
+    % botL case -- invalid (contexts need to be empty)
+    case H4.
+
+    % botR case -- permutes down
+    apply adj_same_result_diff to H4 H8.
+    case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply adj_same_result to H4 H16.
+    apply add_to_merge_right to H15 H13.
+    exists G3. exists M. split.
+      search.
+      apply perm_sym to H17. apply perm_merge_2 to H18 H20. search.
+      search.
+
+    % parR case -- permutes down
+    apply adj_same_result_diff to H4 H8. case H12.
+    apply adj_swap to H13 H10.
+    apply adj_swap to H15 H9.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply merge_unadj_2 to H22 H14.
+    apply adj_swap to H13 H8.
+    apply add_to_merge_right to H25 H24.
+    apply adj_same_result to H4 H26.
+    apply perm_sym to *H29.
+    apply perm_merge_2 to H27 H30.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H10 H4.
+    case H15.
+
+      % 1. cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H13 H3 H16 H5.
+      apply merge_unadj_2 to H18 H11.
+      apply adj_1_is_list to H21.
+      apply adj_1_is_list to H12.
+      apply merge_exists to H23 H24.
+      apply merge_3_is_list to H19.
+      apply merge_2_is_list to H17.
+      apply merge_exists to H26 H27.
+      apply change_merge_order to H25 H22 H9.
+      apply add_to_merge_right to H8 H29.
+      apply change_merge_order to H28 H19 H17.
+      search.
+
+      % 2. cut-formula goes to the right premise of parL.
+      apply IH1 to H1 H14 H3 H16 H5.
+      apply merge_unadj_2 to H18 H12.
+      apply adj_1_is_list to H21.
+      apply adj_1_is_list to H11.
+      apply merge_exists to H23 H24.
+      apply merge_3_is_list to H19.
+      apply merge_1_is_list to H10.
+      apply merge_exists to H26 H27.
+      apply merge_sym to *H9.
+      apply change_merge_order to H25 H22 H29.
+      apply add_to_merge_right to H8 H30.
+      apply merge_sym to *H17.
+      apply change_merge_order to H28 H19 H33.
+      apply merge_sym to *H25.
+      apply merge_sym to *H28.
+      search.
+
+    % zeroL case
+    apply adj_3_is_list to H8.
+    apply adj_1_is_list to H5.
+    apply merge_exists to H11 H10.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to H14 H15.
+    apply merge_unadj_2 to H12 H8.
+    apply merge_3_is_list to H16.
+    search.
+
+    % topR case
+    apply adj_same_result_diff to H8 H4. case H10.
+    apply adj_1_is_list to H4.
+    apply prove_is_list to H3.
+    apply merge_exists to *H14 *H12.
+    apply adj_1_is_list to H5.
+    apply merge_exists to H16 H9.
+    apply merge_unadj_2 to H15 H11.
+    apply merge_3_is_list to H17.
+    search.
+
+    % wthL1 case -- permutes down
+    apply IH1 to *H1 *H10 *H3 *H4 *H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthL2 case -- permutes down
+    apply IH1 to *H1 *H10 *H3 *H4 *H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthR case
+    rename D2' to D4'.
+    apply adj_same_result_diff to H4 H8. case H16.
+    apply adj_swap to H17 H9.
+    apply IH1 to H1 H11 H3 H19 H5.
+    apply merge_unadj_2 to H21 H18.
+    apply perm_sym to *H13.
+    apply adj_perm_result to H25 H17.
+    apply adj_swap to H26 H10.
+    apply IH1 to H1 H12 H3 H29 H5.
+    apply merge_unadj_2 to H31 H28.
+    apply perm_merge_2 to H20 H14.
+    apply perm_merge_2 to H30 H15.
+    apply merge_perm_det to H36 H35.
+    apply perm_2_is_list to H37.
+    apply perm_refl to *H38.
+    apply perm_merge_2 to H24 H27.
+    apply merge_perm_det to H34 H40.
+    apply adj_swap to H17 H8.
+    apply add_to_merge_right to H42 H24.
+    apply adj_same_result to H43 H4.
+    apply perm_merge_2 to H44 H46.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusL case -- permutes down (there are two cuts on the permutation)
+    rename G2'1 to G4'.
+    apply perm_sym to H14.
+    apply adj_perm_result to H16 H4.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H9.
+    apply perm_sym to H15.
+    apply adj_perm_result to H24 H4.
+    apply IH1 to H1 H12 H3 H25 H5.
+    apply merge_unadj_2 to H27 H10.
+    apply perm_merge_2 to H31 H13.
+    apply merge_perm_det to H32 H23.
+    apply add_to_merge_right to H8 H23.
+    apply perm_sym to *H18.
+    apply perm_merge_2 to H20 H36.
+    apply perm_sym to *H26.
+    apply perm_merge_2 to H28 H38.
+    apply merge_perm_det to H39 H37.
+    apply perm_2_is_list to H40.
+    apply perm_refl to *H41.
+    search.
+
+  %% 2. Plus case
+  case H2 (keep).
+
+    % init case
+    case H9. case H4. case H13.
+
+    % oneR case
+    case H8. case H4. case H12.
+
+    % oneL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply add_to_merge_right to H8 H10.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H11 H3 H4 H5.
+    apply merge_unadj_2 to H12 H9.
+    apply merge_unadj_2 to H16 H10.
+    apply add_to_merge_right to H8 H18.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H8. case H15.
+    apply merge_unadj_3 to H9 H16.
+    case H17.
+
+      % the cut-formula goes to the left premise of tensorR
+      apply adj_swap to H18 H11.
+      apply IH1 to H1 H13 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H10.
+      apply merge_exists to *H27 *H28.
+      apply change_merge_order to H29 H22 H10.
+      apply merge_3_is_list to H26.
+      apply adj_1_is_list to H12.
+      apply merge_exists to *H31 *H32.
+      apply change_merge_order to H33 H26 H19.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR
+      apply adj_swap to H18 H12.
+      apply IH1 to H1 H14 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H10.
+      apply merge_exists to H27 H28.
+      apply merge_sym to H29.
+      apply merge_sym to H10.
+      apply change_merge_order to H29 H22 H31.
+      apply merge_3_is_list to H26.
+      apply merge_1_is_list to H9.
+      apply merge_exists to H33 H34.
+      apply merge_sym to H35.
+      apply merge_sym to H19.
+      apply change_merge_order to H35 H26 H37.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H39 H38.
+      apply adj_same_result to H40 H4.
+      apply perm_merge_2 to H41 H43.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H8. case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply add_to_merge_right to H15 H13.
+    apply adj_same_result to H16 H4.
+    apply perm_merge_2 to H17 H19.
+    search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H8. case H12.
+    apply adj_swap to H13 H10.
+    apply adj_swap to H15 H9.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply merge_unadj_2 to H22 H14.
+    apply adj_swap to H13 H8.
+    apply add_to_merge_right to H25 H24.
+    apply adj_same_result to H26 H4.
+    apply perm_merge_2 to H27 H29.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H10 H4.
+    case H15.
+
+      % the cut-formula goes to the left premise of parL
+      apply IH1 to H1 H13 H3 H16 H5.
+      apply merge_unadj_2 to H18 H11.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply change_merge_order to H25 H22 H9.
+      apply add_to_merge_right to H8 H26.
+      apply merge_2_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H30 *H29.
+      apply change_merge_order to H31 H19 H17.
+      search.
+
+      % the cut-formula goes to the right premise of parL
+      apply IH1 to H1 H14 H3 H16 H5.
+      apply merge_unadj_2 to H18 H12.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply merge_sym to H25.
+      apply merge_sym to H9.
+      apply change_merge_order to H25 H22 H27.
+      apply add_to_merge_right to H8 H28.
+      apply merge_1_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H32 *H31.
+      apply merge_sym to H33.
+      apply merge_sym to H17.
+      apply change_merge_order to H33 H19 H35.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H8.
+    apply merge_exists to *H10 *H11.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H14 *H15.
+    apply merge_3_is_list to H16.
+    apply merge_unadj_2 to H12 H8.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H10 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H13 *H14.
+    apply adj_same_result_diff to H8 H4. case H16.
+    apply merge_unadj_2 to H15 H17.
+    apply merge_3_is_list to H11.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthR case
+    rename D2' to D4'.
+    apply adj_same_result_diff to H4 H8. case H16.
+    apply adj_swap to H17 H9.
+    apply IH1 to H1 H11 H3 H19 H5.
+    apply merge_unadj_2 to H21 H18.
+    apply perm_sym to *H13.
+    apply adj_perm_result to H25 H17.
+    apply adj_swap to H26 H10.
+    apply IH1 to H1 H12 H3 H29 H5.
+    apply merge_unadj_2 to H31 H28.
+    apply perm_merge_2 to H20 H14.
+    apply perm_merge_2 to H30 H15.
+    apply merge_perm_det to H36 H35.
+    apply perm_2_is_list to H37.
+    apply perm_refl to *H38.
+    apply perm_merge_2 to H24 H27.
+    apply merge_perm_det to H34 H40.
+    apply adj_swap to H17 H8.
+    apply add_to_merge_right to H42 H24.
+    apply adj_same_result to H43 H4.
+    apply perm_merge_2 to H44 H46.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H8. case H11.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H13. case H5. case H18.
+
+        % oneR case
+        case H13. case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H13. case H15.
+        apply IH2 to H1 H2 H14 H4 H16.
+        apply adj_swap to H16 H13.
+        apply add_to_merge_left to H20 H17.
+        apply adj_same_result to H21 H5.
+        apply perm_merge_1 to H22 H24.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H13. case H17.
+        apply adj_swap to H18 H15.
+        apply adj_swap to H20 H14.
+        apply IH2 to H1 H2 H16 H4 H22.
+        apply merge_unadj_1 to H23 H21.
+        apply merge_unadj_1 to H27 H19.
+        apply adj_swap to H18 H13.
+        apply add_to_merge_left to H30 H29.
+        apply adj_same_result to H31 H5.
+        apply perm_merge_1 to H32 H34.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H15 H5.
+        case H20.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H18 H4 H21.
+          apply merge_unadj_1 to H24 H16.
+          apply merge_3_is_list to H23.
+          apply merge_2_is_list to H15.
+          apply merge_exists to *H28 *H29.
+          apply merge_2_is_list to H14.
+          apply merge_3_is_list to H27.
+          apply merge_exists to *H32 *H31.
+          apply merge_sym to *H23.
+          apply change_merge_order to H30 H34 H22.
+          apply merge_sym to *H35.
+          apply merge_sym to *H27.
+          apply change_merge_order to H33 H37 H14.
+          apply add_to_merge_right to H13 H38.
+          apply merge_sym to H39.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H19 H4 H21. rename G3 to G6.
+          apply merge_unadj_1 to H24 H17.
+          apply merge_3_is_list to H23.
+          apply merge_1_is_list to H15.
+          apply merge_exists to *H28 *H29.
+          apply merge_sym to H30.
+          apply merge_1_is_list to H14.
+          apply merge_3_is_list to H27.
+          apply merge_exists to *H33 *H32.
+          apply merge_sym to H34.
+          apply merge_sym to H27.
+          apply merge_sym to H14.
+          apply change_merge_order to H34 H36 H37.
+          apply add_to_merge_right to H13 H38.
+          apply merge_sym to *H39.
+          apply merge_sym to *H23.
+          apply merge_sym to *H22.
+          apply change_merge_order to H30 H42 H43.
+          apply merge_sym to *H44.
+          search.
+
+        % botL case
+        case H13. case H5. case H17.
+
+        % botR case
+        apply IH2 to H1 H2 H14 H4 H5.
+        apply add_to_merge_left to H13 H16.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H16 H4 H5.
+        apply merge_unadj_1 to H18 H14.
+        apply merge_unadj_1 to H21 H15.
+        apply add_to_merge_left to H13 H23.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H13. case H20.
+        apply merge_unadj_3 to H14 H21.
+        case H22.
+
+          % the cut-formula goes to the left premise of parL
+          apply adj_swap to H23 H16.
+          apply IH2 to H1 H2 H18 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_3_is_list to H31.
+          apply merge_2_is_list to H14.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to H34.
+          apply merge_sym to H31.
+          apply change_merge_order to H34 H36 H24.
+          apply adj_swap to H21 H13.
+          apply add_to_merge_right to H38 H37.
+          apply adj_same_result to H39 H5.
+          apply perm_merge_2 to H40 H42.
+          apply merge_sym to H43.
+          apply merge_2_is_list to H15.
+          apply merge_3_is_list to H28.
+          apply merge_exists to *H45 *H46.
+          apply merge_sym to H47.
+          apply merge_sym to H28.
+          apply change_merge_order to H48 H49 H15.
+          apply merge_sym to H50.
+          search.
+
+          % the cut-formula goes to the right premise of parL
+          apply adj_swap to H23 H17.
+          apply IH2 to H1 H2 H19 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_3_is_list to H31.
+          apply merge_1_is_list to H14.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to H34.
+          apply merge_sym to H31.
+          apply merge_sym to H24.
+          apply change_merge_order to H34 H36 H37.
+          apply merge_sym to H38.
+          apply adj_swap to H21 H13.
+          apply add_to_merge_left to H40 H39.
+          apply adj_same_result to H41 H5.
+          apply perm_merge_1 to H42 H44.
+          apply merge_3_is_list to H28.
+          apply merge_1_is_list to H15.
+          apply merge_exists to *H46 *H47.
+          apply merge_sym to H28.
+          apply merge_sym to H15.
+          apply change_merge_order to H48 H49 H50.
+          apply merge_sym to H51.
+          apply merge_sym to H48.
+          search.
+
+        % zeroL case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H15 *H16.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H14 *H19.
+        apply merge_3_is_list to H20.
+        apply adj_same_result_diff to H13 H5. case H22.
+        apply merge_unadj_1 to H18 H23.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H15 *H16.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H13.
+        apply merge_3_is_list to H18.
+        apply merge_exists to *H19 *H20.
+        apply merge_sym to *H22.
+        apply merge_unadj_1 to H23 H13.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H13. case H16.
+        apply adj_swap to H17 H14.
+        apply IH2 to H1 H2 H15 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply adj_swap to H17 H13.
+        apply add_to_merge_left to H25 H24.
+        apply adj_same_result to H26 H5.
+        apply perm_merge_1 to H27 H29.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H13. case H16.
+        apply adj_swap to H17 H14.
+        apply IH2 to H1 H2 H15 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply adj_swap to H17 H13.
+        apply add_to_merge_left to H25 H24.
+        apply adj_same_result to H26 H5.
+        apply perm_merge_1 to H27 H29.
+        search.
+
+        % wthR case
+        rename D2' to D5'.
+        apply perm_sym to *H19.
+        apply adj_perm_result to H21 H5.
+        apply IH2 to H1 H2 H16 H4 H22.
+        apply merge_unadj_1 to H25 H14.
+        apply perm_sym to *H20.
+        apply adj_perm_result to H29 H5.
+        apply IH2 to H1 H2 H17 H4 H30.
+        apply merge_unadj_1 to H33 H15.
+        apply perm_sym to *H23.
+        apply perm_merge_1 to H24 H37.
+        apply perm_sym to *H31.
+        apply perm_merge_1 to H32 H39.
+        apply merge_perm_det to H40 H38.
+        apply perm_2_is_list to H41.
+        apply perm_refl to *H42.
+        apply perm_merge_1 to H36 H18.
+        apply merge_perm_det to H44 H28.
+        apply add_to_merge_left to H13 H28.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H15 H4 H5.
+        apply merge_unadj_1 to H17 H14.
+        apply add_to_merge_left to H13 H20.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H15 H4 H5.
+        apply merge_unadj_1 to H17 H14.
+        apply add_to_merge_left to H13 H20.
+        search.
+
+        % plusL case
+        apply adj_same_result_diff to H5 H13.
+        case H21.
+
+          % 1. The cut-formula is principal
+          apply IH to H6 H10 H16 H9 H14.
+          apply perm_merge_1 to H24 H19.
+          apply perm_sym to *H12.
+          apply perm_merge_2 to H26 H27.
+          apply perm_sym to *H22.
+          apply perm_merge_1 to H23 H29.
+          search.
+
+          % 2. The cut-formula is not principal
+          apply adj_swap to H22 H14.
+          apply IH2 to H1 H2 H16 H4 H24.
+          apply merge_unadj_1 to H25 H23.
+          apply perm_sym to *H18.
+          apply adj_perm_result to H30 H22.
+          apply adj_swap to H31 H15.
+          apply IH2 to H1 H2 H17 H4 H34.
+          apply merge_unadj_1 to H35 H33.
+          apply perm_merge_1 to H29 H32.
+          apply merge_perm_det to H39 H40.
+          apply adj_swap to H22 H13.
+          apply add_to_merge_left to H42 H29.
+          apply adj_same_result to H43 H5.
+          apply perm_merge_1 to H44 H46.
+          apply perm_merge_1 to H26 H19.
+          apply perm_merge_1 to H36 H20.
+          apply merge_perm_det to H49 H48.
+          apply perm_2_is_list to H50.
+          apply perm_refl to *H51.
+          search.
+
+      % 2. the cut-formula is not principal
+      apply adj_swap to H12 H9.
+      apply IH1 to H1 H10 H3 H14 H5.
+      apply merge_unadj_2 to H16 H13.
+      apply adj_swap to H12 H8.
+      apply add_to_merge_right to H20 H19.
+      apply adj_same_result to H21 H4.
+      apply perm_merge_2 to H22 H24.
+      search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H8. case H11.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H13. case H5. case H18.
+
+        % oneR case
+        case H13. case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H13. case H15.
+        apply IH2 to H1 H2 H14 H4 H16.
+        apply adj_swap to H16 H13.
+        apply add_to_merge_left to H20 H17.
+        apply adj_same_result to H21 H5.
+        apply perm_merge_1 to H22 H24.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H13. case H17.
+        apply adj_swap to H18 H15.
+        apply adj_swap to H20 H14.
+        apply IH2 to H1 H2 H16 H4 H22.
+        apply merge_unadj_1 to H23 H21.
+        apply merge_unadj_1 to H27 H19.
+        apply adj_swap to H18 H13.
+        apply add_to_merge_left to H30 H29.
+        apply adj_same_result to H31 H5.
+        apply perm_merge_1 to H32 H34.
+        search.
+
+        % tensorR case
+        rename D1'1 to D4'. rename D2' to D5'. rename G4 to G5. rename G3 to G4.
+        apply merge_unadj_3 to H15 H5.
+        case H20.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H18 H4 H21. rename G3 to G6.
+          apply merge_unadj_1 to H24 H16.
+          apply merge_3_is_list to H23.
+          apply merge_2_is_list to H15.
+          apply merge_exists to *H28 *H29.
+          apply merge_2_is_list to H14.
+          apply merge_3_is_list to H27.
+          apply merge_exists to *H32 *H31.
+          apply merge_sym to *H23.
+          apply change_merge_order to H30 H34 H22.
+          apply merge_sym to *H35.
+          apply merge_sym to *H27.
+          apply change_merge_order to H33 H37 H14.
+          apply add_to_merge_right to H13 H38.
+          apply merge_sym to H39.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H19 H4 H21. rename G3 to G6.
+          apply merge_unadj_1 to H24 H17.
+          apply merge_3_is_list to H23.
+          apply merge_1_is_list to H15.
+          apply merge_exists to *H28 *H29.
+          apply merge_sym to H30.
+          apply merge_1_is_list to H14.
+          apply merge_3_is_list to H27.
+          apply merge_exists to *H33 *H32.
+          apply merge_sym to H34.
+          apply merge_sym to H27.
+          apply merge_sym to H14.
+          apply change_merge_order to H34 H36 H37.
+          apply add_to_merge_right to H13 H38.
+          apply merge_sym to *H39.
+          apply merge_sym to *H23.
+          apply merge_sym to *H22.
+          apply change_merge_order to H30 H42 H43.
+          apply merge_sym to *H44.
+          search.
+
+        % botL case
+        case H13. case H5. case H17.
+
+        % botR case
+        apply IH2 to H1 H2 H14 H4 H5.
+        apply add_to_merge_left to H13 H16.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H16 H4 H5.
+        apply merge_unadj_1 to H18 H14.
+        apply merge_unadj_1 to H21 H15.
+        apply add_to_merge_left to H13 H23.
+        search.
+
+        % parL case
+        rename G1' to G3'. rename G2'1 to G4'.
+        apply adj_same_result_diff to H5 H13. case H20.
+        apply merge_unadj_3 to H14 H21.
+        case H22.
+
+          % the cut-formula goes to the left premise of parL
+          rename G4 to G5. rename G3 to G4.
+          apply adj_swap to H23 H16.
+          apply IH2 to H1 H2 H18 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_3_is_list to H31.
+          apply merge_2_is_list to H14.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to H34.
+          apply merge_sym to H31.
+          apply change_merge_order to H34 H36 H24.
+          apply adj_swap to H21 H13.
+          apply add_to_merge_right to H38 H37.
+          apply adj_same_result to H39 H5.
+          apply perm_merge_2 to H40 H42.
+          apply merge_sym to H43.
+          apply merge_2_is_list to H15.
+          apply merge_3_is_list to H28.
+          apply merge_exists to *H45 *H46.
+          apply merge_sym to H47.
+          apply merge_sym to H28.
+          apply change_merge_order to H48 H49 H15.
+          apply merge_sym to H50.
+          search.
+
+          % the cut-formula goes to the right premise of parL
+          apply adj_swap to H23 H17.
+          apply IH2 to H1 H2 H19 H4 H26.
+          apply merge_unadj_1 to H27 H25.
+          apply merge_3_is_list to H31.
+          apply merge_1_is_list to H14.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to H34.
+          apply merge_sym to H31.
+          apply merge_sym to H24.
+          apply change_merge_order to H34 H36 H37.
+          apply merge_sym to H38.
+          apply adj_swap to H21 H13.
+          apply add_to_merge_left to H40 H39.
+          apply adj_same_result to H41 H5.
+          apply perm_merge_1 to H42 H44.
+          apply merge_3_is_list to H28.
+          apply merge_1_is_list to H15.
+          apply merge_exists to *H46 *H47.
+          apply merge_sym to H28.
+          apply merge_sym to H15.
+          apply change_merge_order to H48 H49 H50.
+          apply merge_sym to H51.
+          apply merge_sym to H48.
+          search.
+
+        % zeroL case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H15 *H16.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H14 *H19.
+        apply merge_3_is_list to H20.
+        apply adj_same_result_diff to H13 H5. case H22.
+        apply merge_unadj_1 to H18 H23.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H15 *H16.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H13.
+        apply merge_3_is_list to H18.
+        apply merge_exists to *H19 *H20.
+        apply merge_sym to *H22.
+        apply merge_unadj_1 to H23 H13.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H13. case H16.
+        apply adj_swap to H17 H14.
+        apply IH2 to H1 H2 H15 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply adj_swap to H17 H13.
+        apply add_to_merge_left to H25 H24.
+        apply adj_same_result to H26 H5.
+        apply perm_merge_1 to H27 H29.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H13. case H16.
+        apply adj_swap to H17 H14.
+        apply IH2 to H1 H2 H15 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply adj_swap to H17 H13.
+        apply add_to_merge_left to H25 H24.
+        apply adj_same_result to H26 H5.
+        apply perm_merge_1 to H27 H29.
+        search.
+
+        % wthR case
+        rename D2' to D5'.
+        apply perm_sym to *H19.
+        apply adj_perm_result to H21 H5.
+        apply IH2 to H1 H2 H16 H4 H22.
+        apply merge_unadj_1 to H25 H14.
+        apply perm_sym to *H20.
+        apply adj_perm_result to H29 H5.
+        apply IH2 to H1 H2 H17 H4 H30.
+        apply merge_unadj_1 to H33 H15.
+        apply perm_sym to *H23.
+        apply perm_merge_1 to H24 H37.
+        apply perm_sym to *H31.
+        apply perm_merge_1 to H32 H39.
+        apply merge_perm_det to H40 H38.
+        apply perm_2_is_list to H41.
+        apply perm_refl to *H42.
+        apply perm_merge_1 to H36 H18.
+        apply merge_perm_det to H44 H28.
+        apply add_to_merge_left to H13 H28.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H15 H4 H5.
+        apply merge_unadj_1 to H17 H14.
+        apply add_to_merge_left to H13 H20.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H15 H4 H5.
+        apply merge_unadj_1 to H17 H14.
+        apply add_to_merge_left to H13 H20.
+        search.
+
+        % plusL case
+        apply adj_same_result_diff to H5 H13.
+        case H21.
+
+          % 1. The cut-formula is principal
+          apply IH to H7 H10 H17 H9 H15.
+          apply perm_merge_1 to H23 H18.
+          apply perm_sym to *H22.
+          apply perm_merge_1 to H26 H27.
+          apply perm_merge_1 to H24 H20.
+          apply perm_sym to *H12.
+          apply perm_merge_2 to H29 H30.
+          search.
+
+          % 2. The cut-formula is not principal
+          apply adj_swap to H22 H14.
+          apply IH2 to H1 H2 H16 H4 H24.
+          apply merge_unadj_1 to H25 H23.
+          apply perm_sym to *H18.
+          apply adj_perm_result to H30 H22.
+          apply adj_swap to H31 H15.
+          apply IH2 to H1 H2 H17 H4 H34.
+          apply merge_unadj_1 to H35 H33.
+          apply perm_merge_1 to H29 H32.
+          apply merge_perm_det to H39 H40.
+          apply adj_swap to H22 H13.
+          apply add_to_merge_left to H42 H29.
+          apply adj_same_result to H43 H5.
+          apply perm_merge_1 to H44 H46.
+          apply perm_merge_1 to H26 H19.
+          apply perm_merge_1 to H36 H20.
+          apply merge_perm_det to H49 H48.
+          apply perm_2_is_list to H50.
+          apply perm_refl to *H51.
+          search.
+
+      % 2. the cut-formula is not principal
+      apply adj_swap to H12 H9.
+      apply IH1 to H1 H10 H3 H14 H5.
+      apply merge_unadj_2 to H16 H13.
+      apply adj_swap to H12 H8.
+      apply add_to_merge_right to H20 H19.
+      apply adj_same_result to H21 H4.
+      apply perm_merge_2 to H22 H24.
+      search.
+
+    % plusL case
+    rename G2'1 to G4'.
+    apply perm_sym to H14.
+    apply adj_perm_result to H16 H4.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H9.
+    apply perm_sym to H15.
+    apply adj_perm_result to H24 H4.
+    apply IH1 to H1 H12 H3 H25 H5.
+    apply merge_unadj_2 to H27 H10.
+    apply perm_merge_2 to H31 H13.
+    apply merge_perm_det to H32 H23.
+    apply add_to_merge_right to H8 H23.
+    apply perm_sym to *H18.
+    apply perm_merge_2 to H20 H36.
+    apply perm_sym to *H26.
+    apply perm_merge_2 to H28 H38.
+    apply merge_perm_det to H39 H37.
+    apply perm_2_is_list to H40.
+    apply perm_refl to *H41.
+    search.
+
+  %% 3. Wth case
+  case H2 (keep).
+
+    % init case
+    case H9. case H4. case H13.
+
+    % oneR case
+    case H8. case H4. case H12.
+
+    % oneL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply add_to_merge_right to H8 H10.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H11 H3 H4 H5.
+    apply merge_unadj_2 to H12 H9.
+    apply merge_unadj_2 to H16 H10.
+    apply add_to_merge_right to H8 H18.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H8. case H15.
+    apply merge_unadj_3 to H9 H16.
+    case H17.
+
+      % the cut-formula goes to the left premise of tensorR
+      apply adj_swap to H18 H11.
+      apply IH1 to H1 H13 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H10.
+      apply merge_exists to *H27 *H28.
+      apply change_merge_order to H29 H22 H10.
+      apply merge_3_is_list to H26.
+      apply adj_1_is_list to H12.
+      apply merge_exists to *H31 *H32.
+      apply change_merge_order to H33 H26 H19.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR
+      apply adj_swap to H18 H12.
+      apply IH1 to H1 H14 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H10.
+      apply merge_exists to H27 H28.
+      apply merge_sym to H29.
+      apply merge_sym to H10.
+      apply change_merge_order to H29 H22 H31.
+      apply merge_3_is_list to H26.
+      apply merge_1_is_list to H9.
+      apply merge_exists to H33 H34.
+      apply merge_sym to H35.
+      apply merge_sym to H19.
+      apply change_merge_order to H35 H26 H37.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H39 H38.
+      apply adj_same_result to H40 H4.
+      apply perm_merge_2 to H41 H43.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H8. case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply add_to_merge_right to H15 H13.
+    apply adj_same_result to H16 H4.
+    apply perm_merge_2 to H17 H19.
+    search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H8. case H12.
+    apply adj_swap to H13 H10.
+    apply adj_swap to H15 H9.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply merge_unadj_2 to H22 H14.
+    apply adj_swap to H13 H8.
+    apply add_to_merge_right to H25 H24.
+    apply adj_same_result to H26 H4.
+    apply perm_merge_2 to H27 H29.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H10 H4.
+    case H15.
+
+      % the cut-formula goes to the left premise of parL
+      apply IH1 to H1 H13 H3 H16 H5.
+      apply merge_unadj_2 to H18 H11.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply change_merge_order to H25 H22 H9.
+      apply add_to_merge_right to H8 H26.
+      apply merge_2_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H30 *H29.
+      apply change_merge_order to H31 H19 H17.
+      search.
+
+      % the cut-formula goes to the right premise of parL
+      apply IH1 to H1 H14 H3 H16 H5.
+      apply merge_unadj_2 to H18 H12.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply merge_sym to H25.
+      apply merge_sym to H9.
+      apply change_merge_order to H25 H22 H27.
+      apply add_to_merge_right to H8 H28.
+      apply merge_1_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H32 *H31.
+      apply merge_sym to H33.
+      apply merge_sym to H17.
+      apply change_merge_order to H33 H19 H35.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H8.
+    apply merge_exists to *H10 *H11.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H14 *H15.
+    apply merge_3_is_list to H16.
+    apply merge_unadj_2 to H12 H8.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H10 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H13 *H14.
+    apply adj_same_result_diff to H8 H4. case H16.
+    apply merge_unadj_2 to H15 H17.
+    apply merge_3_is_list to H11.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H8. case H16.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H18. case H5. case H23.
+
+        % oneR case
+        case H5.
+
+        % oneL case -- permutes down
+        apply adj_same_result_diff to H5 H18. case H20.
+        apply IH2 to H1 H2 H19 H4 H21.
+        apply adj_swap to H21 H18.
+        apply add_to_merge_left to H25 H22.
+        apply adj_same_result to H5 H26. apply perm_sym to H29.
+        apply perm_merge_1 to H27 H30.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H18. case H22.
+        apply adj_swap to H23 H20.
+        apply adj_swap to H25 H19.
+        apply IH2 to H1 H2 H21 H4 H27.
+        apply merge_unadj_1 to H28 H26.
+        apply merge_unadj_1 to H32 H24.
+        apply adj_swap to H23 H18.
+        apply add_to_merge_left to H35 H34.
+        apply adj_same_result to H36 H5.
+        apply perm_merge_1 to H37 H39.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H20 H5.
+        case H25.
+
+          % 1. cut-formula goes to the left premise of tensorR.
+          apply IH2 to H1 H2 H23 H4 H26.
+          apply merge_unadj_1 to H29 H21.
+          apply adj_1_is_list to H31.
+          apply adj_1_is_list to H22.
+          apply merge_exists to H33 H34.
+          apply merge_3_is_list to H28.
+          apply merge_2_is_list to H27.
+          apply merge_exists to H36 H37.
+          apply merge_sym to *H28.
+          apply change_merge_order to H38 H39 H27.
+          apply merge_sym to *H40.
+          apply merge_sym to *H32.
+          apply change_merge_order to H35 H42 H19.
+          apply merge_sym to *H43.
+          apply add_to_merge_left to H18 H44.
+          search.
+
+          % 2. cut-formula goes to the right premise of tensorR.
+          apply IH2 to H1 H2 H24 H4 H26.
+          apply merge_unadj_1 to H29 H22.
+          apply adj_1_is_list to H31.
+          apply adj_1_is_list to H21.
+          apply merge_exists to H33 H34.
+          apply merge_3_is_list to H28.
+          apply merge_1_is_list to H27.
+          apply merge_exists to H36 H37.
+          apply merge_sym to *H28.
+          apply merge_sym to *H27.
+          apply change_merge_order to H38 H39 H40.
+          apply merge_sym to *H41.
+          apply merge_sym to *H32.
+          apply merge_sym to *H19.
+          apply change_merge_order to H35 H43 H44.
+          apply merge_sym to *H45.
+          apply add_to_merge_left to H18 H46.
+          apply merge_sym to H38.
+          apply merge_sym to H35.
+          search.
+
+        % botL case
+        case H18. case H5. case H22.
+
+        % botR case
+        apply IH2 to H1 H2 H19 H4 H5.
+        apply add_to_merge_left to H18 H21.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H21 H4 H5.
+        apply merge_unadj_1 to H23 H19.
+        apply merge_unadj_1 to H26 H20.
+        apply add_to_merge_left to H18 H28.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H18. case H25.
+        apply merge_unadj_3 to H19 H26. case H27.
+
+          % 1. the cut-formula goes to the left premise of parL.
+          apply adj_swap to H28 H21.
+          apply IH2 to H1 H2 H23 H4 H31.
+          apply merge_unadj_1 to H32 H30.
+          apply merge_3_is_list to H36.
+          apply merge_2_is_list to H19.
+          apply merge_exists to *H37 *H38.
+          apply merge_3_is_list to H33.
+          apply merge_2_is_list to H20.
+          apply merge_exists to *H40 *H41.
+          apply merge_sym to H36.
+          apply change_merge_order to H39 H43 H29.
+          apply merge_sym to *H44.
+          apply adj_swap to H26 H18.
+          apply add_to_merge_left to H46 H45.
+          apply adj_same_result to H47 H5.
+          apply perm_merge_1 to H48 H50.
+          apply merge_sym to H33.
+          apply change_merge_order to H42 H52 H20.
+          apply merge_sym to *H53.
+          search.
+
+          % 2. the cut-formula goes to the right premise of parL.
+          apply adj_swap to H28 H22.
+          apply IH2 to H1 H2 H24 H4 H31.
+          apply merge_unadj_1 to H32 H30.
+          apply merge_3_is_list to H36.
+          apply merge_1_is_list to H19.
+          apply merge_exists to *H37 *H38.
+          apply merge_3_is_list to H33.
+          apply merge_1_is_list to H20.
+          apply merge_exists to *H40 *H41.
+          apply merge_sym to H36.
+          apply merge_sym to H42.
+          apply merge_sym to H29.
+          apply change_merge_order to H39 H43 H45.
+          apply merge_sym to *H46.
+          apply adj_swap to H26 H18.
+          apply add_to_merge_left to H48 H47.
+          apply adj_same_result to H49 H5.
+          apply perm_merge_1 to H50 H52.
+          apply merge_sym to H33.
+          apply merge_sym to H20.
+          apply change_merge_order to H42 H54 H55.
+          apply merge_sym to *H56.
+          apply merge_sym to H39.
+          apply merge_sym to H44.
+          search.
+
+        % zeroL case
+        apply adj_same_result_diff to H18 H5. case H20.
+        apply adj_1_is_list to H4.
+        apply merge_exists to H19 H22.
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to H24 H25.
+        apply merge_unadj_1 to H27 H21.
+        apply merge_3_is_list to H23.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to H20 H21.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H18.
+        apply merge_exists to H25 H24.
+        apply merge_unadj_1 to H26 H18.
+        apply merge_3_is_list to H23.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H18.
+        case H21.
+
+          % 1. The cut-formula is principal
+          apply IH to H6 H11 H20 H9 H19.
+          apply perm_merge_2 to H23 H14.
+          apply perm_sym to *H22.
+          apply perm_merge_1 to H26 H27.
+          apply perm_sym to *H17.
+          apply perm_merge_2 to H24 H29.
+          search.
+
+          % 2. The cut-formula is not principal
+          apply adj_swap to H22 H19.
+          apply IH2 to H1 H2 H20 H4 H24.
+          apply merge_unadj_1 to H25 H23.
+          apply adj_swap to H22 H18.
+          apply add_to_merge_left to H30 H29.
+          apply adj_same_result to H31 H5.
+          apply perm_merge_1 to H32 H34.
+          search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H18.
+        case H21.
+
+          % 1. The cut-formula is principal
+          apply IH to H7 H12 H20 H10 H19.
+          apply perm_sym to *H22.
+          apply perm_merge_1 to H23 H26.
+          apply perm_merge_2 to H27 H15.
+          apply perm_merge_2 to H24 H13.
+          apply perm_sym to *H17.
+          apply perm_merge_2 to H29 H30.
+          search.
+
+          % 2. The cut-formula is not principal
+          apply adj_swap to H22 H19.
+          apply IH2 to H1 H2 H20 H4 H24.
+          apply merge_unadj_1 to H25 H23.
+          apply adj_swap to H22 H18.
+          apply add_to_merge_left to H30 H29.
+          apply adj_same_result to H31 H5.
+          apply perm_merge_1 to H32 H34.
+          search.
+
+        % wthR case
+        rename D'1 to D5'. rename D2'1 to D6'.
+        apply perm_sym to *H24.
+        apply adj_perm_result to H26 H5.
+        apply IH2 to H1 H2 H21 H4 H27.
+        apply merge_unadj_1 to H30 H19.
+        apply perm_sym to *H25.
+        apply adj_perm_result to H34 H5.
+        apply IH2 to H1 H2 H22 H4 H35.
+        apply merge_unadj_1 to H38 H20.
+        apply perm_sym to *H28.
+        apply perm_merge_1 to H29 H42.
+        apply perm_sym to *H36.
+        apply perm_merge_1 to H37 H44.
+        apply merge_perm_det to H45 H43.
+        apply perm_2_is_list to H46.
+        apply perm_refl to *H47.
+        apply perm_merge_1 to H41 H23.
+        apply merge_perm_det to H49 H33.
+        apply perm_2_is_list to H50.
+        apply add_to_merge_left to H18 H33.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H20 H4 H5.
+        apply merge_unadj_1 to H22 H19.
+        apply add_to_merge_left to H18 H25.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H20 H4 H5.
+        apply merge_unadj_1 to H22 H19.
+        apply add_to_merge_left to H18 H25.
+        search.
+
+        % plusL case
+        rename G' to G5'. rename G2'1 to G6'.
+        apply adj_same_result_diff to H5 H18. case H26.
+        apply adj_swap to H27 H19.
+        apply IH2 to H1 H2 H21 H4 H29.
+        apply merge_unadj_1 to H30 H28.
+        apply perm_sym to *H23.
+        apply adj_perm_result to H35 H27.
+        apply adj_swap to H36 H20.
+        apply IH2 to H1 H2 H22 H4 H39.
+        apply merge_unadj_1 to H40 H38.
+        apply perm_merge_1 to H34 H37.
+        apply merge_perm_det to H44 H45.
+        apply adj_swap to H27 H18.
+        apply add_to_merge_left to H47 H34.
+        apply adj_same_result to H48 H5.
+        apply perm_merge_1 to H49 H51.
+        apply perm_merge_1 to H31 H24.
+        apply perm_merge_1 to H41 H25.
+        apply merge_perm_det to H54 H53.
+        apply perm_2_is_list to H55.
+        apply perm_refl to *H56.
+        search.
+
+      % 2. the cut-formula is not principal
+      apply adj_swap to H17 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply perm_sym to *H13.
+      apply adj_perm_result to H25 H17.
+      apply adj_swap to H26 H10.
+      apply IH1 to H1 H12 H3 H29 H5.
+      apply merge_unadj_2 to H31 H28.
+      apply perm_merge_2 to H20 H14.
+      apply perm_merge_2 to H30 H15.
+      apply merge_perm_det to H36 H35.
+      apply perm_2_is_list to H37.
+      apply perm_refl to *H38.
+      apply perm_merge_2 to H24 H27.
+      apply merge_perm_det to H34 H40.
+      apply adj_swap to H17 H8.
+      apply add_to_merge_right to H42 H24.
+      apply adj_same_result to H43 H4.
+      apply perm_merge_2 to H44 H46.
+      search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusL case
+    rename G2'1 to G4'.
+    apply perm_sym to *H14.
+    apply adj_perm_result to H16 H4.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H9.
+    apply perm_sym to *H15.
+    apply adj_perm_result to H24 H4.
+    apply IH1 to H1 H12 H3 H25 H5.
+    apply merge_unadj_2 to H27 H10.
+    apply perm_merge_2 to H31 H13.
+    apply merge_perm_det to H32 H23.
+    apply add_to_merge_right to H8 H23.
+    apply perm_sym to *H18.
+    apply perm_merge_2 to H20 H36.
+    apply perm_sym to *H26.
+    apply perm_merge_2 to H28 H38.
+    apply merge_perm_det to H39 H37.
+    apply perm_2_is_list to H40.
+    apply perm_refl to *H41.
+    search.
+
+  %% 4. Par case
+  case H2 (keep).
+
+    % init case
+    case H9. case H4. case H13.
+
+    % oneR case
+    case H8. case H4. case H12.
+
+    % oneL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply add_to_merge_right to H8 H10.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H11 H3 H4 H5.
+    apply merge_unadj_2 to H12 H9.
+    apply merge_unadj_2 to H16 H10.
+    apply add_to_merge_right to H8 H18.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H8. case H15.
+    apply merge_unadj_3 to H9 H16.
+    case H17.
+
+      % the cut-formula goes to the left premise of tensorR
+      apply adj_swap to H18 H11.
+      apply IH1 to H1 H13 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H10.
+      apply merge_exists to *H27 *H28.
+      apply change_merge_order to H29 H22 H10.
+      apply merge_3_is_list to H26.
+      apply adj_1_is_list to H12.
+      apply merge_exists to *H31 *H32.
+      apply change_merge_order to H33 H26 H19.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR
+      apply adj_swap to H18 H12.
+      apply IH1 to H1 H14 H3 H21 H5.
+      apply merge_unadj_2 to H23 H20.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H10.
+      apply merge_exists to H27 H28.
+      apply merge_sym to H29.
+      apply merge_sym to H10.
+      apply change_merge_order to H29 H22 H31.
+      apply merge_3_is_list to H26.
+      apply merge_1_is_list to H9.
+      apply merge_exists to H33 H34.
+      apply merge_sym to H35.
+      apply merge_sym to H19.
+      apply change_merge_order to H35 H26 H37.
+      apply adj_swap to H16 H8.
+      apply add_to_merge_right to H39 H38.
+      apply adj_same_result to H40 H4.
+      apply perm_merge_2 to H41 H43.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H8. case H10.
+    apply IH1 to H1 H9 H3 H11 H5.
+    apply adj_swap to H11 H8.
+    apply add_to_merge_right to H15 H13.
+    apply adj_same_result to H16 H4.
+    apply perm_merge_2 to H17 H19.
+    search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H8. case H12.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H14. case H5. case H19.
+
+        % oneR case
+        case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H14. case H16.
+        apply IH2 to H1 H2 H15 H4 H17.
+        apply adj_swap to H17 H14.
+        apply add_to_merge_left to H21 H18.
+        apply adj_same_result to H22 H5.
+        apply perm_merge_1 to H23 H25.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H14. case H18.
+        apply adj_swap to H19 H16.
+        apply adj_swap to H21 H15.
+        apply IH2 to H1 H2 H17 H4 H23.
+        apply merge_unadj_1 to H24 H22.
+        apply merge_unadj_1 to H28 H20.
+        apply adj_swap to H19 H14.
+        apply add_to_merge_left to H31 H30.
+        apply adj_same_result to H32 H5.
+        apply perm_merge_1 to H33 H35.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H16 H5.
+        case H21.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H19 H4 H22.
+          apply merge_unadj_1 to H25 H17.
+          apply merge_3_is_list to H24.
+          apply merge_2_is_list to H16.
+          apply merge_exists to *H29 *H30.
+          apply merge_sym to H31.
+          apply merge_sym to *H24.
+          apply change_merge_order to H31 H33 H23.
+          apply merge_sym to H34.
+          apply merge_3_is_list to H28.
+          apply merge_2_is_list to H15.
+          apply merge_exists to *H36 *H37.
+          apply merge_sym to H38.
+          apply merge_sym to *H28.
+          apply change_merge_order to H38 H40 H15.
+          apply add_to_merge_right to H14 H41.
+          apply merge_sym to H42.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H20 H4 H22.
+          apply merge_unadj_1 to H25 H18.
+          apply merge_3_is_list to H24.
+          apply merge_1_is_list to H16.
+          apply merge_exists to *H29 *H30.
+          apply merge_sym to H31.
+          apply merge_sym to H24.
+          apply merge_sym to H23.
+          apply change_merge_order to H31 H33 H34.
+          apply merge_sym to H35.
+          apply merge_3_is_list to H28.
+          apply merge_1_is_list to H15.
+          apply merge_exists to *H37 *H38.
+          apply merge_sym to H39.
+          apply merge_sym to H28.
+          apply merge_sym to H15.
+          apply change_merge_order to H39 H41 H42.
+          apply merge_sym to *H43.
+          apply add_to_merge_left to H14 H44.
+          apply merge_sym to H44.
+          apply merge_sym to H31.
+          search.
+
+        % botL case
+        case H14. case H5. case H18.
+
+        % botR case
+        apply IH2 to H1 H2 H15 H4 H5.
+        apply add_to_merge_left to H14 H17.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H17 H4 H5.
+        apply merge_unadj_1 to H19 H15.
+        apply merge_unadj_1 to H22 H16.
+        apply add_to_merge_left to H14 H24.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H14.
+        case H21.
+
+          % 1. the cut-formula is principal
+          apply IH to H6 H11 H19 H9 H17.
+          apply merge_unadj_2 to H24 H10.
+          apply IH to H7 H25 H20 H26 H18.
+          apply merge_sym to *H29.
+          apply merge_sym to *H27.
+          apply change_merge_order to H31 H32 H16.
+          apply merge_sym to H33.
+          apply perm_sym to *H13.
+          apply perm_merge_2 to H34 H35.
+          apply merge_sym to *H28.
+          apply merge_sym to *H23.
+          apply change_merge_order to H37 H38 H15.
+          apply perm_sym to *H22.
+          apply perm_merge_2 to H39 H40.
+          apply merge_sym to *H41.
+          search.
+
+          % 2. the cut-formula is not principal
+          apply merge_unadj_3 to H15 H22.
+          case H23.
+
+            % the cut-formula goes to the left premise of parL
+            apply adj_swap to H24 H17.
+            apply IH2 to H1 H2 H19 H4 H27.
+            apply merge_unadj_1 to H28 H26.
+            apply merge_3_is_list to H32.
+            apply merge_2_is_list to H15.
+            apply merge_exists to *H33 *H34.
+            apply merge_sym to *H32.
+            apply change_merge_order to H35 H36 H25.
+            apply merge_sym to *H37.
+            apply adj_swap to H22 H14.
+            apply add_to_merge_left to H39 H38.
+            apply adj_same_result to H40 H5.
+            apply perm_merge_1 to H41 H43.
+            apply merge_2_is_list to H16.
+            apply merge_3_is_list to H29.
+            apply merge_exists to *H46 *H45.
+            apply merge_sym to *H29.
+            apply change_merge_order to H47 H48 H16.
+            apply merge_sym to H49.
+            search.
+
+            % the cut-formula goes to the right premise of parL
+            apply adj_swap to H24 H18.
+            apply IH2 to H1 H2 H20 H4 H27.
+            apply merge_unadj_1 to H28 H26.
+            apply merge_3_is_list to H32.
+            apply merge_1_is_list to H15.
+            apply merge_exists to *H33 *H34.
+            apply merge_sym to *H32.
+            apply merge_sym to *H25.
+            apply change_merge_order to H35 H36 H37.
+            apply merge_sym to H38.
+            apply adj_swap to H22 H14.
+            apply add_to_merge_left to H40 H39.
+            apply adj_same_result to H41 H5.
+            apply perm_merge_1 to H42 H44.
+            apply merge_1_is_list to H16.
+            apply merge_3_is_list to H29.
+            apply merge_exists to *H47 *H46.
+            apply merge_sym to *H29.
+            apply merge_sym to *H16.
+            apply change_merge_order to H48 H49 H50.
+            apply merge_sym to H51.
+            apply merge_sym to H35.
+            apply merge_sym to H48.
+            search.
+
+        % zeroL case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H16 *H17.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H15 *H20.
+        apply adj_same_result_diff to H14 H5. case H22.
+        apply merge_unadj_1 to H19 H23.
+        apply merge_3_is_list to H21.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H16 *H17.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H14.
+        apply merge_exists to *H21 *H20.
+        apply merge_unadj_1 to H22 H14.
+        apply merge_3_is_list to H19.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H14. case H17.
+        apply adj_swap to H18 H15.
+        apply IH2 to H1 H2 H16 H4 H20.
+        apply merge_unadj_1 to H21 H19.
+        apply adj_swap to H18 H14.
+        apply add_to_merge_left to H26 H25.
+        apply adj_same_result to H27 H5.
+        apply perm_merge_1 to H28 H30.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H14. case H17.
+        apply adj_swap to H18 H15.
+        apply IH2 to H1 H2 H16 H4 H20.
+        apply merge_unadj_1 to H21 H19.
+        apply adj_swap to H18 H14.
+        apply add_to_merge_left to H26 H25.
+        apply adj_same_result to H27 H5.
+        apply perm_merge_1 to H28 H30.
+        search.
+
+        % wthR case
+        rename D2' to D6'.
+        apply perm_sym to H20.
+        apply adj_perm_result to H22 H5.
+        apply IH2 to H1 H2 H17 H4 H23.
+        apply merge_unadj_1 to H26 H15.
+        apply perm_sym to H21.
+        apply adj_perm_result to H30 H5.
+        apply IH2 to H1 H2 H18 H4 H31.
+        apply merge_unadj_1 to H34 H16.
+        apply perm_sym to *H24.
+        apply perm_merge_1 to H25 H38.
+        apply perm_sym to *H32.
+        apply perm_merge_1 to H33 H40.
+        apply merge_perm_det to H41 H39.
+        apply perm_2_is_list to H42.
+        apply perm_refl to *H43.
+        apply perm_merge_1 to H37 H19.
+        apply merge_perm_det to H45 H29.
+        apply add_to_merge_left to H14 H29.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H16 H4 H5.
+        apply merge_unadj_1 to H18 H15.
+        apply add_to_merge_left to H14 H21.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H16 H4 H5.
+        apply merge_unadj_1 to H18 H15.
+        apply add_to_merge_left to H14 H21.
+        search.
+
+        % plusL case
+        apply adj_same_result_diff to H5 H14. case H22.
+        apply adj_swap to H23 H15.
+        apply IH2 to H1 H2 H17 H4 H25.
+        apply merge_unadj_1 to H26 H24.
+        apply perm_sym to H19.
+        apply adj_perm_result to H31 H23.
+        apply adj_swap to H32 H16.
+        apply IH2 to H1 H2 H18 H4 H35.
+        apply merge_unadj_1 to H36 H34.
+        apply perm_merge_1 to H30 H33.
+        apply merge_perm_det to H40 H41.
+        apply adj_swap to H23 H14.
+        apply add_to_merge_left to H43 H30.
+        apply adj_same_result to H44 H5.
+        apply perm_merge_1 to H45 H47.
+        apply perm_merge_1 to H27 H20.
+        apply perm_merge_1 to H37 H21.
+        apply merge_perm_det to H50 H49.
+        apply perm_2_is_list to H51.
+        apply perm_refl to *H52.
+        search.
+
+      % 2. the cut-formula is not principal
+      apply adj_swap to H13 H10.
+      apply adj_swap to H15 H9.
+      apply IH1 to H1 H11 H3 H17 H5.
+      apply merge_unadj_2 to H19 H16.
+      apply merge_unadj_2 to H22 H14.
+      apply adj_swap to H13 H8.
+      apply add_to_merge_right to H25 H24.
+      apply adj_same_result to H26 H4.
+      apply perm_merge_2 to H27 H29.
+      search.
+
+    % parL case
+    apply merge_unadj_3 to H10 H4.
+    case H15.
+
+      % the cut-formula goes to the left premise of parL
+      apply IH1 to H1 H13 H3 H16 H5.
+      apply merge_unadj_2 to H18 H11.
+      apply merge_3_is_list to H22.
+      apply merge_2_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply change_merge_order to H25 H22 H9.
+      apply add_to_merge_right to H8 H26.
+      apply merge_2_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H30 *H29.
+      apply change_merge_order to H31 H19 H17.
+      search.
+
+      % the cut-formula goes to the right premise of parL
+      apply IH1 to H1 H14 H3 H16 H5.
+      apply merge_unadj_2 to H18 H12.
+      apply merge_3_is_list to H22.
+      apply merge_1_is_list to H9.
+      apply merge_exists to *H23 *H24.
+      apply merge_sym to H25.
+      apply merge_sym to H9.
+      apply change_merge_order to H25 H22 H27.
+      apply add_to_merge_right to H8 H28.
+      apply merge_1_is_list to H10.
+      apply merge_3_is_list to H19.
+      apply merge_exists to *H32 *H31.
+      apply merge_sym to H33.
+      apply merge_sym to H17.
+      apply change_merge_order to H33 H19 H35.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H8.
+    apply merge_exists to *H10 *H11.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H14 *H15.
+    apply merge_3_is_list to H16.
+    apply merge_unadj_2 to H12 H8.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H10 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H13 *H14.
+    apply adj_same_result_diff to H8 H4. case H16.
+    apply merge_unadj_2 to H15 H17.
+    apply merge_3_is_list to H11.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H10 H3 H4 H5.
+    apply merge_unadj_2 to H11 H9.
+    apply add_to_merge_right to H8 H15.
+    search.
+
+    % wthR case
+    rename D2' to D4'.
+    apply adj_same_result_diff to H4 H8. case H16.
+    apply adj_swap to H17 H9.
+    apply IH1 to H1 H11 H3 H19 H5.
+    apply merge_unadj_2 to H21 H18.
+    apply perm_sym to *H13.
+    apply adj_perm_result to H25 H17.
+    apply adj_swap to H26 H10.
+    apply IH1 to H1 H12 H3 H29 H5.
+    apply merge_unadj_2 to H31 H28.
+    apply perm_merge_2 to H20 H14.
+    apply perm_merge_2 to H30 H15.
+    apply merge_perm_det to H36 H35.
+    apply perm_2_is_list to H37.
+    apply perm_refl to *H38.
+    apply perm_merge_2 to H24 H27.
+    apply merge_perm_det to H34 H40.
+    apply adj_swap to H17 H8.
+    apply add_to_merge_right to H42 H24.
+    apply adj_same_result to H43 H4.
+    apply perm_merge_2 to H44 H46.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H8. case H11.
+    apply adj_swap to H12 H9.
+    apply IH1 to H1 H10 H3 H14 H5.
+    apply merge_unadj_2 to H16 H13.
+    apply adj_swap to H12 H8.
+    apply add_to_merge_right to H20 H19.
+    apply adj_same_result to H21 H4.
+    apply perm_merge_2 to H22 H24.
+    search.
+
+    % plusL case
+    rename G2'1 to G4'.
+    apply perm_sym to H14.
+    apply adj_perm_result to H16 H4.
+    apply IH1 to H1 H11 H3 H17 H5.
+    apply merge_unadj_2 to H19 H9.
+    apply perm_sym to H15.
+    apply adj_perm_result to H24 H4.
+    apply IH1 to H1 H12 H3 H25 H5.
+    apply merge_unadj_2 to H27 H10.
+    apply perm_merge_2 to H31 H13.
+    apply merge_perm_det to H32 H23.
+    apply add_to_merge_right to H8 H23.
+    apply perm_sym to *H18.
+    apply perm_merge_2 to H20 H36.
+    apply perm_sym to *H26.
+    apply perm_merge_2 to H28 H38.
+    apply merge_perm_det to H39 H37.
+    apply perm_2_is_list to H40.
+    apply perm_refl to *H41.
+    search.
+
+  %% 5. Zero case
+  case H2 (keep).
+
+    % init case -- invalid (contexts need to be empty)
+    case H7. case H4. case H11.
+
+    % oneR case -- invalid (contexts need to be empty)
+    case H6. case H4. case H10.
+
+    % oneL case -- permutes down
+    apply IH1 to H1 H7 H3 H4 H5.
+    apply add_to_merge_right to H6 H8.
+    search.
+
+    % tensorL case -- permutes down
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply merge_unadj_2 to H10 H7.
+    apply merge_unadj_2 to H14 H8.
+    apply add_to_merge_right to H6 H16.
+    search.
+
+    % tensorR case -- permutes down
+    apply adj_same_result_diff to H4 H6. case H13.
+    apply merge_unadj_3 to H7 H14.
+    case H15.
+
+      % the cut-formula goes to the left premise of tensorR.
+      apply adj_swap to H16 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_3_is_list to H24.
+      apply adj_1_is_list to H10.
+      apply merge_exists to *H25 *H26.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to *H29 *H28.
+      apply change_merge_order to H27 H24 H17.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H32 H31.
+      apply adj_same_result to H33 H4.
+      apply perm_merge_2 to H34 H36.
+      apply change_merge_order to H30 H20 H8.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR.
+      apply adj_swap to H16 H10.
+      apply IH1 to H1 H12 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_3_is_list to H24.
+      apply adj_1_is_list to H9.
+      apply merge_exists to *H25 *H26.
+      apply merge_sym to *H17.
+      apply change_merge_order to H27 H24 H28.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H30 H29.
+      apply adj_same_result to H31 H4.
+      apply perm_merge_2 to H32 H34.
+      apply merge_1_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to H37 H36.
+      apply merge_sym to *H8.
+      apply change_merge_order to H38 H20 H39.
+      apply merge_sym to *H27. apply merge_sym to *H38.
+      search.
+
+    % botL case
+    case H6. case H4.
+
+    % botR case -- permutes down
+    apply adj_same_result_diff to H4 H6. case H8.
+    apply IH1 to H1 H7 H3 H9 H5.
+    apply adj_swap to H9 H6.
+    apply add_to_merge_right to H13 H11.
+    apply adj_same_result to H14 H4.
+    apply perm_merge_2 to H15 H17.
+    search.
+
+    % parR case -- permutes down
+    apply adj_same_result_diff to H4 H6. case H10.
+    apply adj_swap to H11 H8.
+    apply adj_swap to H13 H7.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H14.
+    apply merge_unadj_2 to H20 H12.
+    apply adj_swap to H11 H6.
+    apply add_to_merge_right to H23 H22.
+    apply adj_same_result to H24 H4.
+    apply perm_merge_2 to H25 H27.
+    search.
+
+    % parL case -- permutes down
+    apply merge_unadj_3 to H8 H4. case H13.
+
+      % the cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H11 H3 H14 H5.
+      apply merge_unadj_2 to H16 H9.
+      apply merge_3_is_list to H20.
+      apply merge_3_is_list to H17.
+      apply merge_2_is_list to H7.
+      apply merge_2_is_list to H8.
+      apply merge_exists to *H21 *H23.
+      apply merge_exists to *H22 *H24.
+      apply change_merge_order to H25 H20 H7.
+      apply add_to_merge_right to H6 H27.
+      apply change_merge_order to H26 H17 H15.
+      search.
+
+      % the cut-formula goes to the right premise of parL.
+      apply IH1 to H1 H12 H3 H14 H5.
+      apply merge_unadj_2 to H16 H10.
+      apply merge_3_is_list to H20.
+      apply adj_1_is_list to H9.
+      apply merge_3_is_list to H17.
+      apply merge_1_is_list to H8.
+      apply merge_exists to *H22 *H21.
+      apply merge_exists to *H24 *H23.
+      apply merge_sym to H25. apply merge_sym to H7.
+      apply change_merge_order to H27 H20 H28.
+      apply add_to_merge_right to H6 H29.
+      apply merge_sym to H26. apply merge_sym to H15.
+      apply change_merge_order to H32 H17 H33.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H6.
+    apply merge_exists to H8 H9.
+    apply adj_1_is_list to H4.
+    apply prove_is_list to H3.
+    apply merge_exists to H13 H11.
+    apply merge_3_is_list to H14.
+    apply merge_unadj_2 to H10 H6.
+    search.
+
+    % topR case
+    apply adj_same_result_diff to H6 H4. case H8.
+    apply adj_1_is_list to H5.
+    apply merge_exists to H10 H7.
+    apply adj_1_is_list to H4.
+    apply prove_is_list to H3.
+    apply merge_exists to H14 H12.
+    apply merge_unadj_2 to H15 H9.
+    apply merge_3_is_list to H11.
+    search.
+
+    % wthL1 case -- permutes down
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthL2 case -- permutes down
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H6. case H14.
+    apply adj_swap to H15 H7.
+    apply IH1 to H1 H9 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply perm_sym to H11.
+    apply adj_perm_result to H23 H15.
+    apply adj_swap to H24 H8.
+    apply IH1 to H1 H10 H3 H27 H5.
+    apply merge_unadj_2 to H29 H26.
+    apply perm_merge_2 to H18 H12.
+    apply perm_merge_2 to H28 H13.
+    apply merge_perm_det to H34 H33.
+    apply perm_2_is_list to H35.
+    apply perm_refl to *H36.
+    apply perm_merge_2 to H22 H25.
+    apply merge_perm_det to H32 H38.
+    apply adj_swap to H15 H6.
+    apply add_to_merge_right to H40 H22.
+    apply adj_same_result to H41 H4.
+    apply perm_merge_2 to H42 H44.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusL case
+    apply perm_sym to H12.
+    apply adj_perm_result to H14 H4.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H7.
+    apply perm_sym to H13.
+    apply adj_perm_result to H22 H4.
+    apply IH1 to H1 H10 H3 H23 H5.
+    apply merge_unadj_2 to H25 H8.
+    apply perm_merge_2 to H29 H11.
+    apply merge_perm_det to H30 H21.
+    apply add_to_merge_right to H6 H21.
+    apply perm_sym to *H16.
+    apply perm_merge_2 to H18 H34.
+    apply perm_sym to *H24.
+    apply perm_merge_2 to H26 H36.
+    apply merge_perm_det to H37 H35.
+    apply perm_2_is_list to H38.
+    apply perm_refl to *H39.
+    search.
+
+  %% 6. One case
+  case H2 (keep).
+
+    % init case
+    case H7. case H4. case H11.
+
+    % oneR case
+    apply adj_same_result_diff to H6 H4. case H7.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H9. case H5. case H14.
+
+        % oneR case
+        case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H9.
+        case H11.
+
+          % 1. the cut-formula is principal
+          apply perm_merge_2_nil to H12.
+          apply prove_is_list to H10.
+          apply list_merge_1 to H15.
+          case H8. search. case H17.
+
+          % 2. the cut-formula is not principal
+          apply IH2 to H1 H2 H10 H4 H12.
+          apply add_to_merge_left to H12 H13.
+          apply adj_same_result to H9 H5.
+          apply perm_merge_1 to H16 H18.
+          search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H9. case H13.
+        apply adj_swap to H14 H11.
+        apply adj_swap to H16 H10.
+        apply IH2 to H1 H2 H12 H4 H18.
+        apply merge_unadj_1 to H19 H17.
+        apply merge_unadj_1 to H23 H15.
+        apply adj_swap to H14 H9.
+        apply add_to_merge_left to H26 H25.
+        apply adj_same_result to H27 H5.
+        apply perm_merge_1 to H28 H30.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H11 H5.
+        case H16.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H14 H6 H17.
+          apply merge_unadj_1 to H20 H12.
+          apply merge_2_is_list to H11.
+          apply merge_3_is_list to H19.
+          apply merge_exists to *H24 *H25.
+          apply merge_sym to *H26.
+          apply merge_sym to H19.
+          apply change_merge_order to H27 H28 H18.
+          apply merge_sym to *H29.
+          apply merge_3_is_list to H23.
+          apply merge_2_is_list to H10.
+          apply merge_exists to *H31 *H32.
+          apply merge_sym to H23.
+          apply change_merge_order to H33 H34 H10.
+          apply merge_sym to *H35.
+          apply add_to_merge_left to H9 H36.
+          case H8. search. case H39.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H15 H6 H17.
+          apply merge_unadj_1 to H20 H13.
+          apply merge_1_is_list to H11.
+          apply merge_3_is_list to H19.
+          apply merge_exists to *H25 *H24.
+          apply merge_sym to H26.
+          apply merge_sym to *H19.
+          apply merge_sym to *H18.
+          apply change_merge_order to *H26 *H28 *H29.
+          apply merge_sym to *H30.
+          apply merge_1_is_list to H10.
+          apply merge_3_is_list to H23.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to H34.
+          apply merge_sym to *H23.
+          apply merge_sym to *H10.
+          apply change_merge_order to *H35 *H36 *H37.
+          apply merge_sym to *H38.
+          apply add_to_merge_left to H9 H39.
+          case H8. search. case H42.
+
+        % botL case
+        case H9. case H5. case H13.
+
+        % botR case
+        apply IH2 to H1 H2 H10 H4 H5.
+        apply add_to_merge_left to H9 H12.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H10.
+        apply merge_unadj_1 to H17 H11.
+        apply add_to_merge_left to H9 H19.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H9. case H16.
+        apply merge_unadj_3 to H10 H17.
+        case H18.
+
+          % the cut-formula goes to the left premise of parL
+          apply adj_swap to H19 H12.
+          apply IH2 to H1 H2 H14 H4 H22.
+          apply merge_unadj_1 to H23 H21.
+          apply merge_3_is_list to H27.
+          apply merge_2_is_list to H10.
+          apply merge_exists to H28 H29.
+          apply merge_sym to *H27.
+          apply change_merge_order to H30 *H31 *H20.
+          apply merge_sym to *H32.
+          apply adj_swap to H17 H9.
+          apply add_to_merge_left to H34 H33.
+          apply merge_2_is_list to H11.
+          apply merge_3_is_list to H24.
+          apply merge_exists to *H39 *H38.
+          apply merge_sym to *H24.
+          apply change_merge_order to H40 *H41 *H11.
+          apply merge_sym to *H42.
+          apply adj_same_result to H35 H5.
+          apply perm_merge_1 to H36 H44.
+          case H8. search. case H46.
+
+          % the cut-formula goes to the right premise
+          apply adj_swap to H19 H13.
+          apply IH2 to H1 H2 H15 H4 H22.
+          apply merge_unadj_1 to H23 H21.
+          apply merge_3_is_list to H27.
+          apply merge_1_is_list to H10.
+          apply merge_exists to *H28 *H29.
+          apply merge_sym to *H27.
+          apply merge_sym to *H20.
+          apply change_merge_order to H30 *H31 *H32.
+          apply merge_sym to *H33.
+          apply adj_swap to H17 H9.
+          apply add_to_merge_left to *H35 *H34.
+          apply merge_1_is_list to H11.
+          apply merge_3_is_list to H24.
+          apply merge_exists to *H40 *H39.
+          apply merge_sym to *H24.
+          apply merge_sym to *H11.
+          apply change_merge_order to H41 H42 H43.
+          apply merge_sym to *H44.
+          apply adj_same_result to H36 H5.
+          apply perm_merge_1 to H37 H46.
+          apply merge_sym to H41.
+          apply merge_sym to H30.
+          case H8. search. case H50.
+
+        % zeroL case
+        apply adj_same_result_diff to H9 H5. case H11.
+        apply adj_1_is_list to H5.
+        apply adj_1_is_list to H6.
+        apply merge_exists to *H13 H14.
+        apply merge_exists to *H10 *H14.
+        apply merge_unadj_1 to H15 H12.
+        apply merge_3_is_list to H16.
+        case H8. search. case H20.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply adj_1_is_list to H6.
+        apply merge_exists to *H11 H12.
+        apply adj_3_is_list to H9.
+        apply merge_exists to *H14 *H12.
+        apply merge_unadj_1 to H15 H9.
+        apply merge_3_is_list to H13.
+        case H8. search. case H19.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H9. case H12.
+        apply adj_swap to H13 H10.
+        apply IH2 to H1 H2 H11 H4 H15.
+        apply merge_unadj_1 to H16 H14.
+        apply adj_swap to H13 H9.
+        apply add_to_merge_left to H21 H20.
+        apply adj_same_result to H22 H5.
+        apply perm_merge_1 to H23 H25.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H9. case H12.
+        apply adj_swap to H13 H10.
+        apply IH2 to H1 H2 H11 H4 H15.
+        apply merge_unadj_1 to H16 H14.
+        apply adj_swap to H13 H9.
+        apply add_to_merge_left to H21 H20.
+        apply adj_same_result to H22 H5.
+        apply perm_merge_1 to H23 H25.
+        search.
+
+        % wthR case
+        rename D2' to D4'.
+        apply perm_sym to H15.
+        apply adj_perm_result to H17 H5.
+        apply IH2 to H1 H2 H12 H4 H18.
+        apply merge_unadj_1 to H21 H10.
+        apply perm_sym to H16.
+        apply adj_perm_result to H25 H5.
+        apply IH2 to H1 H2 H13 H4 H26.
+        apply merge_unadj_1 to H29 H11.
+        apply perm_sym to *H19.
+        apply perm_merge_1 to H20 H33.
+        apply perm_sym to *H27.
+        apply perm_merge_1 to H28 H35.
+        apply merge_perm_det to H36 H34.
+        apply perm_2_is_list to H37.
+        apply perm_refl to *H38.
+        apply perm_merge_1 to H32 H14.
+        apply merge_perm_det to H40 H24.
+        apply add_to_merge_left to H9 H24.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H11 H4 H5.
+        apply merge_unadj_1 to H13 H10.
+        apply add_to_merge_left to H9 H16.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H11 H4 H5.
+        apply merge_unadj_1 to H13 H10.
+        apply add_to_merge_left to H9 H16.
+        search.
+
+        % plusL case
+        rename G2'1 to G4'.
+        apply adj_same_result_diff to H5 H9. case H17.
+        apply adj_swap to H18 H10.
+        apply IH2 to H1 H2 H12 H4 H20.
+        apply merge_unadj_1 to H21 H19.
+        apply perm_sym to H14.
+        apply adj_perm_result to H26 H18.
+        apply adj_swap to H27 H11.
+        apply IH2 to H1 H2 H13 H4 H30.
+        apply merge_unadj_1 to H31 H29.
+        apply perm_merge_1 to H25 H28.
+        apply merge_perm_det to H35 H36.
+        apply adj_swap to H18 H9.
+        apply add_to_merge_left to H38 H25.
+        apply adj_same_result to H39 H5.
+        apply perm_merge_1 to H40 H42.
+        apply perm_merge_1 to H22 H15.
+        apply perm_merge_1 to H32 H16.
+        apply merge_perm_det to H45 H44.
+        apply perm_2_is_list to H46.
+        apply perm_refl to *H47.
+        search.
+
+      % 2. the cut-formula is not principal
+      apply adj_same_result to H6 H4.
+      case H9. case H8. case H10.
+
+    % oneL case
+    apply IH1 to H1 H7 H3 H4 H5.
+    apply add_to_merge_right to H6 H8.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply merge_unadj_2 to H10 H7.
+    apply merge_unadj_2 to H14 H8.
+    apply add_to_merge_right to H6 H16.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H6. case H13.
+    apply merge_unadj_3 to H7 H14.
+    case H15.
+
+      % the cut-formula goes to the left premise of tensorR.
+      apply adj_swap to H16 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to *H26 *H25.
+      apply merge_2_is_list to H7.
+      apply merge_3_is_list to H24.
+      apply merge_exists to *H29 *H28.
+      apply change_merge_order to H30 H24 H17.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H32 H31.
+      apply change_merge_order to H27 H20 H8.
+      apply adj_same_result to H33 H4.
+      apply perm_merge_2 to H34 H37.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR.
+      apply adj_swap to H16 H10.
+      apply IH1 to H1 H12 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_1_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to H25 H26.
+      apply merge_sym to H27.
+      apply merge_3_is_list to H24.
+      apply merge_1_is_list to H7.
+      apply merge_exists to H29 H30.
+      apply merge_sym to H31.
+      apply merge_sym to H17.
+      apply change_merge_order to H31 H24 H33.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      apply merge_sym to H8.
+      apply change_merge_order to H28 H20 H41.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H6. case H8.
+    apply IH1 to H1 H7 H3 H9 H5.
+    apply adj_swap to H9 H6.
+    apply add_to_merge_right to H13 H11.
+    apply adj_same_result to H14 H4.
+    apply perm_merge_2 to H15 H17.
+    apply merge_3_is_list to H10.
+    search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H6. case H10.
+    apply adj_swap to H11 H8.
+    apply adj_swap to H13 H7.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H14.
+    apply merge_unadj_2 to H20 H12.
+    apply adj_swap to H11 H6.
+    apply add_to_merge_right to H23 H22.
+    apply adj_same_result to H24 H4.
+    apply perm_merge_2 to H25 H27.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H8 H4.
+    case H13.
+
+      % the cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H11 H3 H14 H5.
+      apply merge_unadj_2 to H16 H9.
+      apply merge_3_is_list to H20.
+      apply merge_2_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply change_merge_order to H23 H20 H7.
+      apply add_to_merge_right to H6 H24.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H17.
+      apply merge_exists to *H28 *H27.
+      apply change_merge_order to H29 H17 H15.
+      search.
+
+      % the cut-formula goes to the right premise of parL.
+      apply IH1 to H1 H12 H3 H14 H5.
+      apply merge_unadj_2 to H16 H10.
+      apply merge_3_is_list to H20.
+      apply merge_1_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply merge_sym to H23.
+      apply merge_sym to H7.
+      apply change_merge_order to H23 H20 H25.
+      apply add_to_merge_right to H6 H26.
+      apply merge_3_is_list to H17.
+      apply merge_1_is_list to H8.
+      apply merge_exists to *H29 *H30.
+      apply merge_sym to H31.
+      apply merge_sym to H15.
+      apply change_merge_order to H31 H17 H33.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H6.
+    apply merge_exists to *H8 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H12 *H13.
+    apply merge_unadj_2 to H10 H6.
+    apply merge_3_is_list to H14.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H8 *H7.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to H11 H12.
+    apply adj_same_result_diff to H6 H4. case H14.
+    apply merge_unadj_2 to H13 H15.
+    apply merge_3_is_list to H9.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H6. case H14.
+    apply adj_swap to H15 H7.
+    apply IH1 to H1 H9 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply perm_sym to H11.
+    apply adj_perm_result to H23 H15.
+    apply adj_swap to H24 H8.
+    apply IH1 to H1 H10 H3 H27 H5.
+    apply merge_unadj_2 to H29 H26.
+    apply perm_merge_2 to H18 H12.
+    apply perm_merge_2 to H28 H13.
+    apply merge_perm_det to H34 H33.
+    apply perm_2_is_list to H35.
+    apply perm_refl to *H36.
+    apply perm_merge_2 to H22 H25.
+    apply merge_perm_det to H32 H38.
+    apply adj_swap to H15 H6.
+    apply add_to_merge_right to H40 H22.
+    apply adj_same_result to H41 H4.
+    apply perm_merge_2 to H42 H44.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusL case
+    apply perm_sym to H12.
+    apply adj_perm_result to H14 H4.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H7.
+    apply perm_sym to H13.
+    apply adj_perm_result to H22 H4.
+    apply IH1 to H1 H10 H3 H23 H5.
+    apply merge_unadj_2 to H25 H8.
+    apply perm_merge_2 to H29 H11.
+    apply merge_perm_det to H30 H21.
+    apply add_to_merge_right to H6 H21.
+    apply perm_sym to *H16.
+    apply perm_merge_2 to H18 H34.
+    apply perm_sym to *H24.
+    apply perm_merge_2 to H26 H36.
+    apply merge_perm_det to H37 H35.
+    apply perm_2_is_list to H38.
+    apply perm_refl to *H39.
+    search.
+
+  %% 7. Bot case
+  case H2 (keep).
+
+    % init case
+    case H6. case H7. case H4. case H13.
+
+    % oneR case
+    case H6. case H4. case H10.
+
+    % oneL case
+    apply IH1 to H1 H7 H3 H4 H5.
+    apply add_to_merge_right to H6 H8.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply merge_unadj_2 to H10 H7.
+    apply merge_unadj_2 to H14 H8.
+    apply add_to_merge_right to H6 H16.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H6. case H13.
+    apply merge_unadj_3 to H7 H14.
+    case H15.
+
+      % the cut-formula goes to the left premise of tensorR.
+      apply adj_swap to H16 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to *H26 *H25.
+      apply merge_2_is_list to H7.
+      apply merge_3_is_list to H24.
+      apply merge_exists to *H29 *H28.
+      apply change_merge_order to H30 H24 H17.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H32 H31.
+      apply change_merge_order to H27 H20 H8.
+      apply adj_same_result to H33 H4.
+      apply perm_merge_2 to H34 H37.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR.
+      apply adj_swap to H16 H10.
+      apply IH1 to H1 H12 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_1_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to H25 H26.
+      apply merge_sym to H27.
+      apply merge_3_is_list to H24.
+      apply merge_1_is_list to H7.
+      apply merge_exists to H29 H30.
+      apply merge_sym to H31.
+      apply merge_sym to H17.
+      apply change_merge_order to H31 H24 H33.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      apply merge_sym to H8.
+      apply change_merge_order to H28 H20 H41.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H6. case H8.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H10. case H5. case H15.
+
+        % oneR case
+        case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H10. case H12.
+        apply IH2 to H1 H2 H11 H4 H13.
+        apply adj_swap to H13 H10.
+        apply add_to_merge_left to H17 H14.
+        apply adj_same_result to H18 H5.
+        apply perm_merge_1 to H19 H21.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H10. case H14.
+        apply adj_swap to H15 H12.
+        apply adj_swap to H17 H11.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply merge_unadj_1 to H24 H16.
+        apply adj_swap to H15 H10.
+        apply add_to_merge_left to H27 H26.
+        apply adj_same_result to H28 H5.
+        apply perm_merge_1 to H29 H31.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H12 H5.
+        case H17.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H15 H4 H18.
+          apply merge_unadj_1 to H21 H13.
+          apply merge_3_is_list to H20.
+          apply merge_2_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply change_merge_order to H27 H28 H19.
+          apply merge_sym to *H29.
+          apply merge_3_is_list to H24.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H31 *H32.
+          apply merge_sym to H24.
+          apply change_merge_order to H33 H34 H11.
+          apply merge_sym to *H35.
+          apply add_to_merge_left to H10 H36.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H16 H4 H18.
+          apply merge_unadj_1 to H21 H14.
+          apply merge_3_is_list to H20.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply merge_sym to H19.
+          apply change_merge_order to H27 *H28 *H29.
+          apply merge_sym to *H30.
+          apply merge_3_is_list to H24.
+          apply merge_1_is_list to H11.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to *H24.
+          apply merge_sym to *H11.
+          apply change_merge_order to H34 *H35 *H36.
+          apply merge_sym to *H37.
+          apply add_to_merge_left to H10 H38.
+          apply merge_sym to H27.
+          apply merge_sym to H34.
+          search.
+
+        % botL case
+        apply perm_merge_1_nil to H9.
+        apply prove_is_list to H2.
+        apply list_merge_2 to *H12.
+        apply adj_same_result to H10 H5.
+        case H15. search. case H16.
+
+        % botR case
+        apply IH2 to H1 H2 H11 H4 H5.
+        apply add_to_merge_left to H10 H13.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H13 H4 H5.
+        apply merge_unadj_1 to H15 H11.
+        apply merge_unadj_1 to H18 H12.
+        apply add_to_merge_left to H10 H20.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H10. case H17.
+        apply merge_unadj_3 to H11 H18.
+        case H19.
+
+          % the cut-formula goes to the left premise of parL
+          apply adj_swap to H20 H13.
+          apply IH2 to H1 H2 H15 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_3_is_list to H28.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H29 *H30.
+          apply merge_sym to *H28.
+          apply change_merge_order to H31 H32 H21.
+          apply merge_sym to *H33.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H35 H34.
+          apply adj_same_result to H36 H5.
+          apply perm_merge_1 to H37 H39.
+          apply merge_2_is_list to H12.
+          apply merge_3_is_list to H25.
+          apply merge_exists to *H42 *H41.
+          apply merge_sym to *H25.
+          apply change_merge_order to H43 H44 H12.
+          apply merge_sym to *H45.
+          search.
+
+          % the cut-formula goes to the right premise of parL
+          apply adj_swap to H20 H14.
+          apply IH2 to H1 H2 H16 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_1_is_list to H11.
+          apply merge_3_is_list to H28.
+          apply merge_exists to *H30 *H29.
+          apply merge_sym to *H28.
+          apply merge_sym to *H21.
+          apply change_merge_order to H31 H32 H33.
+          apply merge_sym to *H34.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H36 H35.
+          apply adj_same_result to H37 H5.
+          apply perm_merge_1 to H38 H40.
+          apply merge_3_is_list to H25.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H42 *H43.
+          apply merge_sym to *H25.
+          apply merge_sym to *H12.
+          apply change_merge_order to H44 H45 H46.
+          apply merge_sym to *H47.
+          apply merge_sym to *H44.
+          apply merge_sym to *H31.
+          search.
+
+        % zeroL case
+        apply adj_same_result_diff to H10 H5. case H12.
+        apply prove_is_list to H2.
+        apply adj_1_is_list to H5.
+        apply merge_exists to *H16 *H14.
+        apply merge_unadj_1 to H17 H13.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H11 *H20.
+        apply merge_3_is_list to H21.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H12 *H13.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H10.
+        apply merge_exists to *H17 *H16.
+        apply merge_unadj_1 to H18 H10.
+        apply merge_3_is_list to H15.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthR case
+        rename D2' to D4'.
+        apply perm_sym to H16.
+        apply adj_perm_result to H18 H5.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H22 H11.
+        apply perm_sym to H17.
+        apply adj_perm_result to H26 H5.
+        apply IH2 to H1 H2 H14 H4 H27.
+        apply merge_unadj_1 to H30 H12.
+        apply perm_sym to *H20.
+        apply perm_merge_1 to H21 H34.
+        apply perm_sym to *H28.
+        apply perm_merge_1 to H29 H36.
+        apply merge_perm_det to H37 H35.
+        apply perm_2_is_list to H38.
+        apply perm_refl to *H39.
+        apply perm_merge_1 to H33 H15.
+        apply merge_perm_det to H41 H25.
+        apply add_to_merge_left to H10 H25.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusL case
+        rename G2'1 to G4'.
+        apply adj_same_result_diff to H5 H10. case H18.
+        apply adj_swap to H19 H11.
+        apply IH2 to H1 H2 H13 H4 H21.
+        apply merge_unadj_1 to H22 H20.
+        apply perm_sym to H15.
+        apply adj_perm_result to H27 H19.
+        apply adj_swap to H28 H12.
+        apply IH2 to H1 H2 H14 H4 H31.
+        apply merge_unadj_1 to H32 H30.
+        apply perm_merge_1 to H26 H29.
+        apply merge_perm_det to H36 H37.
+        apply adj_swap to H19 H10.
+        apply add_to_merge_left to H39 H26.
+        apply adj_same_result to H40 H5.
+        apply perm_merge_1 to H41 H43.
+        apply perm_merge_1 to H23 H16.
+        apply perm_merge_1 to H33 H17.
+        apply merge_perm_det to H46 H45.
+        apply perm_2_is_list to H47.
+        apply perm_refl to *H48.
+        search.
+
+      % the cut-formula is not principal
+      apply IH1 to H1 H7 H3 H9 H5.
+      apply add_to_merge_right to H9 H11.
+      apply adj_same_result to H6 H4.
+      apply perm_merge_2 to H13 H15.
+      search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H6. case H10.
+    apply adj_swap to H11 H8.
+    apply adj_swap to H13 H7.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H14.
+    apply merge_unadj_2 to H20 H12.
+    apply adj_swap to H11 H6.
+    apply add_to_merge_right to H23 H22.
+    apply adj_same_result to H24 H4.
+    apply perm_merge_2 to H25 H27.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H8 H4.
+    case H13.
+
+      % the cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H11 H3 H14 H5.
+      apply merge_unadj_2 to H16 H9.
+      apply merge_3_is_list to H20.
+      apply merge_2_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply change_merge_order to H23 H20 H7.
+      apply add_to_merge_right to H6 H24.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H17.
+      apply merge_exists to *H28 *H27.
+      apply change_merge_order to H29 H17 H15.
+      search.
+
+      % the cut-formula goes to the right premise of the parL.
+      apply IH1 to H1 H12 H3 H14 H5.
+      apply merge_unadj_2 to H16 H10.
+      apply merge_3_is_list to H20.
+      apply merge_1_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply merge_sym to H23.
+      apply merge_sym to H7.
+      apply change_merge_order to H23 H20 H25.
+      apply add_to_merge_right to H6 H26.
+      apply merge_3_is_list to H17.
+      apply merge_1_is_list to H8.
+      apply merge_exists to *H29 *H30.
+      apply merge_sym to H31.
+      apply merge_sym to H15.
+      apply change_merge_order to H31 H17 H33.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H6.
+    apply merge_exists to *H8 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H12 *H13.
+    apply merge_unadj_2 to H10 H6.
+    apply merge_3_is_list to H14.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H8 *H7.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to H11 H12.
+    apply adj_same_result_diff to H6 H4. case H14.
+    apply merge_unadj_2 to H13 H15.
+    apply merge_3_is_list to H9.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H6. case H14.
+    apply adj_swap to H15 H7.
+    apply IH1 to H1 H9 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply perm_sym to H11.
+    apply adj_perm_result to H23 H15.
+    apply adj_swap to H24 H8.
+    apply IH1 to H1 H10 H3 H27 H5.
+    apply merge_unadj_2 to H29 H26.
+    apply perm_merge_2 to H18 H12.
+    apply perm_merge_2 to H28 H13.
+    apply merge_perm_det to H34 H33.
+    apply perm_2_is_list to H35.
+    apply perm_refl to *H36.
+    apply perm_merge_2 to H22 H25.
+    apply merge_perm_det to H32 H38.
+    apply adj_swap to H15 H6.
+    apply add_to_merge_right to H40 H22.
+    apply adj_same_result to H41 H4.
+    apply perm_merge_2 to H42 H44.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusL case
+    apply perm_sym to H12.
+    apply adj_perm_result to H14 H4.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H7.
+    apply perm_sym to H13.
+    apply adj_perm_result to H22 H4.
+    apply IH1 to H1 H10 H3 H23 H5.
+    apply merge_unadj_2 to H25 H8.
+    apply perm_merge_2 to H29 H11.
+    apply merge_perm_det to H30 H21.
+    apply add_to_merge_right to H6 H21.
+    apply perm_sym to *H16.
+    apply perm_merge_2 to H18 H34.
+    apply perm_sym to *H24.
+    apply perm_merge_2 to H26 H36.
+    apply merge_perm_det to H37 H35.
+    apply perm_2_is_list to H38.
+    apply perm_refl to *H39.
+    search.
+
+  %% 8. Top case
+  case H2 (keep).
+
+    % init
+    case H7. case H4. case H11.
+
+    % oneL case
+    case H6. case H4. case H10.
+
+    % oneL case
+    apply IH1 to H1 H7 H3 H4 H5.
+    apply add_to_merge_right to H6 H8.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply merge_unadj_2 to H10 H7.
+    apply merge_unadj_2 to H14 H8.
+    apply add_to_merge_right to H6 H16.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H6. case H13.
+    apply merge_unadj_3 to H7 H14.
+    case H15.
+
+      % the cut-formula goes to the left premise of tensorR.
+      apply adj_swap to H16 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_3_is_list to H24.
+      apply adj_1_is_list to H10.
+      apply merge_exists to *H25 *H26.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to *H29 *H28.
+      apply change_merge_order to H27 H24 H17.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H32 H31.
+      apply adj_same_result to H33 H4.
+      apply perm_merge_2 to H34 H36.
+      apply change_merge_order to H30 H20 H8.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR.
+      apply adj_swap to H16 H10.
+      apply IH1 to H1 H12 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_3_is_list to H24.
+      apply adj_1_is_list to H9.
+      apply merge_exists to *H25 *H26.
+      apply merge_sym to *H17.
+      apply change_merge_order to H27 H24 H28.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H30 H29.
+      apply adj_same_result to H31 H4.
+      apply perm_merge_2 to H32 H34.
+      apply merge_1_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to H37 H36.
+      apply merge_sym to *H8.
+      apply change_merge_order to H38 H20 H39.
+      apply merge_sym to *H27. apply merge_sym to *H38.
+      search.
+
+    % botL case
+    case H6. case H4.
+
+    % botR case -- permutes down
+    apply adj_same_result_diff to H4 H6. case H8.
+    apply IH1 to H1 H7 H3 H9 H5.
+    apply adj_swap to H9 H6.
+    apply add_to_merge_right to H13 H11.
+    apply adj_same_result to H14 H4.
+    apply perm_merge_2 to H15 H17.
+    search.
+
+    % parR case -- permutes down
+    apply adj_same_result_diff to H4 H6. case H10.
+    apply adj_swap to H11 H8.
+    apply adj_swap to H13 H7.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H14.
+    apply merge_unadj_2 to H20 H12.
+    apply adj_swap to H11 H6.
+    apply add_to_merge_right to H23 H22.
+    apply adj_same_result to H24 H4.
+    apply perm_merge_2 to H25 H27.
+    search.
+
+    % parL case -- permutes down
+    apply merge_unadj_3 to H8 H4. case H13.
+
+      % the cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H11 H3 H14 H5.
+      apply merge_unadj_2 to H16 H9.
+      apply merge_3_is_list to H20.
+      apply merge_3_is_list to H17.
+      apply merge_2_is_list to H7.
+      apply merge_2_is_list to H8.
+      apply merge_exists to *H21 *H23.
+      apply merge_exists to *H22 *H24.
+      apply change_merge_order to H25 H20 H7.
+      apply add_to_merge_right to H6 H27.
+      apply change_merge_order to H26 H17 H15.
+      search.
+
+      % the cut-formula goes to the right premise of parL.
+      apply IH1 to H1 H12 H3 H14 H5.
+      apply merge_unadj_2 to H16 H10.
+      apply merge_3_is_list to H20.
+      apply adj_1_is_list to H9.
+      apply merge_3_is_list to H17.
+      apply merge_1_is_list to H8.
+      apply merge_exists to *H22 *H21.
+      apply merge_exists to *H24 *H23.
+      apply merge_sym to H25. apply merge_sym to H7.
+      apply change_merge_order to H27 H20 H28.
+      apply add_to_merge_right to H6 H29.
+      apply merge_sym to H26. apply merge_sym to H15.
+      apply change_merge_order to H32 H17 H33.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H6.
+    apply merge_exists to H8 H9.
+    apply adj_1_is_list to H4.
+    apply prove_is_list to H3.
+    apply merge_exists to H13 H11.
+    apply merge_3_is_list to H14.
+    apply merge_unadj_2 to H10 H6.
+    search.
+
+    % topR case
+    apply adj_same_result_diff to H6 H4. case H8.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        case H10. case H5. case H15.
+
+        % oneR case
+        case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H10. case H12.
+        apply IH2 to H1 H2 H11 H4 H13.
+        apply adj_swap to H13 H10.
+        apply add_to_merge_left to H17 H14.
+        apply adj_same_result to H18 H5.
+        apply perm_merge_1 to H19 H21.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H10. case H14.
+        apply adj_swap to H15 H12.
+        apply adj_swap to H17 H11.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply merge_unadj_1 to H24 H16.
+        apply adj_swap to H15 H10.
+        apply add_to_merge_left to H27 H26.
+        apply adj_same_result to H28 H5.
+        apply perm_merge_1 to H29 H31.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H12 H5.
+        case H17.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H15 H4 H18.
+          apply merge_unadj_1 to H21 H13.
+          apply merge_3_is_list to H20.
+          apply merge_2_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply change_merge_order to H27 H28 H19.
+          apply merge_sym to *H29.
+          apply merge_3_is_list to H24.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H31 *H32.
+          apply merge_sym to H24.
+          apply change_merge_order to H33 H34 H11.
+          apply merge_sym to *H35.
+          apply add_to_merge_left to H10 H36.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H16 H4 H18.
+          apply merge_unadj_1 to H21 H14.
+          apply merge_3_is_list to H20.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply merge_sym to H19.
+          apply change_merge_order to H27 *H28 *H29.
+          apply merge_sym to *H30.
+          apply merge_3_is_list to H24.
+          apply merge_1_is_list to H11.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to *H24.
+          apply merge_sym to *H11.
+          apply change_merge_order to H34 *H35 *H36.
+          apply merge_sym to *H37.
+          apply add_to_merge_left to H10 H38.
+          apply merge_sym to H27.
+          apply merge_sym to H34.
+          search.
+
+        % botL case
+        case H10. case H5. case H14.
+
+        % botR case
+        apply IH2 to H1 H2 H11 H4 H5.
+        apply add_to_merge_left to H10 H13.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H13 H4 H5.
+        apply merge_unadj_1 to H15 H11.
+        apply merge_unadj_1 to H18 H12.
+        apply add_to_merge_left to H10 H20.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H10. case H17.
+        apply merge_unadj_3 to H11 H18.
+        case H19.
+
+          % the cut-formula goes to the left premise of parL
+          apply adj_swap to H20 H13.
+          apply IH2 to H1 H2 H15 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_3_is_list to H28.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H29 *H30.
+          apply merge_sym to *H28.
+          apply change_merge_order to H31 H32 H21.
+          apply merge_sym to *H33.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H35 H34.
+          apply adj_same_result to H36 H5.
+          apply perm_merge_1 to H37 H39.
+          apply merge_2_is_list to H12.
+          apply merge_3_is_list to H25.
+          apply merge_exists to *H42 *H41.
+          apply merge_sym to *H25.
+          apply change_merge_order to H43 H44 H12.
+          apply merge_sym to *H45.
+          search.
+
+          % the cut-formula goes to the right premise of parL
+          apply adj_swap to H20 H14.
+          apply IH2 to H1 H2 H16 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_1_is_list to H11.
+          apply merge_3_is_list to H28.
+          apply merge_exists to *H30 *H29.
+          apply merge_sym to *H28.
+          apply merge_sym to *H21.
+          apply change_merge_order to H31 H32 H33.
+          apply merge_sym to *H34.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H36 H35.
+          apply adj_same_result to H37 H5.
+          apply perm_merge_1 to H38 H40.
+          apply merge_3_is_list to H25.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H42 *H43.
+          apply merge_sym to *H25.
+          apply merge_sym to *H12.
+          apply change_merge_order to H44 H45 H46.
+          apply merge_sym to *H47.
+          apply merge_sym to *H44.
+          apply merge_sym to *H31.
+          search.
+
+        % zeroL case
+        apply adj_same_result_diff to H10 H5. case H12.
+        apply prove_is_list to H2.
+        apply adj_1_is_list to H5.
+        apply merge_exists to *H16 *H14.
+        apply merge_unadj_1 to H17 H13.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H11 *H20.
+        apply merge_3_is_list to H21.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H12 *H13.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H10.
+        apply merge_exists to *H17 *H16.
+        apply merge_unadj_1 to H18 H10.
+        apply merge_3_is_list to H15.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthR case
+        rename D2' to D4'.
+        apply perm_sym to H16.
+        apply adj_perm_result to H18 H5.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H22 H11.
+        apply perm_sym to H17.
+        apply adj_perm_result to H26 H5.
+        apply IH2 to H1 H2 H14 H4 H27.
+        apply merge_unadj_1 to H30 H12.
+        apply perm_sym to *H20.
+        apply perm_merge_1 to H21 H34.
+        apply perm_sym to *H28.
+        apply perm_merge_1 to H29 H36.
+        apply merge_perm_det to H37 H35.
+        apply perm_2_is_list to H38.
+        apply perm_refl to *H39.
+        apply perm_merge_1 to H33 H15.
+        apply merge_perm_det to H41 H25.
+        apply add_to_merge_left to H10 H25.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusL case
+        rename G2'1 to G4'.
+        apply adj_same_result_diff to H5 H10. case H18.
+        apply adj_swap to H19 H11.
+        apply IH2 to H1 H2 H13 H4 H21.
+        apply merge_unadj_1 to H22 H20.
+        apply perm_sym to H15.
+        apply adj_perm_result to H27 H19.
+        apply adj_swap to H28 H12.
+        apply IH2 to H1 H2 H14 H4 H31.
+        apply merge_unadj_1 to H32 H30.
+        apply perm_merge_1 to H26 H29.
+        apply merge_perm_det to H36 H37.
+        apply adj_swap to H19 H10.
+        apply add_to_merge_left to H39 H26.
+        apply adj_same_result to H40 H5.
+        apply perm_merge_1 to H41 H43.
+        apply perm_merge_1 to H23 H16.
+        apply perm_merge_1 to H33 H17.
+        apply merge_perm_det to H46 H45.
+        apply perm_2_is_list to H47.
+        apply perm_refl to *H48.
+        search.
+
+      % the cut-formula is not principal
+      apply adj_1_is_list to H5.
+      apply merge_exists to *H10 *H7.
+      apply prove_is_list to H3.
+      apply adj_1_is_list to H4.
+      apply merge_exists to *H13 *H14.
+      apply merge_unadj_2 to H15 H9.
+      apply merge_3_is_list to H11.
+      search.
+
+    % wthL1 case -- permutes down
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthL2 case -- permutes down
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H6. case H14.
+    apply adj_swap to H15 H7.
+    apply IH1 to H1 H9 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply perm_sym to H11.
+    apply adj_perm_result to H23 H15.
+    apply adj_swap to H24 H8.
+    apply IH1 to H1 H10 H3 H27 H5.
+    apply merge_unadj_2 to H29 H26.
+    apply perm_merge_2 to H18 H12.
+    apply perm_merge_2 to H28 H13.
+    apply merge_perm_det to H34 H33.
+    apply perm_2_is_list to H35.
+    apply perm_refl to *H36.
+    apply perm_merge_2 to H22 H25.
+    apply merge_perm_det to H32 H38.
+    apply adj_swap to H15 H6.
+    apply add_to_merge_right to H40 H22.
+    apply adj_same_result to H41 H4.
+    apply perm_merge_2 to H42 H44.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusL case
+    apply perm_sym to H12.
+    apply adj_perm_result to H14 H4.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H7.
+    apply perm_sym to H13.
+    apply adj_perm_result to H22 H4.
+    apply IH1 to H1 H10 H3 H23 H5.
+    apply merge_unadj_2 to H25 H8.
+    apply perm_merge_2 to H29 H11.
+    apply merge_perm_det to H30 H21.
+    apply add_to_merge_right to H6 H21.
+    apply perm_sym to *H16.
+    apply perm_merge_2 to H18 H34.
+    apply perm_sym to *H24.
+    apply perm_merge_2 to H26 H36.
+    apply merge_perm_det to H37 H35.
+    apply perm_2_is_list to H38.
+    apply perm_refl to *H39.
+    search.
+
+  %% 9. Atom case
+  case H2 (keep).
+
+    % init
+    apply adj_same_result_diff to H4 H7. case H8.
+
+      % 1. the cut-formula is principal
+      % Unfolds the right premise (cut-formula in the antecedent)
+      % Each case is a possible rule applied to the right premise
+      case H3 (keep).
+
+        % init case
+        apply adj_same_result_diff to H5 H10.
+        case H12.
+
+          % 1. The cut-formula is principal
+          case H9. case H13.
+          apply adj_3_is_list to H6.
+          apply adj_3_is_list to H4.
+          apply perm_refl to *H14.
+          apply perm_refl to *H15.
+          apply perm_merge_1_nil to H16.
+          apply perm_merge_1_nil to H17. search.
+          case H15. case H15.
+
+          % 2. The cut-formula is not principal
+          case H13.
+
+        % oneR case
+        case H10. case H5.
+
+        % oneL case
+        apply adj_same_result_diff to H5 H10. case H12.
+        apply IH2 to H1 H2 H11 H4 H13.
+        apply adj_swap to H13 H10.
+        apply add_to_merge_left to H17 H14.
+        apply adj_same_result to H18 H5.
+        apply perm_merge_1 to H19 H21.
+        search.
+
+        % tensorL case
+        apply adj_same_result_diff to H5 H10. case H14.
+        apply adj_swap to H15 H12.
+        apply adj_swap to H17 H11.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H20 H18.
+        apply merge_unadj_1 to H24 H16.
+        apply adj_swap to H15 H10.
+        apply add_to_merge_left to H27 H26.
+        apply adj_same_result to H28 H5.
+        apply perm_merge_1 to H29 H31.
+        search.
+
+        % tensorR case
+        apply merge_unadj_3 to H12 H5.
+        case H17.
+
+          % the cut-formula goes to the left premise of tensorR
+          apply IH2 to H1 H2 H15 H4 H18.
+          apply merge_unadj_1 to H21 H13.
+          apply merge_3_is_list to H20.
+          apply merge_2_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply change_merge_order to H27 H28 H19.
+          apply merge_sym to *H29.
+          apply merge_3_is_list to H24.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H31 *H32.
+          apply merge_sym to H24.
+          apply change_merge_order to H33 H34 H11.
+          apply merge_sym to *H35.
+          apply add_to_merge_left to H10 H36.
+          search.
+
+          % the cut-formula goes to the right premise of tensorR
+          apply IH2 to H1 H2 H16 H4 H18.
+          apply merge_unadj_1 to H21 H14.
+          apply merge_3_is_list to H20.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H25 *H26.
+          apply merge_sym to H20.
+          apply merge_sym to H19.
+          apply change_merge_order to H27 *H28 *H29.
+          apply merge_sym to *H30.
+          apply merge_3_is_list to H24.
+          apply merge_1_is_list to H11.
+          apply merge_exists to *H32 *H33.
+          apply merge_sym to *H24.
+          apply merge_sym to *H11.
+          apply change_merge_order to H34 *H35 *H36.
+          apply merge_sym to *H37.
+          apply add_to_merge_left to H10 H38.
+          apply merge_sym to H27.
+          apply merge_sym to H34.
+          search.
+
+        % botL case
+        case H10. case H5. case H14.
+
+        % botR case
+        apply IH2 to H1 H2 H11 H4 H5.
+        apply add_to_merge_left to H10 H13.
+        search.
+
+        % parR case
+        apply IH2 to H1 H2 H13 H4 H5.
+        apply merge_unadj_1 to H15 H11.
+        apply merge_unadj_1 to H18 H12.
+        apply add_to_merge_left to H10 H20.
+        search.
+
+        % parL case
+        apply adj_same_result_diff to H5 H10. case H17.
+        apply merge_unadj_3 to H11 H18.
+        case H19.
+
+          % the cut-formula goes to the left premise of parL
+          apply adj_swap to H20 H13.
+          apply IH2 to H1 H2 H15 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_3_is_list to H28.
+          apply merge_2_is_list to H11.
+          apply merge_exists to *H29 *H30.
+          apply merge_sym to *H28.
+          apply change_merge_order to H31 H32 H21.
+          apply merge_sym to *H33.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H35 H34.
+          apply adj_same_result to H36 H5.
+          apply perm_merge_1 to H37 H39.
+          apply merge_2_is_list to H12.
+          apply merge_3_is_list to H25.
+          apply merge_exists to *H42 *H41.
+          apply merge_sym to *H25.
+          apply change_merge_order to H43 H44 H12.
+          apply merge_sym to *H45.
+          search.
+
+          % the cut-formula goes to the right premise of parL
+          apply adj_swap to H20 H14.
+          apply IH2 to H1 H2 H16 H4 H23.
+          apply merge_unadj_1 to H24 H22.
+          apply merge_1_is_list to H11.
+          apply merge_3_is_list to H28.
+          apply merge_exists to *H30 *H29.
+          apply merge_sym to *H28.
+          apply merge_sym to *H21.
+          apply change_merge_order to H31 H32 H33.
+          apply merge_sym to *H34.
+          apply adj_swap to H18 H10.
+          apply add_to_merge_left to H36 H35.
+          apply adj_same_result to H37 H5.
+          apply perm_merge_1 to H38 H40.
+          apply merge_3_is_list to H25.
+          apply merge_1_is_list to H12.
+          apply merge_exists to *H42 *H43.
+          apply merge_sym to *H25.
+          apply merge_sym to *H12.
+          apply change_merge_order to H44 H45 H46.
+          apply merge_sym to *H47.
+          apply merge_sym to *H44.
+          apply merge_sym to *H31.
+          search.
+
+        % zeroL case
+        apply adj_same_result_diff to H10 H5. case H12.
+        apply prove_is_list to H2.
+        apply adj_1_is_list to H5.
+        apply merge_exists to *H16 *H14.
+        apply merge_unadj_1 to H17 H13.
+        apply adj_1_is_list to H4.
+        apply merge_exists to *H11 *H20.
+        apply merge_3_is_list to H21.
+        search.
+
+        % topR case
+        apply adj_1_is_list to H5.
+        apply prove_is_list to H2.
+        apply merge_exists to *H12 *H13.
+        apply adj_1_is_list to H4.
+        apply adj_3_is_list to H10.
+        apply merge_exists to *H17 *H16.
+        apply merge_unadj_1 to H18 H10.
+        apply merge_3_is_list to H15.
+        search.
+
+        % wthL1 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthL2 case
+        apply adj_same_result_diff to H5 H10. case H13.
+        apply adj_swap to H14 H11.
+        apply IH2 to H1 H2 H12 H4 H16.
+        apply merge_unadj_1 to H17 H15.
+        apply adj_swap to H14 H10.
+        apply add_to_merge_left to H22 H21.
+        apply adj_same_result to H23 H5.
+        apply perm_merge_1 to H24 H26.
+        search.
+
+        % wthR case
+        rename D2' to D4'.
+        apply perm_sym to H16.
+        apply adj_perm_result to H18 H5.
+        apply IH2 to H1 H2 H13 H4 H19.
+        apply merge_unadj_1 to H22 H11.
+        apply perm_sym to H17.
+        apply adj_perm_result to H26 H5.
+        apply IH2 to H1 H2 H14 H4 H27.
+        apply merge_unadj_1 to H30 H12.
+        apply perm_sym to *H20.
+        apply perm_merge_1 to H21 H34.
+        apply perm_sym to *H28.
+        apply perm_merge_1 to H29 H36.
+        apply merge_perm_det to H37 H35.
+        apply perm_2_is_list to H38.
+        apply perm_refl to *H39.
+        apply perm_merge_1 to H33 H15.
+        apply merge_perm_det to H41 H25.
+        apply add_to_merge_left to H10 H25.
+        search.
+
+        % plusR1 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusR2 case
+        apply IH2 to H1 H2 H12 H4 H5.
+        apply merge_unadj_1 to H14 H11.
+        apply add_to_merge_left to H10 H17.
+        search.
+
+        % plusL case
+        rename G2'1 to G4'.
+        apply adj_same_result_diff to H5 H10. case H18.
+        apply adj_swap to H19 H11.
+        apply IH2 to H1 H2 H13 H4 H21.
+        apply merge_unadj_1 to H22 H20.
+        apply perm_sym to H15.
+        apply adj_perm_result to H27 H19.
+        apply adj_swap to H28 H12.
+        apply IH2 to H1 H2 H14 H4 H31.
+        apply merge_unadj_1 to H32 H30.
+        apply perm_merge_1 to H26 H29.
+        apply merge_perm_det to H36 H37.
+        apply adj_swap to H19 H10.
+        apply add_to_merge_left to H39 H26.
+        apply adj_same_result to H40 H5.
+        apply perm_merge_1 to H41 H43.
+        apply perm_merge_1 to H23 H16.
+        apply perm_merge_1 to H33 H17.
+        apply merge_perm_det to H46 H45.
+        apply perm_2_is_list to H47.
+        apply perm_refl to *H48.
+        search.
+
+      % 2. The cut-formula is not principal
+      case H9.
+
+    % oneR case
+    case H6. case H4. case H10.
+
+    % oneL case
+    apply IH1 to H1 H7 H3 H4 H5.
+    apply add_to_merge_right to H6 H8.
+    search.
+
+    % tensorL case
+    apply IH1 to H1 H9 H3 H4 H5.
+    apply merge_unadj_2 to H10 H7.
+    apply merge_unadj_2 to H14 H8.
+    apply add_to_merge_right to H6 H16.
+    search.
+
+    % tensorR case
+    apply adj_same_result_diff to H4 H6. case H13.
+    apply merge_unadj_3 to H7 H14.
+    case H15.
+
+      % the cut-formula goes to the left premise of tensorR.
+      apply adj_swap to H16 H9.
+      apply IH1 to H1 H11 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to *H26 *H25.
+      apply merge_2_is_list to H7.
+      apply merge_3_is_list to H24.
+      apply merge_exists to *H29 *H28.
+      apply change_merge_order to H30 H24 H17.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H32 H31.
+      apply change_merge_order to H27 H20 H8.
+      apply adj_same_result to H33 H4.
+      apply perm_merge_2 to H34 H37.
+      search.
+
+      % the cut-formula goes to the right premise of tensorR.
+      apply adj_swap to H16 H10.
+      apply IH1 to H1 H12 H3 H19 H5.
+      apply merge_unadj_2 to H21 H18.
+      apply merge_1_is_list to H8.
+      apply merge_3_is_list to H20.
+      apply merge_exists to H25 H26.
+      apply merge_sym to H27.
+      apply merge_3_is_list to H24.
+      apply merge_1_is_list to H7.
+      apply merge_exists to H29 H30.
+      apply merge_sym to H31.
+      apply merge_sym to H17.
+      apply change_merge_order to H31 H24 H33.
+      apply adj_swap to H14 H6.
+      apply add_to_merge_right to H35 H34.
+      apply adj_same_result to H36 H4.
+      apply perm_merge_2 to H37 H39.
+      apply merge_sym to H8.
+      apply change_merge_order to H28 H20 H41.
+      search.
+
+    % botL case
+    case H4.
+
+    % botR case
+    apply adj_same_result_diff to H4 H6. case H8.
+    apply IH1 to H1 H7 H3 H9 H5.
+    apply adj_swap to H9 H6.
+    apply add_to_merge_right to H13 H11.
+    apply adj_same_result to H14 H4.
+    apply perm_merge_2 to H15 H17.
+    search.
+
+    % parR case
+    apply adj_same_result_diff to H4 H6. case H10.
+    apply adj_swap to H11 H8.
+    apply adj_swap to H13 H7.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H14.
+    apply merge_unadj_2 to H20 H12.
+    apply adj_swap to H11 H6.
+    apply add_to_merge_right to H23 H22.
+    apply adj_same_result to H24 H4.
+    apply perm_merge_2 to H25 H27.
+    search.
+
+    % parL case
+    apply merge_unadj_3 to H8 H4.
+    case H13.
+
+      % the cut-formula goes to the left premise of parL.
+      apply IH1 to H1 H11 H3 H14 H5.
+      apply merge_unadj_2 to H16 H9.
+      apply merge_3_is_list to H20.
+      apply merge_2_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply change_merge_order to H23 H20 H7.
+      apply add_to_merge_right to H6 H24.
+      apply merge_2_is_list to H8.
+      apply merge_3_is_list to H17.
+      apply merge_exists to *H28 *H27.
+      apply change_merge_order to H29 H17 H15.
+      search.
+
+      % the cut-formula goes to the right premise of the parL.
+      apply IH1 to H1 H12 H3 H14 H5.
+      apply merge_unadj_2 to H16 H10.
+      apply merge_3_is_list to H20.
+      apply merge_1_is_list to H7.
+      apply merge_exists to *H21 *H22.
+      apply merge_sym to H23.
+      apply merge_sym to H7.
+      apply change_merge_order to H23 H20 H25.
+      apply add_to_merge_right to H6 H26.
+      apply merge_3_is_list to H17.
+      apply merge_1_is_list to H8.
+      apply merge_exists to *H29 *H30.
+      apply merge_sym to H31.
+      apply merge_sym to H15.
+      apply change_merge_order to H31 H17 H33.
+      search.
+
+    % zeroL case
+    apply adj_1_is_list to H5.
+    apply adj_3_is_list to H6.
+    apply merge_exists to *H8 *H9.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to *H12 *H13.
+    apply merge_unadj_2 to H10 H6.
+    apply merge_3_is_list to H14.
+    search.
+
+    % topR case
+    apply adj_1_is_list to H5.
+    apply merge_exists to *H8 *H7.
+    apply prove_is_list to H3.
+    apply adj_1_is_list to H4.
+    apply merge_exists to H11 H12.
+    apply adj_same_result_diff to H6 H4. case H14.
+    apply merge_unadj_2 to H13 H15.
+    apply merge_3_is_list to H9.
+    search.
+
+    % wthL1 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthL2 case
+    apply IH1 to H1 H8 H3 H4 H5.
+    apply merge_unadj_2 to  H9 H7.
+    apply add_to_merge_right to H6 H13.
+    search.
+
+    % wthR case
+    apply adj_same_result_diff to H4 H6. case H14.
+    apply adj_swap to H15 H7.
+    apply IH1 to H1 H9 H3 H17 H5.
+    apply merge_unadj_2 to H19 H16.
+    apply perm_sym to H11.
+    apply adj_perm_result to H23 H15.
+    apply adj_swap to H24 H8.
+    apply IH1 to H1 H10 H3 H27 H5.
+    apply merge_unadj_2 to H29 H26.
+    apply perm_merge_2 to H18 H12.
+    apply perm_merge_2 to H28 H13.
+    apply merge_perm_det to H34 H33.
+    apply perm_2_is_list to H35.
+    apply perm_refl to *H36.
+    apply perm_merge_2 to H22 H25.
+    apply merge_perm_det to H32 H38.
+    apply adj_swap to H15 H6.
+    apply add_to_merge_right to H40 H22.
+    apply adj_same_result to H41 H4.
+    apply perm_merge_2 to H42 H44.
+    search.
+
+    % plusR1 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusR2 case
+    apply adj_same_result_diff to H4 H6. case H9.
+    apply adj_swap to H10 H7.
+    apply IH1 to H1 H8 H3 H12 H5.
+    apply merge_unadj_2 to H14 H11.
+    apply adj_swap to H10 H6.
+    apply add_to_merge_right to H18 H17.
+    apply adj_same_result to H19 H4.
+    apply perm_merge_2 to H20 H22.
+    search.
+
+    % plusL case
+    apply perm_sym to H12.
+    apply adj_perm_result to H14 H4.
+    apply IH1 to H1 H9 H3 H15 H5.
+    apply merge_unadj_2 to H17 H7.
+    apply perm_sym to H13.
+    apply adj_perm_result to H22 H4.
+    apply IH1 to H1 H10 H3 H23 H5.
+    apply merge_unadj_2 to H25 H8.
+    apply perm_merge_2 to H29 H11.
+    apply merge_perm_det to H30 H21.
+    apply add_to_merge_right to H6 H21.
+    apply perm_sym to *H16.
+    apply perm_merge_2 to H18 H34.
+    apply perm_sym to *H24.
+    apply perm_merge_2 to H26 H36.
+    apply merge_perm_det to H37 H35.
+    apply perm_2_is_list to H38.
+    apply perm_refl to *H39.
+    search.

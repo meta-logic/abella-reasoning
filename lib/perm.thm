@@ -226,6 +226,16 @@ induction on 1. intros. case H1.
      apply adj_preserves_perm to H10 H12 H9.
      backchain perm_trans.
 
+Theorem adj_perm_source : forall J K A L,
+  perm J K ->
+  adj J A L ->
+  exists LL, adj K A LL /\ perm L LL.
+intros.
+apply adj_2_is_o to H2.
+apply perm_2_is_list to H1.
+apply adj_exists to H3 H4.
+search.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% append and perm
 
