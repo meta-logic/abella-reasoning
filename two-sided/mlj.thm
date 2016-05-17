@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                    %%
+%%       Multi-conclusion             %%
+%%       intuitionistic logic in      %%
+%%       Abella (.thm)                %%
+%%                                    %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Kind atm, tm       type.
+
+Type a, b, c, d    atm.
+Type r, s, t       tm.
+
+Type and, or, imp  o -> o -> o.
+%Type fa, ex        (tm -> o) -> o.
+Type not           o -> o.
+Type atom          atm -> o.
+
+Define formula : o -> prop by
+; formula (and A B) := formula A /\ formula B
+; formula (or A B) := formula A /\ formula B
+; formula (imp A B) := formula A /\ formula B
+%; formula (fa X A) := formula A
+%; formula (ex X A) := formula A
+; formula (not A) := formula A
+; formula (atom A).
+
+Import "../lib/merge" with is_o := formula.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Specification of multi-conclusion LJ with implicit contraction and weakening.
+% (Context is copied to all premises in binary rules)
+
+Define mlj : olist -> olist -> prop by
+
+% 1. init
+; mlj L R :=
+    exists L1 R1 A, adj L1 (atom A) L /\ adj R1 (atom A) R
+
+% 2. negR
+; mlj L R :=
+    exists R1 A, adj R1 (not A) R /\
+    exists LA, adj L A LA /\ mlj LA nil
+
+% 3. negL
+; mlj L R :=
+    exists L1 A, adj L1 (not A) L /\
+    exists RA, adj R A RA /\ mlj L1 RA
+
+% 4. impR
+; mlj L R :=
+    exists R1 A B, adj R1 (imp A B) R /\
+    exists LA, adj L A LA /\ mlj LA (B :: nil)
+
+% 5. impL
+; mlj L R :=
+    exists L1 A B, adj L1 (imp A B) L /\
+    exists RA, adj R A RA /\
+    exists LB, adj L B LB /\
+    mlj L RA /\ mlj LB R
+
+% 6. andR
+; mlj L R :=
+    exists R1 A B, adj R1 (and A B) R /\
+    exists RA, adj R1 A RA /\
+    exists RB, adj R1 B RB /\
+    mlj L RA /\ mlj L RB
+
+% 7. andL
+; mlj L R :=
+    exists L1 A B, adj L1 (and A B) L /\
+    exists LAB, merge (A :: B :: nil) L1 LAB /\
+    mlj LAB R
+
+% 8. orR
+; mlj L R :=
+    exists R1 A B, adj R1 (or A B) R /\
+    exists RAB, merge (A :: B :: nil) R1 RAB /\
+    mlj L RAB
+
+% 9. orL
+; mlj L R :=
+    exists L1 A B, adj L1 (or A B) L /\
+    exists LA, adj L1 A LA /\
+    exists LB, adj L1 B LB /\
+    mlj LA R /\ mlj LB R
+.
+% 10. forallR
+%; mlj L R :=
+%    exists R1 X A, adj R1 (fa X A) R /\    
+
+% 11. forallL
+%; mlj L R :=
+
+% 12. existsR
+%; mlj L R :=
+
+% 13. existsL
+%; mlj L R :=
