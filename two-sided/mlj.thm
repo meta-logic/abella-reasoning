@@ -16,25 +16,24 @@ Kind atm, tm       type.
 Type a, b, c, d    atm.
 Type r, s, t       tm.
 
+Type not           o -> o.
 Type and, or, imp  o -> o -> o.
 %Type fa, ex        (tm -> o) -> o.
-Type not           o -> o.
 Type atom          atm -> o.
 
 Define formula : o -> prop by
+; formula (not A) := formula A
+; formula (imp A B) := formula A /\ formula B
 ; formula (and A B) := formula A /\ formula B
 ; formula (or A B) := formula A /\ formula B
-; formula (imp A B) := formula A /\ formula B
 %; formula (fa X A) := formula A
 %; formula (ex X A) := formula A
-; formula (not A) := formula A
 ; formula (atom A).
 
 Import "../lib/merge" with is_o := formula.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Specification of multi-conclusion LJ with implicit contraction and weakening.
-% (Context is copied to all premises in binary rules)
+% Specification of multi-conclusion LJ
 
 Define mlj : olist -> olist -> prop by
 
@@ -42,12 +41,12 @@ Define mlj : olist -> olist -> prop by
 ; mlj L R :=
     exists L1 R1 A, adj L1 (atom A) L /\ adj R1 (atom A) R
 
-% 2. negR
+% 2. notR
 ; mlj L R :=
     exists R1 A, adj R1 (not A) R /\
     exists LA, adj L A LA /\ mlj LA nil
 
-% 3. negL
+% 3. notL
 ; mlj L R :=
     exists L1 A, adj L1 (not A) L /\
     exists RA, adj R A RA /\ mlj L1 RA
@@ -60,16 +59,20 @@ Define mlj : olist -> olist -> prop by
 % 5. impL
 ; mlj L R :=
     exists L1 A B, adj L1 (imp A B) L /\
-    exists RA, adj R A RA /\
-    exists LB, adj L B LB /\
-    mlj L RA /\ mlj LB R
+    exists L11 L12, merge L11 L12 L1 /\
+    exists R1 R2, merge R1 R2 R /\
+    exists R1A, adj R1 A R1A /\
+    exists L12B, adj L12 B L12B /\
+    mlj L11 R1A /\ mlj L12B R2
 
 % 6. andR
 ; mlj L R :=
     exists R1 A B, adj R1 (and A B) R /\
-    exists RA, adj R1 A RA /\
-    exists RB, adj R1 B RB /\
-    mlj L RA /\ mlj L RB
+    exists L1 L2, merge L1 L2 L /\
+    exists R11 R12, merge R11 R12 R1 /\
+    exists R11A, adj R11 A R11A /\
+    exists R12B, adj R12 B R12B /\
+    mlj L1 R11A /\ mlj L2 R12B
 
 % 7. andL
 ; mlj L R :=
@@ -86,9 +89,11 @@ Define mlj : olist -> olist -> prop by
 % 9. orL
 ; mlj L R :=
     exists L1 A B, adj L1 (or A B) L /\
-    exists LA, adj L1 A LA /\
-    exists LB, adj L1 B LB /\
-    mlj LA R /\ mlj LB R
+    exists L11 L12, merge L11 L12 L1 /\
+    exists R1 R2, merge R1 R2 R /\
+    exists L11A, adj L11 A L11A /\
+    exists L12B, adj L12 B L12B /\
+    mlj L11A R1 /\ mlj L12B R2
 .
 % 10. forallR
 %; mlj L R :=
@@ -102,3 +107,43 @@ Define mlj : olist -> olist -> prop by
 
 % 13. existsL
 %; mlj L R :=
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cut-elimination proof
+
+Theorem cut_admissibility : forall C L1 R1 R1C L2 L2C R2,
+  formula C ->
+  mlj L1 R1C -> mlj L2C R2 ->
+  adj R1 C R1C -> adj L2 C L2C ->
+  exists L R, merge L1 L2 L /\ merge R1 R2 R /\ mlj L R.
+
+induction on 1. induction on 2. induction on 3. intros.
+case H1 (keep).
+
+% Cut on (not A)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply adj_same_result_diff to H8 H4.
+  
+  apply adj_3_is_list to H7. apply adj_1_is_list to H5.
+  apply merge_exists to H10 H11.
+  apply adj_1_is_list to H4.
+  case H9.
+%% Up to here [search.]
+
+  % notR
+  apply adj_same_result_diff to H7 H4.
+  case H10.
+
+    % cut formula is principal
+    skip.
+
+    % cut disappears
+    search.
+
+  % notL
+  apply adj_swap to H4 H8.
+  apply IH1 to H1 H9 H3 H11 H5.
