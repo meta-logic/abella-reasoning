@@ -108,6 +108,46 @@ Define mlj : olist -> olist -> prop by
 % 13. existsL
 %; mlj L R :=
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helper lemmas
+
+Theorem mlj_is_list : forall L R,
+  mlj L R -> is_list L /\ is_list R.
+
+induction on 1. intros. case H1.
+  apply adj_3_is_list to H2. apply adj_3_is_list to H3. search.
+  apply adj_1_is_list to H3. apply adj_3_is_list to H3. search.
+  apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply adj_1_is_list to H3. search.
+  apply adj_1_is_list to H3. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H4. search.
+  apply merge_3_is_list to H3. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply IH to H4. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H4. search.
+
+Theorem init_case : forall C A L1 R1 R1C L2 L2C R2 L3 R3,
+  formula C ->
+  mlj L1 R1C ->
+  mlj L2C R2 ->
+  adj R1 C R1C ->
+  adj L2 C L2C ->
+  adj L3 (atom A) L1 ->
+  adj R3 (atom A) R1C ->
+  (exists L R, merge L1 L2 L /\ merge R1 R2 R /\ mlj L R) \/
+  C = (atom A).
+
+intros.
+  apply adj_3_is_list to H6. apply adj_1_is_list to H5.
+  apply merge_exists to H8 H9.
+  apply adj_1_is_list to H4.
+  apply mlj_is_list to H3.
+  apply merge_exists to H11 H13.
+  apply adj_same_result_diff to H7 H4.
+  case H15.
+    search.
+    apply merge_unadj_1 to H10 H6. apply merge_unadj_1 to H14 H16. search.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Cut-elimination proof
 
@@ -126,24 +166,174 @@ case H1 (keep).
   case H2 (keep).
 
   % init
-  apply adj_same_result_diff to H8 H4.
-  
-  apply adj_3_is_list to H7. apply adj_1_is_list to H5.
-  apply merge_exists to H10 H11.
-  apply adj_1_is_list to H4.
+  apply init_case to H1 H2 H3 H4 H5 H7 H8.
   case H9.
-%% Up to here [search.]
-
-  % notR
-  apply adj_same_result_diff to H7 H4.
-  case H10.
-
-    % cut formula is principal
-    skip.
-
-    % cut disappears
     search.
 
+  % notR
+  skip.
+
   % notL
-  apply adj_swap to H4 H8.
-  apply IH1 to H1 H9 H3 H11 H5.
+  skip.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (imp A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  skip.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+ 
+% Cut on (and A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  skip.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (or A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  skip.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (atom A)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H6 H7.
+  case H8.
+    search.
+    % cut-principal case
+    apply adj_3_is_list to H6. apply adj_1_is_list to H5.
+    apply merge_exists to H9 H10.
+    apply adj_1_is_list to H4. apply mlj_is_list to H3.
+    apply merge_exists to H12 H14.
+    apply merge_unadj_1 to H11 H6.
+    %% TODO: continue here.
+    skip.
+
+  % notR
+  skip.
+
+  % notL
+  skip.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
