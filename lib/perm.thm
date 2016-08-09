@@ -111,25 +111,7 @@ Theorem adj_preserves_perm : forall A JJ J KK K,
   adj KK A K ->
   perm JJ KK ->
   perm J K.
-induction on 1. intros. case H1.
-  case H2.
-    search. search.
-  case H2.
-    search.
-    case H3. case H8. case H9.
-      apply IH to H5 H7 H10. apply adj_3_is_list to H5. apply adj_3_is_list to H7. search.
-      apply adj_swap to H14 H7.
-       assert adj (B1 :: K3) A (B1 :: U).
-       apply IH to H5 H17 H10.
-         apply adj_3_is_list to H5. apply adj_3_is_list to H15. apply adj_3_is_list to H14.
-         search.
-      apply perm_cons_1 to *H10.
-        apply adj_3_is_list to H5. apply adj_1_is_list to H13.
-        apply adj_swap to *H13 *H9.
-        assert adj (B1 :: K2) A (B1 :: L1).
-        apply adj_swap to *H18 *H19.
-        apply IH to *H5 *H20 _.
-        search.
+intros. search.
 
 Theorem perm_trans_lem : forall J K L, is_list K -> perm J K -> perm K L -> perm J L.
 induction on 1. intros. case H1.
@@ -139,7 +121,7 @@ induction on 1. intros. case H1.
   case H2. case H3.
     case H7. case H9.
       apply IH to *H5 *H8 *H11.
-      backchain adj_preserves_perm.
+       search.
 
       apply perm_cons_1 to *H11.
       apply adj_swap to *H16 *H10.

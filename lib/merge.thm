@@ -89,6 +89,13 @@ induction on 1. intros. case H1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Theorem merge_adj_1 : forall A JJ J K LL,
+  merge JJ K LL -> adj JJ A J -> exists L, adj LL A L /\ merge J K L.
+intros.
+apply adj_2_is_o to H2. apply merge_3_is_list to H1.
+apply adj_exists to *H3 *H4.
+search.
+
 Theorem merge_unadj_1 : forall J K L JJ A,
   merge J K L -> adj JJ A J -> exists LL, adj LL A L /\ merge JJ K LL.
 induction on 1. intros. case H1.
@@ -99,6 +106,13 @@ induction on 1. intros. case H1.
      assert merge U1 K U. apply adj_same_result to H13 H2.
      apply perm_merge_1 to *H14 *H15. search.
   apply IH to H5 H2. apply adj_swap to H6 H4. assert merge JJ K U. search.
+
+Theorem merge_adj_2 : forall A J KK K LL,
+  merge J KK LL -> adj KK A K -> exists L, adj LL A L /\ merge J K L.
+intros.
+apply adj_2_is_o to H2. apply merge_3_is_list to H1.
+apply adj_exists to *H3 *H4.
+search.
 
 Theorem merge_unadj_2 : forall J K L KK A,
   merge J K L -> adj KK A K -> exists LL, adj LL A L /\ merge J KK LL.
