@@ -10,7 +10,7 @@ Inductive adj : list T -> T -> list T -> Prop :=
   | adj_same : forall X L, adj L X (X :: L)
   | adj_diff : forall X Y K L, adj K X L -> adj (Y :: K) X (Y :: L).
 
-Theorem adj_swap :
+Theorem adj_swap_lem :
   forall J X K Y L,
   adj J X K -> adj K Y L ->
   exists KK, adj J Y KK /\ adj KK X L.
@@ -26,6 +26,10 @@ Proof.
     - destruct (IHadj _ _ H4) ; destruct H6 ; rename x into XX.
       exists (Y :: XX) ; split ; refine (adj_diff _ _ _ _ _) ; auto.
 Qed.
+
+Ltac adj_swap H1 H2 KK :=
+  let H := fresh in
+  destruct (adj_swap_lem _ _ _ _ _ H1 H2) as [ KK H ] ; destruct H.
 
 Inductive perm : list T -> list T -> Prop :=
   | perm_nil : perm nil nil
@@ -59,8 +63,8 @@ Proof.
   * exists LL ; rewrite <- H4, <- H5 ; auto.
   * symmetry in H2 ; rewrite H1 in H2.
     destruct (IHHp _ H2) as [ Z HH ] ; destruct HH.
-    destruct (adj_swap _ _ _ _ _ H6 H0) as [ ZZ HH ] ; destruct HH.
-    exists ZZ ; split ; [ auto | refine (perm_adj _ _ _ _ _ H4 H8 H7) ].
+    adj_swap H6 H0 U.
+    exists U ; split ; [ trivial | refine (perm_adj _ _ _ _ _ H4 H8 H7) ].
 Qed.
 
 Lemma perm_uncons_2 : forall X K L,
@@ -71,8 +75,8 @@ Proof.
   * exists KK ; rewrite <- H5, <- H6 ; auto.
   * symmetry in H3 ; rewrite H2 in H3.
     destruct (IHperm _ H3) as [ Z HH ] ; destruct HH.
-    destruct (adj_swap _ _ _ _ _ H7 H) as [ ZZ HH ] ; destruct HH.
-    exists ZZ ; split ; [ auto | refine (perm_adj _ _ _ _ _ H9 H5 H8) ].
+    adj_swap H7 H U.
+    exists U ; split ; [ auto | refine (perm_adj _ _ _ _ _ H9 H5 H8) ].
 Qed.
 
 Lemma list_finite : forall (X : T) L, (X :: L) = L -> False.
@@ -117,21 +121,14 @@ Ltac adj_one :=
       cut (adj J X K) ; [
         let HH := fresh in intro HH ; now refine (@adj_diff X Y J K HH)
       | ]
-  | [ |- context [?X :: ?K] ] =>
-      let L := fresh "L" in
-      let Heq := fresh "HeqL" in
-      remember (X :: K) as L eqn:Heq ;
-      assert (adj K X L) ; [ rewrite Heq ; now refine (adj_same X K) | ]
   end.
 
 Ltac perm_one :=
   match goal with
   | [ H : perm nil ?L |- _ ] =>
-      let HH := fresh in
-      pose (HH := perm_nil_1 L H) ; rewrite HH in * ; clear H HH
+      rewrite (perm_nil_1 L H) in * ; clear H
   | [ H : perm ?L nil |- _ ] =>
-      let HH := fresh in
-      pose (HH := perm_nil_2 L H) ; rewrite HH in * ; clear H HH
+      rewrite (perm_nil_2 L H) in * ; clear H
   | [ H : perm ?K (?X :: ?L) |- _ ] =>
       let KK := fresh K in
       let HH := fresh in
@@ -152,7 +149,17 @@ Ltac perm_one :=
       | ]
   end.
 
-Ltac ms_simpl := repeat (intros ; eauto ; (adj_one || perm_one)).
+(* This is the most questionable simplification rule *)
+Ltac adjify_one :=
+  match goal with
+  | [ |- context [?X :: ?K] ] =>
+      let L := fresh "L" in
+      let Heq := fresh "HeqL" in
+      remember (X :: K) as L eqn:Heq ;
+      assert (adj K X L) ; [ rewrite Heq ; now refine (adj_same X K) | ]
+  end.
+
+Ltac ms_simpl := repeat (intros ; eauto ; (adj_one || perm_one || adjify_one)).
 
 Theorem perm_trans : forall J K L, perm J K -> perm K L -> perm J L.
 Proof.
@@ -172,33 +179,39 @@ Theorem adj_same_result : forall J K X L,
   adj K X L ->
   perm J K.
 Proof.
-intros until 1. dependent induction H generalizing K.
-* now ms_simpl.
-* intros. inversion H0.
-  - rewrite <- H4 ; now ms_simpl.
-  - now ms_simpl.
+  intros until 1. dependent induction H generalizing K.
+  * now ms_simpl.
+  * intros. inversion H0.
+    - rewrite <- H4 ; now ms_simpl.
+    - now ms_simpl.
 Qed.
 
-Theorem adj_same_result_diff : forall J X K B L,
+Lemma adj_same_result_diff_lem : forall J X K Y L,
   adj J X L ->
-  adj K B L ->
-  (X = B /\ perm J K) \/
+  adj K Y L ->
+  (X = Y /\ perm J K) \/
   exists KK, adj KK X K.
 Proof.
-intros until 1. dependent induction H generalizing K B.
-* intros. inversion H.
-  - pose (HH := perm_refl L). auto.
-  - now ms_simpl.
-* intros. inversion H0.
-  - now ms_simpl.
-  - destruct (IHadj K1 B H4) as [ HH | HH ].
-    + destruct HH. left. split. auto. refine (perm_adj _ _ _ _ _ (adj_same Y _) (adj_same Y _) H7).
-    + destruct HH as [ KK ]. right. exists (Y :: KK).
-      eapply adj_diff. auto.
+  intros until 1. dependent induction H generalizing K.
+  * intros. inversion H.
+    - pose (HH := perm_refl L). auto.
+    - now ms_simpl.
+  * intros. inversion H0.
+    - now ms_simpl.
+    - destruct (IHadj K1 H4) as [ HH | HH ].
+      + destruct HH. left. split ; now ms_simpl.
+      + destruct HH as [ KK ]. right.
+        exists (Y0 :: KK). now ms_simpl.
 Qed.
 
-(* Rest have not been ms_simpl'd *)
-(* 2016-08-10 16:12:24+0200 *)
+Ltac adj_same_result_diff H1 H2 :=
+   let H := fresh "H" in
+   destruct (adj_same_result_diff_lem _ _ _ _ _ H1 H2) as [ H | H ] ;
+   [ (let Heq := fresh "Heq" in
+      destruct H as [ Heq ] ; rewrite <- Heq in * ; clear Heq)
+   | (let KK := fresh "KK" in
+      destruct H as [ KK ])
+   ].
 
 Theorem perm_invert : forall X J K JJ KK,
   perm J K ->
@@ -206,58 +219,49 @@ Theorem perm_invert : forall X J K JJ KK,
   adj KK X K ->
   perm JJ KK.
 Proof.
-intros until 1. dependent induction H generalizing X JJ KK.
-* intros. inversion H.
-* intros.
-  destruct (adj_same_result_diff _ _ _ _ _ H2 H) as [ HH | HH ].
-  - destruct HH ; rewrite <- H4 in * ; clear H4.
-    refine (perm_trans _ _ _ H5 (perm_trans _ _ _ H1 _)).
-    refine (adj_same_result _ _ _ _ H0 H3).
-  - destruct HH as [ Z ].
-    destruct (adj_same_result_diff _ _ _ _ _ H3 H0) as [ HH | HH ].
-    + destruct HH. rewrite <- H5 in H.
-      eapply perm_trans.
-      eapply adj_same_result. exact H2. exact H.
-      eapply perm_trans. exact H1. eapply perm_sym. auto.
-    + destruct HH as [ ZZ ].
-      destruct (adj_swap _ _ _ _ _ H4 H) as [ U HH ] ; destruct HH.
-      destruct (adj_swap _ _ _ _ _ H5 H0) as [ UU HH ] ; destruct HH.
-      eapply perm_trans.
-      exact (adj_same_result _ _ _ _ H2 H7).
-      eapply perm_trans. eapply perm_adj. exact H6. exact H8.
-      eapply IHperm. exact H4. exact H5.
-      exact (adj_same_result _ _ _ _ H9 H3).
+  intros until 1. dependent induction H generalizing JJ KK.
+  * now ms_simpl.
+  * intros. adj_same_result_diff H2 H.
+    - refine (perm_trans _ _ _ H4 (perm_trans _ _ _ H1 _)).
+      refine (adj_same_result _ _ _ _ H0 H3).
+    - adj_same_result_diff H3 H0.
+      + refine (perm_trans _ _ _ (adj_same_result _ _ _ _ H2 H) (perm_trans _ _ _ H1 (perm_sym _ _ H5))).
+      + adj_swap H4 H U. adj_swap H5 H0 UU.
+        refine (perm_trans _ _ _ (adj_same_result _ _ _ _ H2 H7) _).
+        specialize (IHperm _ _ H4 H5).
+        refine (perm_trans _ _ _ (perm_adj _ _ _ _ _ H6 H8 IHperm) (adj_same_result _ _ _ _ H9 H3)).
 Qed.
 
-Theorem adj_perm_result : forall J K X JJ,
+Theorem adj_perm_result_lem : forall J K X JJ,
   perm J K ->
   adj JJ X J ->
   exists KK, adj KK X K /\ perm JJ KK.
 Proof.
-intros until 1. dependent induction H generalizing X JJ.
-* intros. inversion H.
-* intros.
-  destruct (adj_same_result_diff _ _ _ _ _ H2 H) as [ HH | HH ].
-  - destruct HH. exists LL. rewrite <- H3 in H0.
-    pose (HH := perm_trans _ _ _ H4 H1). auto.
-  - destruct HH as [ Z ].
-    destruct (adj_swap _ _ _ _ _ H3 H) as [ ZZ HH ] ; destruct HH.
-    destruct (IHperm _ _ H3) as [ U HH ] ; destruct HH.
-    destruct (adj_swap _ _ _ _ _ H6 H0) as [ UU HH ] ; destruct HH.
-    assert (perm ZZ UU). eapply perm_adj. exact H4. exact H8. exact H7.
-    exists UU. split. auto.
-    eapply perm_trans. eapply adj_same_result. exact H2. exact H5. auto.
+  intros until 1. dependent induction H generalizing JJ ; intros.
+  * now ms_simpl.
+  * adj_same_result_diff H2 H.
+    - exists LL. split ; [ trivial | refine (perm_trans _ _ _ H3 H1) ].
+    - adj_swap H3 H ZZ. specialize (IHperm _ H3). destruct IHperm as [ U HH ] ; destruct HH.
+      adj_swap H6 H0 UU.
+      assert (perm ZZ UU) by ms_simpl.
+      exists UU. split ; [ trivial | ].
+      refine (perm_trans _ _ _ (adj_same_result _ _ _ _ H2 H5) H10).
 Qed.
 
-Theorem adj_perm_source : forall J K A L,
+Ltac adj_perm_result H1 H2 U :=
+  let H := fresh in
+  destruct (adj_perm_result_lem _ _ _ _ H1 H2) as [ U H ] ; destruct H.
+
+Theorem adj_perm_source_lem : forall J K X L,
   perm J K ->
-  adj J A L ->
-  exists LL, adj K A LL /\ perm L LL.
+  adj J X L ->
+  exists LL, adj K X LL /\ perm L LL.
 Proof.
-intros.
-assert (adj K A (A :: K)). eapply adj_same.
-exists (A :: K). split. auto.
-refine (perm_adj _ _ _ _ _ H0 H1 H).
+  intros. exists (X :: K). split ; now ms_simpl.
 Qed.
+
+Ltac adj_perm_source H1 H2 U :=
+  let H := fresh in
+  destruct (adj_perm_source_lem _ _ _ _ H1 H2) as [ U H ] ; destruct H.
 
 End Adj_Perm.
