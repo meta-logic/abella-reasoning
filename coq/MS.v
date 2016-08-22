@@ -3,7 +3,7 @@ Require Import List.
 Open Scope list_scope.
 
 Module Type CARRIER.
-  Parameter T : Type.
+  Parameter T : Set.
 End CARRIER.
 
 Module Adj (Import CC : CARRIER).
@@ -12,7 +12,7 @@ Inductive adj : list T -> T -> list T -> Prop :=
   | adj_same : forall {X L}, adj L X (X :: L)
   | adj_diff : forall {X Y K L}, adj K X L -> adj (Y :: K) X (Y :: L).
 
-Hint Resolve adj_same adj_diff : ms.
+Hint Constructors adj : ms.
 
 Theorem adj_swap :
   forall {X Y : T} {J K L : list T},
@@ -47,7 +47,7 @@ Inductive perm : list T -> list T -> Prop :=
   | perm_nil : perm nil nil
   | perm_adj : forall {X KK K LL L}, adj KK X K -> adj LL X L -> perm KK LL -> perm K L.
 
-Hint Resolve perm_nil perm_adj : ms.
+Hint Constructors perm : ms.
 
 Theorem perm_refl : forall {L}, perm L L.
 Proof.
@@ -229,7 +229,7 @@ Inductive merge : list T -> list T -> list T -> Prop :=
   | merge_left : forall {X JJ J K LL L}, merge JJ K LL -> adj JJ X J -> adj LL X L -> merge J K L
   | merge_right : forall {X J KK K LL L}, merge J KK LL -> adj KK X K -> adj LL X L -> merge J K L.
 
-Hint Resolve merge_nil merge_left merge_right : ms.
+Hint Constructors merge : ms.
 
 Theorem perm_merge_1 : forall {J K L JJ},
   merge J K L ->
