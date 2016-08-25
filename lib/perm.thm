@@ -218,6 +218,28 @@ apply perm_2_is_list to H1.
 apply adj_exists to H3 H4.
 search.
 
+Theorem adj_nil_1 : forall A L, 
+  adj nil A L -> L = A :: nil.
+intros. case H1. search.
+
+Theorem perm_nil_1 : forall L, 
+  perm nil L -> L = nil.
+intros. case H1. search. case H2.
+
+Theorem adj_det : forall A B L,
+  adj L A (B :: nil) -> A = B /\ L = nil.
+intros. case H1.
+  search.
+  case H3.
+
+Theorem perm_singleton : forall A L,
+  perm (A :: nil) L -> L = (A :: nil).
+intros. case H1. 
+  apply adj_det to H2.
+  apply perm_nil_1 to H4.
+  apply adj_nil_1 to H3.
+  search.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% append and perm
 

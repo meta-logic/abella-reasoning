@@ -335,3 +335,26 @@ intros.
   apply merge_preserves_perm to H13 H3.
   apply perm_merge_3 to H6 H14.
   search.
+
+Theorem merge_to_adj : forall J L A,
+  merge J (A :: nil) L ->
+  exists JJ, perm J JJ /\ adj JJ A L.
+skip.
+
+% Theorem merge_same_result_diff : forall J A K B L,
+%   merge J (A :: nil) L ->
+%   merge K (B :: nil) L ->
+%   (A = B /\ perm J K) \/
+%   exists KK, merge KK (A :: nil) K /\
+%   exists JJ, merge JJ (B :: nil) J.
+% induction on 1. intros. case H1.
+%   case H2.
+%     apply perm_refl to H4. search.
+%     right. witness K1. apply adj_1_is_list to H6. search.
+%   case H2.
+%     right. search.
+%     apply IH to H4 H6. case H7.
+%       apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
+%       search.
+% 
+
