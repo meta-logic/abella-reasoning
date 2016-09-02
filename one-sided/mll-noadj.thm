@@ -89,6 +89,15 @@ induction on 1. intros. case H1.
 Theorem bot_inv : forall J L,
   mll L -> merge J (bot :: nil) L -> mll J.
 induction on 1. intros. case H1.
+  apply merge_same_result_diff to H2 H3. case H4.
+   apply merge_to_adj to H5. apply adj_det to H7.
+
+  apply merge_same_result_diff to H2 H3. case H9.
+  apply merge_split to H10 H4. case H11.
+    % Stopped here    
+  
+
+
   apply adj_same_result_diff to H2 H3. case H9.
    apply merge_unadj_3 to H4 H10. case H11.
     apply adj_swap to H12 H5. apply IH to *H6 H15.
