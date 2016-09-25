@@ -180,12 +180,6 @@ induction on 1. intros. case H1.
   apply IH to H5 H2.
    apply adj_perm to H2 H3. search.
 
-Theorem adj_nil_1 : forall A L, adj nil A L -> L = A :: nil.
-intros. case H1. search.
-
-Theorem perm_nil_1 : forall L, perm nil L -> L = nil.
-intros. case H1. search. case H2.
-
 Theorem mell_perm_l : forall X QL K L,
   mell X QL K ->
   perm K L ->

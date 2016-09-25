@@ -76,12 +76,6 @@ induction on 1. intros. case H1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Theorem adj_nil_1 : forall A L, adj nil A L -> L = A :: nil.
-intros. case H1. search.
-
-Theorem perm_nil_1 : forall L, perm nil L -> L = nil.
-intros. case H1. search. case H2.
-
 Theorem mll_perm : forall K L,
   mll K -> perm K L -> mll L.
 induction on 1. intros. case H1.
