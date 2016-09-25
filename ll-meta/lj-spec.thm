@@ -1,0 +1,18 @@
+
+%% Object logic connectives
+Type olatom olatm -> olfm.
+Type oland  olfm -> olfm -> olfm.
+Type olimp  olfm -> olfm -> olfm.
+
+%% No units or quantifiers so far.
+%% I have the feeling that this should not be taylored towards one system...
+
+%% Mapping OL formulas to LL formulas (LL formula types is using Abella's
+%% built-in formula type o).
+Type lft olfm -> o.
+Type rgt olfm -> o.
+
+Define is_olfm : olfm -> prop by
+TODO
+
+Import "cut-coherence" with is_olfm := is_olfm.

@@ -1,0 +1,26 @@
+
+%% Object logic formulas and atoms
+Kind olfm type.
+Kind olatm type.
+
+%% Each logic specification should define what it means to be a 
+%% formula and atom in this logic
+Type is_olfm olfm -> prop.
+Type is_olat olfm -> prop.
+
+Import "../one-sided/mall".
+
+Define cut_spec : o by
+; is_olfm B -> times (lft B) (rgt B).
+
+Define acut_spec : olfm -> o by
+; is_olat A -> times (lft A) (rgt A).
+
+% Define cut_coherent : olist -> o by
+% ?
+% 
+% Theorem to_atomic_cuts : forall X,
+%   cut_coherent X cut_spec ->
+%   mall (cut_spec :: X) ->
+%   mall (acut_spec :: X).
+% 
