@@ -16,7 +16,12 @@ Type is_olfm olfm -> prop.
 Type is_olat olfm -> prop.
 
 %% The specification of a formula maps to a pair with the left and right bodies
-Type specification olfm -> o -> o.
+Kind spec type.
+
+Type snil spec.
+Type sadd spec -> olfm
+               -> (olfm -> olfm -> o)           % left body
+               -> (olfm -> olfm -> o) -> spec.  % right body
 
 Import "../one-sided/mall".
 
