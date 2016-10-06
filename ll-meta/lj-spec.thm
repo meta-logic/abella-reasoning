@@ -1,18 +1,21 @@
 
 %% Object logic connectives
-Type olatom olatm -> olfm.
-Type oland  olfm -> olfm -> olfm.
-Type olimp  olfm -> olfm -> olfm.
+Type ljatom olatm -> olfm.
+Type ljand  olfm -> olfm -> olfm.
+Type ljor   olfm -> olfm -> olfm.
+Type ljimp  olfm -> olfm -> olfm.
 
 %% No units or quantifiers so far.
-%% I have the feeling that this should not be taylored towards one system...
 
-%% Mapping OL formulas to LL formulas (LL formula types is using Abella's
-%% built-in formula type o).
-Type lft olfm -> o.
-Type rgt olfm -> o.
+Define is_ljfm : olfm -> prop by
+; is_ljfm (ljatom A)
+; is_ljfm (ljand A B) := is_ljfm A /\ is_ljfm B
+; is_ljfm (ljor A B) := is_ljfm A /\ is_ljfm B
+; is_ljfm (ljimp A B) := is_ljfm A /\ is_ljfm B.
 
-Define is_olfm : olfm -> prop by
-TODO
+Import "cut-coherence" with is_olfm := is_ljfm.
 
-Import "cut-coherence" with is_olfm := is_olfm.
+Define lj : ljfm -> o by
+; lft (ljimp A B) := tens (rgt A) (lft B)
+; rgt (ljimp A B) := par (lft A) (rgt B).
+
