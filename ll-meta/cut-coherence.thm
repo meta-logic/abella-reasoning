@@ -1,3 +1,6 @@
+Kind atm type.
+
+Import "../one-sided/mall".
 
 %% Elements used in the specification of systems.
 
@@ -5,40 +8,58 @@
 Kind olfm type.
 Kind olatm type.
 
-%% Mapping OL formulas to LL formulas (LL formula types is using Abella's
-%% built-in formula type o).
-Type lft olfm -> o.
-Type rgt olfm -> o.
+%% Mapping OL formulas to LL atoms
+Type lft olfm -> atm.
+Type rgt olfm -> atm.
+
+%% Quantifiers for formulas of the object logic
+%Type all (olfm -> o) -> o.
+%Type ex (olfm -> o) -> o.
 
 %% Each logic specification should define what it means to be a 
 %% formula and atom in this logic
 Type is_olfm olfm -> prop.
 Type is_olat olfm -> prop.
 
-%% The specification of a formula maps to a pair with the left and right bodies
+%% The specification of a formula maps the lft or rgt atoms to the body
 Kind spec type.
 
-Type snil spec.
-Type sadd spec -> olfm
-               -> (olfm -> olfm -> o)           % left body
-               -> (olfm -> olfm -> o) -> spec.  % right body
+Type spnil spec.
+% Type spadd spec -> (olfm -> olfm -> atm) -> (olfm -> olfm -> o) -> spec.
+Type spadd spec -> atm -> o -> spec.
 
-Import "../one-sided/mall".
+%% There is a restriction regarding variables that can occur in the head and
+%% body of a bipole that is not taken into account here.
+Define is_spec : spec -> prop by
+; is_spec spnil
+; is_spec (spadd S (lft A) B) := is_spec S /\ is_olfm A /\ is_fm B
+; is_spec (spadd S (rgt A) B) := is_spec S /\ is_olfm A /\ is_fm B.
 
-Define cut_spec : o by
-; is_olfm B -> times (lft B) (rgt B).
+%% build \mathcal{X}
+Define translate : spec -> olist -> prop by
+; translate spnil nil
+; translate (spadd S H B) (F :: R) :=
+    translate S R /\ 
+%%    F = all OA\ all OB\ tens (natom (H OA OB)) (B OA OB).
+    F = tens (natom H) B.
 
-Define acut_spec : olfm -> o by
-; is_olat A -> times (lft A) (rgt A).
-
-Define specification : olfm -> o by
-; specification A := lft A /\ rgt A.
-
-% Define cut_coherent : olist -> o by
-% ?
+% Define cut_spec : o by
+% ; is_olfm B -> tens (atom (lft B)) (atom (rgt B)).
 % 
-% Theorem to_atomic_cuts : forall X,
-%   cut_coherent X cut_spec ->
-%   mall (cut_spec :: X) ->
-%   mall (acut_spec :: X).
-% 
+% Define acut_spec : olfm -> o by
+% ; is_olat A -> tens (atom (lft A)) (atom (rgt A)).
+
+%% Define cut_coherent : spec -> prop by
+%% TODO: define cut-coherence or prove it?
+
+Theorem to_atomic_cuts : forall S X G Th A B Cut ACut,
+  is_spec S -> translate S X ->
+  append X G Th ->
+%  cut_coherent S ->
+  is_olfm B ->
+  Cut = tens (atom (lft B)) (atom (rgt B)) ->
+  is_olat A ->
+  ACut = tens (atom (lft A)) (atom (rgt A)) ->
+  mall (Cut :: Th) ->
+  mall (ACut :: Th).
+

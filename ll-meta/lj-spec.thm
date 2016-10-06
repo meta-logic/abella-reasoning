@@ -1,3 +1,5 @@
+Kind olfm type.
+Kind olatm type.
 
 %% Object logic connectives
 Type ljatom olatm -> olfm.
