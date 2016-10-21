@@ -8,6 +8,23 @@ Import "../one-sided/mall".
 Kind olfm type.
 Kind olatm type.
 
+% The object logic contains atoms and binary connectives. These can possibly be
+% augmented with higher arities connectives or quantifiers.
+Type olatom olatm -> olfm.
+Type olcon2 olfm -> olfm -> olfm.
+
+%% The induction measure
+%
+% Either we instantiate is_olfm with a is_fm from a specification of a real
+% logic or we use this more generic one. I see two reasons to use a generic
+% one: (1) the theorem should not depend on the object logic; and (2) there
+% will be less cases if we just have unnamed binary, terciary, etc.
+% connectives.
+%
+Define is_olfm : olfm -> prop by
+; is_olfm (olatom A)
+; is_olfm (olcon2 A B) := is_olfm A /\ is_olfm B.
+
 %% Mapping OL formulas to LL atoms
 Type lft olfm -> atm.
 Type rgt olfm -> atm.
@@ -16,38 +33,27 @@ Type rgt olfm -> atm.
 %Type all (olfm -> o) -> o.
 %Type ex (olfm -> o) -> o.
 
-%% Each logic specification should define what it means to be a 
-%% formula and atom in this logic
-Type is_olfm olfm -> prop.
-Type is_olat olfm -> prop.
-
 %% The specification of a formula maps the lft or rgt atoms to the body
 Kind spec type.
 
 Type spnil spec.
-% Type spadd spec -> (olfm -> olfm -> atm) -> (olfm -> olfm -> o) -> spec.
-Type spadd spec -> atm -> o -> spec.
+% Type spcons spec -> (olfm -> olfm -> atm) -> (olfm -> olfm -> o) -> spec.
+Type spcons spec -> atm -> o -> spec.
 
 %% There is a restriction regarding variables that can occur in the head and
 %% body of a bipole that is not taken into account here.
 Define is_spec : spec -> prop by
 ; is_spec spnil
-; is_spec (spadd S (lft A) B) := is_spec S /\ is_olfm A /\ is_fm B
-; is_spec (spadd S (rgt A) B) := is_spec S /\ is_olfm A /\ is_fm B.
+; is_spec (spcons S (lft A) B) := is_spec S /\ is_olfm A /\ is_fm B
+; is_spec (spcons S (rgt A) B) := is_spec S /\ is_olfm A /\ is_fm B.
 
 %% build \mathcal{X}
 Define translate : spec -> olist -> prop by
 ; translate spnil nil
-; translate (spadd S H B) (F :: R) :=
+; translate (spcons S H B) (F :: R) :=
     translate S R /\ 
 %%    F = all OA\ all OB\ tens (natom (H OA OB)) (B OA OB).
     F = tens (natom H) B.
-
-% Define cut_spec : o by
-% ; is_olfm B -> tens (atom (lft B)) (atom (rgt B)).
-% 
-% Define acut_spec : olfm -> o by
-% ; is_olat A -> tens (atom (lft A)) (atom (rgt A)).
 
 %% Define cut_coherent : spec -> prop by
 %% TODO: define cut-coherence or prove it?
@@ -55,11 +61,19 @@ Define translate : spec -> olist -> prop by
 Theorem to_atomic_cuts : forall S X G Th A B Cut ACut,
   is_spec S -> translate S X ->
   append X G Th ->
-%  cut_coherent S ->
+%  cut_coherent S -> We will need this at some point.
   is_olfm B ->
   Cut = tens (atom (lft B)) (atom (rgt B)) ->
-  is_olat A ->
-  ACut = tens (atom (lft A)) (atom (rgt A)) ->
+  ACut = tens (atom (lft (olatom A))) (atom (rgt (olatom A))) ->
   mall (Cut :: Th) ->
   mall (ACut :: Th).
+
+induction on 4. intros.
+% Applying the equalities
+case H6. case H5.
+% Induction starts
+case H4.
+  % Case 1: the formula is atomic
+
+  % Case 2: the formula contains a connective
 
