@@ -58,22 +58,67 @@ Define translate : spec -> olist -> prop by
 %% Define cut_coherent : spec -> prop by
 %% TODO: define cut-coherence or prove it?
 
-Theorem to_atomic_cuts : forall S X G Th A B Cut ACut,
+Theorem apply_def : forall J H B K L LL,
+  adj J (tens (natom H) B) K ->
+  adj K (atom H) L ->
+  mall L ->
+  adj J B LL -> mall LL.
+induction on 3. intros. case H3.
+  % Init (base case)
+  case H5.
+    case H2.
+      case H1. case H11.
+      case H9. case H11.
+    apply adj_nil_1 to H7. case H2. case H9.
+      case H1. case H13.
+      case H11.
+  % tensor
+  apply adj_swap to H1 H2.
+  apply adj_same_result_diff to H5 H12.
+  case H13.
+  abort.
+% This is painfully hard.
+
+    
+Theorem to_atomic_cuts : forall S X G Th B Cut ACut,
   is_spec S -> translate S X ->
   append X G Th ->
 %  cut_coherent S -> We will need this at some point.
   is_olfm B ->
   Cut = tens (atom (lft B)) (atom (rgt B)) ->
-  ACut = tens (atom (lft (olatom A))) (atom (rgt (olatom A))) ->
   mall (Cut :: Th) ->
+  exists A,
+  ACut = tens (atom (lft (olatom A))) (atom (rgt (olatom A))) ->
   mall (ACut :: Th).
 
 induction on 4. intros.
-% Applying the equalities
-case H6. case H5.
-% Induction starts
+% Induction on B
 case H4.
   % Case 1: the formula is atomic
-
+  exists A. intros. case H7. case H5. search.
   % Case 2: the formula contains a connective
+  case H5. case H6.
+    % Casing on the linear logic proof with the non-atomic cut
+    % How to deal with the cases where the tensor is not the first formula
+    % to be decomposed?
+    % Case 2.1: initial
+    skip.
+    % Case 2.2: tensor
+    case H9.
+      % Case 2.2.1: tensor is applied to the cut encoding
+      
+      % Case 2.2.2: tensor is not applied to the cut encoding
+      skip.
+    % Case 2.3: par
+    skip.
+    % Case 2.4: bot
+    skip.
+    % Case 2.5: with
+    skip.
+    % Case 2.6: top
+    skip.
+    % Case 2.7: plus 1
+    skip.
+    % Case 2.8: plus 2
+    skip.
 
