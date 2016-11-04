@@ -536,7 +536,7 @@ case H1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Theorem cut : forall A B JJ J KK K LL,
+Theorem mall_cut : forall A B JJ J KK K LL,
   dual A B ->
   adj JJ A J -> mall J ->
   adj KK B K -> mall K ->
