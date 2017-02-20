@@ -253,6 +253,8 @@ induction on 1. intros. case H1.
      apply adj_1_is_list to *H2.
      assert perm (tens A1 B1 :: A :: B :: KK1) (A :: B :: JJ).
      apply mall_perm to *H28 *H35.
+     assert adj JJ A (A :: JJ).
+     assert adj (A :: JJ) B (A :: B :: JJ).
      search.
 
     %% symmetric case
@@ -267,6 +269,8 @@ induction on 1. intros. case H1.
      apply adj_1_is_list to *H2.
      assert perm (tens A1 B1 :: A :: B :: KK1) (A :: B :: JJ).
      apply mall_perm to *H28 *H35.
+     assert adj JJ A (A :: JJ).
+     assert adj (A :: JJ) B (A :: B :: JJ).
      search.
 
   case H2. case H4.
