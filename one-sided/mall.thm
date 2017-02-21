@@ -418,19 +418,21 @@ case H1.
     apply mall_perm to *H19 _ with L = (D :: B :: KK2).
     clear H14 H16 H18.
     apply merge_3_is_list to H13.
+    assert merge JJ1 (A :: KK2) (A :: KK1).
     assert mall (tens C D :: A :: KK1).
+    assert merge JJ1 (B :: KK2) (B :: KK1).
     assert mall (tens C D :: B :: KK1).
-    apply merge_unadj_2 to H4 H12. apply adj_swap to H27 H3.
-    apply adj_same_result to *H30 *H2.
-    apply merge_perm_det to *H13 *H28.
+    apply merge_unadj_2 to H4 H12. apply adj_swap to H29 H3.
+    apply adj_same_result to *H32 *H2.
+    apply merge_perm_det to *H13 *H30.
     assert perm (tens C D :: A :: KK1) (A :: JJ).
       unfold. witness A, tens C D :: KK1, JJ. split. search. search.
       backchain perm_trans with K = U1.
-    apply mall_perm to *H25 *H33.
+    apply mall_perm to *H26 *H35.
     assert perm (tens C D :: B :: KK1) (B :: JJ).
       unfold. witness B, tens C D :: KK1, JJ. split. search. search.
       backchain perm_trans with K = U1.
-    apply mall_perm to *H26 *H35.
+    apply mall_perm to *H28 *H37.
     search.
 
   case H2. case H4.
