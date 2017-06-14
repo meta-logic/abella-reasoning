@@ -1,61 +1,33 @@
-Kind atm type.
-
-Type a, b, c, d, e, f atm.
-
-Kind pf, nf  type.
-
-Type atom  atm -> pf.
-Type tens  pf -> pf -> pf.
-Type one   pf.
-Type shp   nf -> pf.
-
-Type natom atm -> nf.
-Type par   nf -> nf -> nf.
-Type bot   nf.
-Type shn   pf -> nf.
-
-Define dual : pf -> nf -> prop by
-; dual (atom A) (natom A)
-; dual (tens P Q) (par M N) := dual P M /\ dual Q N
-; dual one bot
-; dual (shp N) (shn P) := dual P N
-.
+Specification "mllf".
 
 Theorem $dual_det :
-  (forall P1 P2 N, dual P1 N -> dual P2 N -> P1 = P2)
+  (forall P1 P2 N, {dual P1 N} -> {dual P2 N} -> P1 = P2)
 /\
-  (forall P N1 N2, dual P N1 -> dual P N2 -> N1 = N2).
+  (forall P N1 N2, {dual P N1} -> {dual P N2} -> N1 = N2).
 IH1 : induction on 1 1. split.
 intros. case H1.
   case H2. search.
-  case H2. apply IH1 to *H3 *H5. apply *IH1 to *H4 H6. search.
+  case H2. apply IH1 to *H3 *H5. apply *IH1 to *H4 *H6. search.
   case H2. search.
+  case H2. apply IH1 to *H3 *H5. apply *IH1 to *H4 *H6. search.
+  case H2. search.
+  case H2. apply IH1 to *H3 *H4. search.
   case H2. apply IH2 to *H3 *H4. search.
 intros. case H1.
   case H2. search.
   case H2. apply IH2 to *H3 H5. apply *IH2 to *H4 *H6. search.
   case H2. search.
+  case H2. apply IH2 to *H3 H5. apply *IH2 to *H4 *H6. search.
+  case H2. search.
+  case H2. apply IH2 to *H3 *H4. search.
   case H2. apply IH1 to *H3 *H4. search.
 
 Split $dual_det as dual_det_1, dual_det_2.
 
-Kind foc type.
-Type fatom  atm -> foc.
-Type fshift nf -> foc.
-Type fjoin  foc -> foc -> foc.
-Type femp   foc.
-
-Define subf : foc -> pf -> prop by
-; subf (fatom A) (atom A)
-; subf (fshift N) (shp N) := exists P, dual P N
-; subf (fjoin F1 F2) (tens P Q) := subf F1 P /\ subf F2 Q
-; subf femp one
-.
-
 Type $pf pf -> o.
 Type $natom atm -> o.
 Define is_fm : o -> prop by
-; is_fm ($pf P) := exists N, dual P N
+; is_fm ($pf P) := exists N, {dual P N}
 ; is_fm ($natom A)
 .
 Import "../lib/merge" with is_o := is_fm.
@@ -64,7 +36,7 @@ Define extend : olist -> foc -> olist -> prop by
 ; extend LL (fatom A) L :=
     adj LL ($natom A) L
 ; extend LL (fshift N) L :=
-    exists P, dual P N /\ adj LL ($pf P) L
+    exists P, {dual P N} /\ adj LL ($pf P) L
 ; extend LL (fjoin F1 F2) L :=
     exists K, extend LL F1 K /\ extend K F2 L
 ; extend L femp L := is_list L
@@ -84,14 +56,14 @@ Define
 by
 ; mll L :=
     exists P LL, adj LL ($pf P) L /\
-    exists F, subf F P /\
+    exists F, {subf F P} /\
     mllfoc LL F
 
 ; mllfoc ($natom A :: nil) (fatom A)
 
 ; mllfoc L (fshift N) :=
-    exists P, dual P N /\
-    forall F, subf F P ->
+    exists P, {dual P N} /\
+    forall F, {subf F P} ->
     exists LL, extend L F LL /\ mll LL
 
 ; mllfoc L (fjoin F1 F2) :=
@@ -100,7 +72,6 @@ by
 
 ; mllfoc nil femp
 .
-
 
 Theorem adj_merge : forall K A L,
   adj K A L ->
@@ -168,18 +139,21 @@ induction on 2. intros. case H2.
   apply merge_2_is_list to H1. search.
 
 Theorem extend_exists : forall L F P,
-  is_list L -> subf F P ->
+  is_list L -> {subf F P} ->
   exists K, extend L F K.
 induction on 2. intros. case H2.
   search.
   search.
   apply IH to *H1 H3. apply extend_is to H5.
    apply IH to *H7 *H4. search.
+  apply IH to *H1 *H3. search.
+  apply IH to *H1 *H3. search.
+  apply IH to *H1 H3. search.
   search.
 
 Theorem id : forall P N F L,
-  dual P N ->
-  subf F P ->
+  {dual P N} ->
+  {subf F P} ->
   extend nil F L ->
   mllfoc L F.
 induction on 1. intros. case H1.
@@ -192,6 +166,14 @@ induction on 1. intros. case H1.
   apply IH to *H5 *H7 *H12. search.
 
   case H2. case H3. search.
+
+  case H2.
+    apply IH to *H4 *H6 *H3. search.
+    apply IH to *H5 *H6 *H3. search.
+
+  case H2.
+
+  case H2. inst *H4 with n1 = T. apply IH to *H6 *H5 _. search.
 
   case H2. apply dual_det_1 to H4 *H5.
   case H3. apply dual_det_1 to H4 *H6.
@@ -207,3 +189,16 @@ induction on 1. intros. case H1.
     apply extend_is to H12. search.
   witness F1. split. search.
   backchain IH.
+
+Theorem cut : forall P N J JP K L,
+  {dual P N} ->
+  adj J ($pf P) JP -> mll JP ->
+  (forall F KN, {subf F P} -> extend K F KN -> mll KN) ->
+  merge J K L ->
+  mll L.
+IHrank : induction on 1. IHpht : induction on 3.
+intros. case H1.
+  apply merge_2_is_list to H5.
+  apply extend_exists to *H6 _ with F = fatom A.
+  apply *H4 to _ H7. case H7.
+abort.
