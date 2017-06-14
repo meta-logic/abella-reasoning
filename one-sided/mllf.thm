@@ -190,6 +190,63 @@ induction on 1. intros. case H1.
   witness F1. split. search.
   backchain IH.
 
+Theorem extend_perm :
+  forall J K F JF, perm J K -> extend J F JF ->
+  exists KF, extend K F KF /\ perm JF KF.
+induction on 2. intros. case H2.
+  witness ($natom A :: K).
+    apply adj_2_is_o to H3. apply perm_2_is_list to H1. split.
+    search. search.
+
+  witness ($pf P :: K).
+    apply adj_2_is_o to H4. apply perm_2_is_list to H1.
+    split. search. search.
+
+  apply IH to *H1 *H3. apply IH to *H6 *H4. search.
+
+  apply perm_2_is_list to H1. search.
+
+Theorem $mll_perm :
+  (forall J K, mll J -> perm J K -> mll K) /\
+  (forall J F K, mllfoc J F -> perm J K -> mllfoc K F).
+IH1 : induction on 1 1. split.
+intros. case H1.
+  apply adj_perm_full to H2 H3.
+   apply IH2 to *H5 H7. search.
+
+intros. case H1.
+  apply perm_cons_1 to H2. case H4. case H3. search.
+   case H5.
+
+  assert forall F, {subf F P} -> exists LL, extend K F LL /\ mll LL.
+     intros. apply *H4 to *H5.
+      apply extend_perm to *H2 *H6.
+      apply IH1 to *H7 *H9.
+      search.
+   search.
+
+  apply perm_merge_3 to *H3 *H2. search.
+
+  case H2. search. case H3.
+
+Split $mll_perm as mll_perm, mllfoc_perm.
+
+Theorem acut : forall A J JP K KN L,
+  adj J ($pf (atom A)) JP -> mll JP ->
+  adj K ($natom A) KN -> mll KN ->
+  merge J K L -> mll L.
+induction on 2. intros. case H2.
+apply adj_same_result_diff to H6 H1. case H9.
+  case H7. case H8. apply perm_cons_1 to *H10.
+   apply perm_nil_1 to *H12. apply adj_nil_1 to *H11.
+   apply merge_sym to *H5. apply merge_to_adj to *H13.
+   assert perm KN L. backchain mll_perm.
+
+  apply merge_unadj_1 to H5 H10.
+   apply adj_swap to *H10 *H1.
+   apply adj_same_result to H6 H14.
+abort.
+
 Theorem cut : forall P N J JP K L,
   {dual P N} ->
   adj J ($pf P) JP -> mll JP ->
