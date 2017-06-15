@@ -231,20 +231,41 @@ intros. case H1.
 
 Split $mll_perm as mll_perm, mllfoc_perm.
 
-Theorem acut : forall A J JP K KN L,
-  adj J ($pf (atom A)) JP -> mll JP ->
-  adj K ($natom A) KN -> mll KN ->
-  merge J K L -> mll L.
-induction on 2. intros. case H2.
-apply adj_same_result_diff to H6 H1. case H9.
+Theorem acut :
+  (forall A J JP K KN L,
+     adj J ($pf (atom A)) JP -> mll JP ->
+     adj K ($natom A) KN -> mll KN ->
+     merge J K L -> mll L)
+/\
+  (forall A J JP F K KN L,
+     adj J ($pf (atom A)) JP -> mllfoc JP F ->
+     adj K ($natom A) KN -> mll KN ->
+     merge J K L -> mllfoc L F).
+IH1 : induction on 2 2. split.
+intros. case H2.
+apply adj_same_result_diff_both to H6 H1. case H9.
   case H7. case H8. apply perm_cons_1 to *H10.
    apply perm_nil_1 to *H12. apply adj_nil_1 to *H11.
    apply merge_sym to *H5. apply merge_to_adj to *H13.
    assert perm KN L. backchain mll_perm.
 
-  apply merge_unadj_1 to H5 H10.
-   apply adj_swap to *H10 *H1.
-   apply adj_same_result to H6 H14.
+  Hn : assert exists U, merge JJ K U.
+      apply merge_2_is_list to H5. apply perm_1_is_list to H12. backchain merge_exists.
+    case Hn.
+  apply *IH2 to H10 *H8 *H3 *H4 H13.
+  apply perm_merge_1 to *H13 *H12.
+  apply merge_adj_1 to *H15 *H11.
+  assert mll L1. apply merge_perm_det to *H17 *H5. backchain mll_perm.
+
+intros. case H2.
+  case H1. case H7.
+
+  unfold 3. witness P. split. search.
+  intros. apply *H7 to *H8.
+  Hn : assert exists U, extend J F1 U /\ adj U ($pf (atom A)) LL. skip. case Hn.
+  Hn : assert exists V, merge U K V. apply adj_1_is_list to H12. apply merge_2_is_list to H5.
+    backchain merge_exists. case Hn.
+  apply IH1 to H12 *H10 *H3 *H4 H13.
 abort.
 
 Theorem cut : forall P N J JP K L,

@@ -174,6 +174,21 @@ induction on 1. intros. case H1.
       apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
       search.
 
+Theorem adj_same_result_diff_both : forall J A K B L,
+  adj J A L ->
+  adj K B L ->
+  (A = B /\ perm J K) \/
+  exists JJ KK, adj JJ B J /\ adj KK A K /\ perm JJ KK.
+induction on 1. intros. case H1.
+  case H2.
+    apply perm_refl to H4. search.
+    right. witness K1, K1. apply adj_1_is_list to H6. apply perm_refl to H7. search.
+  case H2.
+    right. apply adj_1_is_list to H4. apply perm_refl to H7. search.
+    apply IH to H4 H6. case H7.
+      apply adj_1_is_list to H4. apply adj_1_is_list to H6. search.
+      apply perm_1_is_list to H10. apply perm_2_is_list to H10. search.
+
 Theorem perm_invert : forall A J K JJ KK,
   perm J K ->
   adj JJ A J ->
