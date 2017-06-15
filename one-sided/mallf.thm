@@ -1,5 +1,13 @@
 Specification "mallf".
 
+Type $pf pf -> o.
+Type $natom atm -> o.
+Define is_fm : o -> prop by
+; is_fm ($pf P) := exists N, {dual P N}
+; is_fm ($natom A).
+
+Import "../lib/merge" with is_o := is_fm.
+
 Theorem $dual_det :
   (forall P1 P2 N, {dual P1 N} -> {dual P2 N} -> P1 = P2)
 /\
@@ -24,13 +32,8 @@ intros. case H1.
 
 Split $dual_det as dual_det_1, dual_det_2.
 
-Type $pf pf -> o.
-Type $natom atm -> o.
-Define is_fm : o -> prop by
-; is_fm ($pf P) := exists N, {dual P N}
-; is_fm ($natom A)
-.
-Import "../lib/merge" with is_o := is_fm.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Context extensions based on focusing patterns
 
 Define extend : olist -> foc -> olist -> prop by
 ; extend LL (fatom A) L :=
@@ -39,8 +42,7 @@ Define extend : olist -> foc -> olist -> prop by
     exists P, {dual P N} /\ adj LL ($pf P) L
 ; extend LL (fjoin F1 F2) L :=
     exists K, extend LL F1 K /\ extend K F2 L
-; extend L femp L := is_list L
-.
+; extend L femp L := is_list L.
 
 Theorem extend_is : forall K F L,
   extend K F L -> is_list K /\ is_list L.
@@ -49,38 +51,6 @@ induction on 1. intros. case H1.
   apply adj_1_is_list to H3. apply adj_3_is_list to H3. search.
   apply IH to H2. apply IH to H3. search.
   search.
-
-Define
-  mall : olist -> prop,
-  mallfoc : olist -> foc -> prop
-by
-; mall L :=
-    exists P LL, adj LL ($pf P) L /\
-    exists F, {subf F P} /\
-    mallfoc LL F
-
-; mallfoc ($natom A :: nil) (fatom A)
-
-; mallfoc L (fshift N) :=
-    exists P, {dual P N} /\
-    forall F, {subf F P} ->
-    exists LL, extend L F LL /\ mall LL
-
-; mallfoc L (fjoin F1 F2) :=
-    exists J K, merge J K L /\
-    mallfoc J F1 /\ mallfoc K F2
-
-; mallfoc nil femp
-.
-
-Theorem adj_merge : forall K A L,
-  adj K A L ->
-  merge K (A :: nil) L.
-intros. apply adj_2_is_o to H1.
-unfold 3. witness A, nil, K. split.
-  search. search.
-  backchain merge_sym. backchain merge_nil_equal.
-   backchain adj_1_is_list.
 
 Theorem extend_merge : forall J F L K JK,
   extend J F L ->
@@ -115,7 +85,7 @@ induction on 2. intros. case H2.
     apply merge_2_is_list to H1. apply adj_2_is_o to H3.
     apply adj_exists to H5 H4. search. case Ht.
    witness KF. split. search.
-   apply adj_merge to *H3. apply adj_merge to *H4.
+   apply adj_implies_merge to *H3. apply adj_implies_merge to *H4.
    Ht : assert 0 exists JKF, merge J KF JKF.
      apply merge_1_is_list to H1. apply merge_3_is_list to H6.
      apply merge_exists to H7 H8. search. case Ht.
@@ -126,7 +96,7 @@ induction on 2. intros. case H2.
     apply merge_2_is_list to H1. apply adj_2_is_o to H4.
     apply adj_exists to H6 H5. search. case Ht.
    witness KF. split. search.
-   apply adj_merge to *H4. apply adj_merge to *H5.
+   apply adj_implies_merge to *H4. apply adj_implies_merge to *H5.
    Ht : assert 0 exists JKF, merge J KF JKF.
      apply merge_1_is_list to H1. apply merge_3_is_list to H7.
      apply merge_exists to H8 H9. search. case Ht.
@@ -158,13 +128,10 @@ induction on 2. intros. case H2.
   witness ($natom A :: K).
     apply adj_2_is_o to H3. apply perm_2_is_list to H1. split.
     search. search.
-
   witness ($pf P :: K).
     apply adj_2_is_o to H4. apply perm_2_is_list to H1.
     split. search. search.
-
   apply IH to *H1 *H3. apply IH to *H6 *H4. search.
-
   apply perm_2_is_list to H1. search.
 
 Theorem extend_adj : forall J A K F L,
@@ -201,6 +168,32 @@ case H1.
   case H2. backchain perm_refl.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Synthetic first-order MALL
+
+Define
+  mall : olist -> prop,
+  mallfoc : olist -> foc -> prop
+by
+; mall L :=
+    exists P LL, adj LL ($pf P) L /\
+    exists F, {subf F P} /\
+    mallfoc LL F
+
+; mallfoc ($natom A :: nil) (fatom A)
+
+; mallfoc L (fshift N) :=
+    exists P, {dual P N} /\
+    forall F, {subf F P} ->
+    exists LL, extend L F LL /\ mall LL
+
+; mallfoc L (fjoin F1 F2) :=
+    exists J K, merge J K L /\
+    mallfoc J F1 /\ mallfoc K F2
+
+; mallfoc nil femp.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Generalized identity
 
 Theorem id : forall P N F L,
   {dual P N} ->
@@ -212,7 +205,8 @@ induction on 1. intros. case H1.
 
   case H2. case H3. unfold.
   apply IH to *H4 *H6 *H8. witness K.
-  assert merge K nil K. apply extend_is to H9. backchain merge_sym. backchain merge_nil_equal.
+  assert merge K nil K. apply extend_is to H9.
+   backchain merge_sym. backchain merge_nil_equal.
   apply unextend to *H11 *H9.
   apply IH to *H5 *H7 *H12. search.
 
@@ -242,6 +236,7 @@ induction on 1. intros. case H1.
   backchain IH.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Permutations
 
 Theorem $mll_perm :
   (forall J K, mall J -> perm J K -> mall K) /\
@@ -269,6 +264,8 @@ intros. case H1.
 Split $mll_perm as mll_perm, mllfoc_perm.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Atomic cut-elimination
+%% (Only for illustration; not used in full cut-elim proof)
 
 Theorem $acut :
   (forall A J JP K KN L,
@@ -344,16 +341,8 @@ intros. case H2.
 
 Split $acut as acut, acut_foc.
 
-Define is_foc : foc -> prop by
-; is_foc (fatom A) := is_fm ($pf (atom A))
-; is_foc (fshift N) := exists P, {dual P N} /\ is_fm ($pf P)
-; is_foc (fjoin F1 F2) := is_foc F1 /\ is_foc F2
-; is_foc femp.
-
-% Theorem dual_is_foc : forall P N F,
-%   {dual P N} -> {is_foc F}.
-
-Set subgoals off.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Full cut-elimination
 
 Theorem $cut :
   (forall P N J JP K L,
