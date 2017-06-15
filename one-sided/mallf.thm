@@ -1,4 +1,4 @@
-Specification "mllf".
+Specification "mallf".
 
 Theorem $dual_det :
   (forall P1 P2 N, {dual P1 N} -> {dual P2 N} -> P1 = P2)
@@ -51,26 +51,26 @@ induction on 1. intros. case H1.
   search.
 
 Define
-  mll : olist -> prop,
-  mllfoc : olist -> foc -> prop
+  mall : olist -> prop,
+  mallfoc : olist -> foc -> prop
 by
-; mll L :=
+; mall L :=
     exists P LL, adj LL ($pf P) L /\
     exists F, {subf F P} /\
-    mllfoc LL F
+    mallfoc LL F
 
-; mllfoc ($natom A :: nil) (fatom A)
+; mallfoc ($natom A :: nil) (fatom A)
 
-; mllfoc L (fshift N) :=
+; mallfoc L (fshift N) :=
     exists P, {dual P N} /\
     forall F, {subf F P} ->
-    exists LL, extend L F LL /\ mll LL
+    exists LL, extend L F LL /\ mall LL
 
-; mllfoc L (fjoin F1 F2) :=
+; mallfoc L (fjoin F1 F2) :=
     exists J K, merge J K L /\
-    mllfoc J F1 /\ mllfoc K F2
+    mallfoc J F1 /\ mallfoc K F2
 
-; mllfoc nil femp
+; mallfoc nil femp
 .
 
 Theorem adj_merge : forall K A L,
@@ -185,13 +185,28 @@ induction on 1. intros. case H1.
   apply IH to *H4 *H2. apply IH to *H3 *H5. search.
   apply merge_3_is_list to H2. search.
 
+Theorem extend_det3 : forall J F K1 K2,
+  extend J F K1 -> extend J F K2 -> perm K1 K2.
+induction on 1. intros.
+apply extend_is to H1. apply extend_is to H2.
+case H1.
+  case H2. apply adj_2_is_o to H7. apply perm_refl to H3. search.
+  case H2. apply adj_2_is_o to H8. apply perm_refl to H3.
+    apply dual_det_1 to H7 H9. search.
+  case H2. apply IH to *H7 *H9. apply perm_sym to *H11.
+    apply extend_perm to *H12 *H10.
+    apply IH to *H8 *H13.
+    apply perm_sym to *H14.
+    backchain perm_trans.
+  case H2. backchain perm_refl.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem id : forall P N F L,
   {dual P N} ->
   {subf F P} ->
   extend nil F L ->
-  mllfoc L F.
+  mallfoc L F.
 induction on 1. intros. case H1.
   case H2. case H3. case H4. search.
 
@@ -229,8 +244,8 @@ induction on 1. intros. case H1.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem $mll_perm :
-  (forall J K, mll J -> perm J K -> mll K) /\
-  (forall J F K, mllfoc J F -> perm J K -> mllfoc K F).
+  (forall J K, mall J -> perm J K -> mall K) /\
+  (forall J F K, mallfoc J F -> perm J K -> mallfoc K F).
 IH1 : induction on 1 1. split.
 intros. case H1.
   apply adj_perm_full to H2 H3.
@@ -240,7 +255,7 @@ intros. case H1.
   apply perm_cons_1 to H2. case H4. case H3. search.
    case H5.
 
-  assert forall F, {subf F P} -> exists LL, extend K F LL /\ mll LL.
+  assert forall F, {subf F P} -> exists LL, extend K F LL /\ mall LL.
      intros. apply *H4 to *H5.
       apply extend_perm to *H2 *H6.
       apply IH1 to *H7 *H9.
@@ -255,16 +270,16 @@ Split $mll_perm as mll_perm, mllfoc_perm.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Theorem acut :
+Theorem $acut :
   (forall A J JP K KN L,
-     adj J ($pf (atom A)) JP -> mll JP ->
-     adj K ($natom A) KN -> mll KN ->
-     merge J K L -> mll L)
+     adj J ($pf (atom A)) JP -> mall JP ->
+     adj K ($natom A) KN -> mall KN ->
+     merge J K L -> mall L)
 /\
   (forall A J JP F K KN L,
-     adj J ($pf (atom A)) JP -> mllfoc JP F ->
-     adj K ($natom A) KN -> mll KN ->
-     merge J K L -> mllfoc L F).
+     adj J ($pf (atom A)) JP -> mallfoc JP F ->
+     adj K ($natom A) KN -> mall KN ->
+     merge J K L -> mallfoc L F).
 IH1 : induction on 2 2. split.
 intros. case H2.
 apply adj_same_result_diff_both to H6 H1. case H9.
@@ -279,7 +294,7 @@ apply adj_same_result_diff_both to H6 H1. case H9.
   apply *IH2 to H10 *H8 *H3 *H4 H13.
   apply perm_merge_1 to *H13 *H12.
   apply merge_adj_1 to *H15 *H11.
-  assert mll L1. apply merge_perm_det to *H17 *H5. backchain mll_perm.
+  assert mall L1. apply merge_perm_det to *H17 *H5. backchain mll_perm.
 
 intros. case H2.
   case H1. case H7.
@@ -327,15 +342,138 @@ intros. case H2.
 
   case H1.
 
-Theorem cut : forall P N J JP K L,
-  {dual P N} ->
-  adj J ($pf P) JP -> mll JP ->
-  (forall F KN, {subf F P} -> extend K F KN -> mll KN) ->
-  merge J K L ->
-  mll L.
-IHrank : induction on 1. IHpht : induction on 3.
+Split $acut as acut, acut_foc.
+
+Define is_foc : foc -> prop by
+; is_foc (fatom A) := is_fm ($pf (atom A))
+; is_foc (fshift N) := exists P, {dual P N} /\ is_fm ($pf P)
+; is_foc (fjoin F1 F2) := is_foc F1 /\ is_foc F2
+; is_foc femp.
+
+% Theorem dual_is_foc : forall P N F,
+%   {dual P N} -> {is_foc F}.
+
+Set subgoals off.
+
+Theorem $cut :
+  (forall P N J JP K L,
+    {dual P N} ->
+    adj J ($pf P) JP -> mall JP ->
+    (forall F KN, {subf F P} -> extend K F KN -> mall KN) ->
+    merge J K L ->
+    mall L)
+/\
+  (forall P N F J K KN L,
+    {dual P N} ->
+    {subf F P} -> mallfoc J F ->
+    extend K F KN -> mall KN ->
+    merge J K L ->
+    mall L)
+/\
+  (forall P N F J JP K L,
+    {dual P N} ->
+    adj J ($pf P) JP -> mallfoc JP F ->
+    (forall F KN, {subf F P} -> extend K F KN -> mall KN) ->
+    merge J K L ->
+    mallfoc L F).
+IHrank1 : induction on 1 1 1. IHht1 : induction on 3 3 3. split.
+intros. case H3.
+  apply adj_same_result_diff_both to *H2 *H6. case H9.
+    Hn : assert exists KN, extend K F KN.
+       backchain extend_exists. backchain merge_2_is_list.
+       case Hn.
+    apply *H4 to H7 H11.
+    apply perm_merge_1 to *H5 *H10.
+    backchain IHht2.
+
+   apply merge_unadj_1 to *H5 *H10.
+   apply perm_merge_1 to *H14 *H12.
+   apply IHht3 to *H1 *H11 *H8 *H4 *H15.
+   search.
+
 intros. case H1.
-  apply merge_2_is_list to H5.
-  apply extend_exists to *H6 _ with F = fatom A.
-  apply *H4 to _ H7. case H7.
-abort.
+  case H2. case H3. case H4.
+  assert perm KN L. unfold 2.
+    apply merge_sym to *H6. apply merge_to_adj to *H8.
+    witness $natom A, K, JJ. search.
+  backchain mll_perm.
+
+  case H2. case H3. case H4.
+  Hn : assert exists U, merge K1 K2 U.
+     backchain merge_exists. backchain merge_2_is_list.
+     apply extend_is to H14. search.
+     case Hn.
+  apply IHrank2 to *H8 *H10 *H13 *H15 *H5 H16.
+  apply merge_sym to *H16.
+  apply extend_merge_seq to *H14 *H18.
+  Hn : assert exists V, merge J1 U1 V.
+    backchain merge_exists. backchain merge_1_is_list. backchain merge_3_is_list.
+    case Hn.
+  apply IHrank2 to *H7 *H9 *H12 *H20 *H17 H21.
+  apply merge_sym to *H19.
+  apply merge_assoc to *H11 *H23 *H21 *H6.
+  backchain mll_perm.
+
+  case H2. case H3. case H4. apply merge_nil_perm to *H6.
+  backchain mll_perm.
+
+  case H2.
+    backchain IHrank2.
+    backchain IHrank2 with N = N1.
+
+  case H2.
+
+  case H2. inst *H7 with n1 = T.
+  backchain IHrank2.
+
+  case H2. case H3. case H4.
+    apply dual_det_1 to H7 *H8.
+    apply dual_det_1 to H7 *H9.
+    apply dual_det_1 to H7 *H11.
+  apply merge_sym to *H6.
+  assert forall F LL, {subf F P4} -> extend J F LL -> mall LL.
+     intros. apply H10 to H14.
+     apply extend_det3 to *H16 *H15.
+     backchain mll_perm with J = LL1.
+  apply IHrank1 to *H7 *H12 *H5 *H14 *H13. search.
+
+intros. case H3.
+  case H2. case H7.
+
+  unfold 3. witness P1.  split. search.
+  intros. apply *H7 to *H8.
+  apply extend_adj to *H2 *H9.
+  Hn : assert exists V, merge U K V.
+     backchain merge_exists. backchain adj_1_is_list.
+     backchain merge_2_is_list. case Hn.
+  apply IHht1 to *H1 *H12 *H10 *H4 H13. clear H6.
+  apply extend_merge to *H11 *H5.
+  apply merge_perm_det to *H13 *H15.
+  apply mll_perm to *H14 *H17. search.
+
+  apply merge_unadj_3 to *H6 *H2. case H9.
+    Hn : assert exists U, merge JJ K U.
+       backchain merge_exists. backchain merge_1_is_list.
+       backchain merge_2_is_list. case Hn.
+    apply IHht3 to *H1 *H10 *H7 *H4 H12.
+    assert merge U K1 L. clear H8 H13.
+    apply merge_sym to *H11.
+    apply merge_exists to _ _ with J = K1, K = U.
+       backchain merge_3_is_list. backchain merge_1_is_list.
+    apply merge_assoc to *H14 *H12 H15 H5.
+    apply perm_merge_3 to *H15 *H16. backchain merge_sym.
+    search.
+
+    Hn : assert exists U, merge KK K U.
+       backchain merge_exists. backchain merge_2_is_list.
+       backchain merge_2_is_list. case Hn.
+    apply IHht3 to *H1 *H10 *H8 *H4 H12.
+    assert merge J1 U L. clear H7 H13.
+    apply merge_exists to _ _ with J = J1, K = U.
+      backchain merge_3_is_list. backchain merge_1_is_list.
+    apply merge_assoc to *H11 *H12 H14 *H5.
+    backchain perm_merge_3. search.
+
+  case H2.
+
+Split $cut as cut_main, cut_principal, cut_commutative.

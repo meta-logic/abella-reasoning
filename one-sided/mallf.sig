@@ -1,4 +1,4 @@
-sig mllf.
+sig mallf.
 
 kind atm type.
 

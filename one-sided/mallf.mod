@@ -1,4 +1,4 @@
-module mllf.
+module mallf.
 
 dual (atom A) (natom A).
 dual (tens P Q) (par M N) :- dual P M, dual Q N.
