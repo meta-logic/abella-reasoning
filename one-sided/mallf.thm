@@ -238,7 +238,7 @@ induction on 1. intros. case H1.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Permutations
 
-Theorem $mll_perm :
+Theorem $mall_perm :
   (forall J K, mall J -> perm J K -> mall K) /\
   (forall J F K, mallfoc J F -> perm J K -> mallfoc K F).
 IH1 : induction on 1 1. split.
@@ -261,7 +261,7 @@ intros. case H1.
 
   case H2. search. case H3.
 
-Split $mll_perm as mll_perm, mllfoc_perm.
+Split $mall_perm as mall_perm, mallfoc_perm.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Atomic cut-elimination
@@ -283,7 +283,7 @@ apply adj_same_result_diff_both to H6 H1. case H9.
   case H7. case H8. apply perm_cons_1 to *H10.
    apply perm_nil_1 to *H12. apply adj_nil_1 to *H11.
    apply merge_sym to *H5. apply merge_to_adj to *H13.
-   assert perm KN L. backchain mll_perm.
+   assert perm KN L. backchain mall_perm.
 
   Hn : assert exists U, merge JJ K U.
       apply merge_2_is_list to H5. apply perm_1_is_list to H12. backchain merge_exists.
@@ -291,7 +291,7 @@ apply adj_same_result_diff_both to H6 H1. case H9.
   apply *IH2 to H10 *H8 *H3 *H4 H13.
   apply perm_merge_1 to *H13 *H12.
   apply merge_adj_1 to *H15 *H11.
-  assert mall L1. apply merge_perm_det to *H17 *H5. backchain mll_perm.
+  assert mall L1. apply merge_perm_det to *H17 *H5. backchain mall_perm.
 
 intros. case H2.
   case H1. case H7.
@@ -306,7 +306,7 @@ intros. case H2.
   apply extend_merge_seq to *H11 *H13.
   apply merge_perm_det to *H15 *H5.
   apply extend_perm to *H17 *H16.
-  apply mll_perm to *H14 *H19.
+  apply mall_perm to *H14 *H19.
   search.
 
   apply merge_unadj_3 to *H6 *H1. case H9.
@@ -385,7 +385,7 @@ intros. case H1.
   assert perm KN L. unfold 2.
     apply merge_sym to *H6. apply merge_to_adj to *H8.
     witness $natom A, K, JJ. search.
-  backchain mll_perm.
+  backchain mall_perm.
 
   case H2. case H3. case H4.
   Hn : assert exists U, merge K1 K2 U.
@@ -401,10 +401,10 @@ intros. case H1.
   apply IHrank2 to *H7 *H9 *H12 *H20 *H17 H21.
   apply merge_sym to *H19.
   apply merge_assoc to *H11 *H23 *H21 *H6.
-  backchain mll_perm.
+  backchain mall_perm.
 
   case H2. case H3. case H4. apply merge_nil_perm to *H6.
-  backchain mll_perm.
+  backchain mall_perm.
 
   case H2.
     backchain IHrank2.
@@ -423,7 +423,7 @@ intros. case H1.
   assert forall F LL, {subf F P4} -> extend J F LL -> mall LL.
      intros. apply H10 to H14.
      apply extend_det3 to *H16 *H15.
-     backchain mll_perm with J = LL1.
+     backchain mall_perm with J = LL1.
   apply IHrank1 to *H7 *H12 *H5 *H14 *H13. search.
 
 intros. case H3.
@@ -438,7 +438,7 @@ intros. case H3.
   apply IHht1 to *H1 *H12 *H10 *H4 H13. clear H6.
   apply extend_merge to *H11 *H5.
   apply merge_perm_det to *H13 *H15.
-  apply mll_perm to *H14 *H17. search.
+  apply mall_perm to *H14 *H17. search.
 
   apply merge_unadj_3 to *H6 *H2. case H9.
     Hn : assert exists U, merge JJ K U.
