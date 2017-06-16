@@ -302,6 +302,19 @@ induction on 1. intros. case H1.
   search.
   apply IH to H3. search.
 
+Theorem member_adj : forall A L,
+  is_list L -> member A L -> exists J, adj J A L.
+induction on 2. intros. case H2.
+  case H1. search.
+  case H1. apply IH to *H5 *H3. search.
+
+Theorem member_adj_rel : forall JJ A J B,
+  adj JJ A J -> member B J ->
+  A = B \/ member B JJ.
+induction on 1. intros. case H1.
+  case H2. search. search.
+  case H2. search. apply IH to *H4 H5. case H6. search. search.
+
 Theorem adj_preserves_member_lem : forall A J B L,
   is_list J -> member A J -> adj J B L -> member A L.
 induction on 2. intros. case H2.
@@ -321,3 +334,9 @@ induction on 2. intros. case H2.
   apply perm_cons_1 to *H1.
    apply IH to *H5 *H3.
    backchain adj_preserves_member.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% subsets via adj
+
+Define subset : olist -> olist -> prop by
+  subset J K := forall JJ A, adj JJ A J -> exists KK, adj KK A K.

@@ -230,7 +230,7 @@ Theorem merge_head_lemma : forall L A,
   is_o A -> is_list L -> merge L (A :: nil) (A :: L).
 induction on 2. intros. case H2 (keep).
   assert (is_list (A :: nil)). apply merge_nil_equal to H3. search.
-  assert (adj L1 A1 (A1 :: L1)). 
+  assert (adj L1 A1 (A1 :: L1)).
    apply IH to H1 H4.
    apply add_to_merge_left to H5 H6.
    search.
@@ -341,7 +341,7 @@ Theorem merge_to_adj : forall J L A,
   exists JJ, perm J JJ /\ adj JJ A L.
 induction on 1. intros. case H1.
   apply IH to H4. apply adj_swap to H6 H3. search.
-  apply adj_det to H2. apply merge_sym to H4. 
+  apply adj_det to H2. apply merge_sym to H4.
    apply merge_nil_perm to H5. search.
 
 Theorem merge_same_result_diff : forall J A K B L,
@@ -354,15 +354,23 @@ intros.
   apply merge_to_adj to H2.
   apply adj_same_result_diff to H4 H6.
   case H7.
-    apply perm_trans to H3 H8. apply perm_sym to H5. 
+    apply perm_trans to H3 H8. apply perm_sym to H5.
      apply perm_trans to H9 H10. search.
-    apply adj_implies_merge to H8. apply perm_sym to H5. 
+    apply adj_implies_merge to H8. apply perm_sym to H5.
      apply perm_merge_3 to H9 H10. search.
 
+Theorem merge_subset : forall J K L, merge J K L -> subset J L.
+induction on 1. intros. case H1.
+  search.
+  apply IH to *H4. H5 : case H5. unfold. intros.
+   apply adj_same_result_diff_both to H2 H6. case H7. search.
+   apply *H5 to *H8. apply adj_swap to *H11 *H3. search.
+  apply IH to *H4. H5 : case H5. unfold. intros.
+    apply *H5 to *H6. apply adj_swap to *H7 *H3. search.
+
 Theorem merge_split : forall J K L LL A,
-  merge LL (A :: nil) L -> 
+  merge LL (A :: nil) L ->
   merge J K L ->
   (exists JJ, merge JJ (A :: nil) J /\ merge JJ K LL) \/
   (exists KK, merge KK (A :: nil) K /\ merge J KK LL).
 skip.
-
