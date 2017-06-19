@@ -278,6 +278,15 @@ intros.
   apply perm_merge_3 to H6 H7.
   search.
 
+Theorem change_merge_order2 : forall J K JK L KL JKL,
+  merge J K JK -> merge K L KL -> merge J KL JKL ->
+  merge JK L JKL.
+intros.
+  apply merge_3_is_list to H1. apply merge_2_is_list to H2.
+  apply merge_exists to *H4 *H5.
+  apply merge_assoc to *H1 *H2 *H3 H6. apply perm_sym to *H7.
+  backchain perm_merge_3.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem merge_perm_det : forall J K L1 L2,
