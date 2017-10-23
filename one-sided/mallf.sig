@@ -9,7 +9,7 @@ kind pf, nf  type.
 type atom  atm -> pf.
 type tens  pf -> pf -> pf.
 type one   pf.
-type plus  pf -> pf -> pf.
+type oplus pf -> pf -> pf.
 type zero  pf.
 type fex   (atm -> pf) -> pf.
 type shp   nf -> pf.
@@ -29,5 +29,3 @@ type fatom  atm -> foc.
 type fshift nf -> foc.
 type fjoin  foc -> foc -> foc.
 type femp   foc.
-
-type subf  foc -> pf -> o.

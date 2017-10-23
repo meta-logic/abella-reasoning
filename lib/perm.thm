@@ -334,9 +334,3 @@ induction on 2. intros. case H2.
   apply perm_cons_1 to *H1.
    apply IH to *H5 *H3.
    backchain adj_preserves_member.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% subsets via adj
-
-Define subset : olist -> olist -> prop by
-  subset J K := forall JJ A, adj JJ A J -> exists KK, adj KK A K.

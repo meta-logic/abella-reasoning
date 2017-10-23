@@ -1,11 +1,13 @@
 Specification "llf".
 
+Kind nat type.
+Import "../lib/nat".
+
 Type $pf pf -> o.
 Type $natom atm -> o.
 Define is_fm : o -> prop by
 ; is_fm ($pf P) := exists N, {dual P N}
 ; is_fm ($natom A).
-
 Import "../lib/merge" with is_o := is_fm.
 
 Theorem $dual_det :
@@ -37,36 +39,6 @@ Split $dual_det as dual_det_1, dual_det_2.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Context extensions based on focusing patterns
 
-Kind cx type.
-Type $cx olist -> olist -> cx.
-Define no_atoms : olist -> prop by
-; no_atoms nil
-; no_atoms ($pf P :: L) := no_atoms L.
-Theorem no_atoms_adj : forall LL P L,
-  no_atoms LL -> adj LL ($pf P) L -> no_atoms L.
-induction on 1. intros. case H1.
-  case H2. search.
-  case H2. search. apply IH to H3 H5. search.
-Theorem no_atoms_unadj : forall LL P L,
-  no_atoms L -> adj LL P L -> no_atoms LL /\ exists A, P = $pf A.
-induction on 1. intros. case H1.
-  case H2.
-  case H2. search. apply IH to H3 H5. search.
-Theorem no_atoms_merge : forall J K L,
-  no_atoms J -> no_atoms K -> merge J K L -> no_atoms L.
-induction on 3. intros. case H3.
-  search.
-  apply no_atoms_unadj to *H1 *H4. apply IH to *H7 *H2 *H6. backchain no_atoms_adj.
-  apply no_atoms_unadj to *H2 *H4. apply IH to *H1 *H7 *H6. backchain no_atoms_adj.
-Theorem no_atoms_unmerge : forall J K L,
-  no_atoms L -> merge J K L -> no_atoms J /\ no_atoms K.
-induction on 2. intros. case H2.
-  search.
-  apply no_atoms_unadj to *H1 *H4. apply IH to *H6 *H5. apply no_atoms_adj to *H7 *H3. search.
-  apply no_atoms_unadj to *H1 *H4. apply IH to *H6 *H5. apply no_atoms_adj to *H8 *H3. search.
-Define is_cx : cx -> prop by
-  is_cx ($cx U L) := is_list U /\ no_atoms U /\ is_list L.
-
 Define extension : foc -> olist -> olist -> prop by
 ; extension (fatom A) nil ($natom A :: nil) := is_fm ($pf (atom A))
 ; extension (fshift N) nil ($pf P :: nil) := {dual P N} /\ is_fm ($pf P)
@@ -79,13 +51,12 @@ Define extension : foc -> olist -> olist -> prop by
 ; extension femp nil nil.
 
 Theorem extension_is : forall F U L,
-  extension F U L -> is_list U /\ no_atoms U /\ is_list L.
-induction on 1. intros. case H1.
+  extension F U L -> is_list U /\ is_list L.
+intros. case H1.
   search.
   search.
   search.
-  apply IH to H2. apply IH to H3. apply no_atoms_merge to *H7 *H10 H4.
-    apply merge_3_is_list to *H4. apply merge_3_is_list to *H5. search.
+  apply merge_3_is_list to H4. apply merge_3_is_list to H5. search.
   search.
 
 Theorem extension_exists : forall F P,
@@ -94,7 +65,7 @@ induction on 1. intros. case H1.
   search. search. search.
   apply IH to *H2. apply IH to *H3.
    apply extension_is to H4. apply extension_is to H5.
-   apply merge_exists to *H6 *H9. apply merge_exists to *H8 *H11.
+   apply merge_exists to *H7 *H9. apply merge_exists to *H6 *H8.
    search.
   apply IH to *H2. search.
   apply IH to *H2. search.
@@ -119,54 +90,54 @@ induction on 1. intros. case H1.
 %% Synthetic first-order LL
 
 Define
-  ll : olist -> olist -> prop,
-  llfoc : olist -> olist -> foc -> prop
+  ll    : nat -> olist -> olist -> prop,
+  llfoc : nat -> olist -> olist -> foc -> prop
 by
 % linear decide
-; ll U L :=
+; ll (s X) U L :=
     exists P LL, adj LL ($pf P) L /\
     exists F, {subf F P} /\
-    llfoc U LL F
+    llfoc X U LL F
 % unrestricted decide
-; ll U L :=
+; ll (s X) U L :=
     exists P UU, adj UU ($pf P) U /\
     exists F, {subf F P} /\
-    llfoc U L F
+    llfoc X U L F
 
 % init
-; llfoc U ($natom A :: nil) (fatom A) :=
-    is_list U /\ no_atoms U
+; llfoc (s X) U ($natom A :: nil) (fatom A) :=
+    is_nat X /\ is_list U
 % linear release + async + store
-; llfoc U L (fshift N) :=
-    is_list U /\ no_atoms U /\ is_list L /\
+; llfoc (s X) U L (fshift N) :=
+    is_nat X /\ is_list U /\ is_list L /\
     exists P, {dual P N} /\
     forall F, {subf F P} ->
     exists UE LE, extension F UE LE /\
     exists UU, merge U UE UU /\
     exists LL, merge L LE LL /\
-    ll UU LL
+    ll X UU LL
 % unrestricted release + async + store
-; llfoc U nil (fbang N) :=
-    is_list U /\ no_atoms U /\
+; llfoc (s X) U nil (fbang N) :=
+    is_nat X /\ is_list U /\
     exists P, {dual P N} /\
     forall F, {subf F P} ->
     exists UE LL, extension F UE LL /\
-    exists UU, merge U UE UU /\ ll UU LL
+    exists UU, merge U UE UU /\ ll X UU LL
 % multiplicative split
-; llfoc U L (fjoin F1 F2) :=
+; llfoc (s X) U L (fjoin F1 F2) :=
     exists L1 L2, merge L1 L2 L /\
-    llfoc U L1 F1 /\ llfoc U L2 F2
+    llfoc X U L1 F1 /\ llfoc X U L2 F2
 % linear emptiness test
-; llfoc U nil femp :=
-    is_list U /\ no_atoms U.
+; llfoc (s X) U nil femp :=
+    is_nat X /\ is_list U.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Well-formedness of context
 
 Theorem $ll_is :
-  (forall U L, ll U L -> is_list U /\ no_atoms U /\ is_list L)
+  (forall X U L, ll X U L -> is_nat X /\ is_list U /\ is_list L)
 /\
-  (forall F U L, llfoc U L F -> is_list U /\ no_atoms U /\ is_list L).
+  (forall X F U L, llfoc X U L F -> is_nat X /\ is_list U /\ is_list L).
 IH1 : induction on 1 1. split.
 intros. case H1.
   apply IH2 to H4. apply adj_3_is_list to H2. search.
@@ -181,96 +152,177 @@ Split $ll_is as ll_is, llfoc_is.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Monotonicity of unrestricted contexts
 
-Theorem $monotone :
-  (forall U1 U2 L,
-     ll U1 L ->
-     is_list U2 -> no_atoms U2 ->
-     subset U1 U2 ->
-     ll U2 L)
+Theorem $monotone_ind :
+  (forall X1 X2 U1 U2 L,
+     ll X1 U1 L ->
+     subset U1 U2 -> leq X1 X2 ->
+     ll X2 U2 L)
 /\
-  (forall U1 U2 L F,
-     llfoc U1 L F ->
-     is_list U2 -> no_atoms U2 ->
-     subset U1 U2 ->
-     llfoc U2 L F).
-IH1 : induction on 1 1. split.
-intros. case H1.
-  apply IH2 to *H7 _ _ _. search.
-  apply IH2 to *H7 _ _ _. H4 : case H4. apply *H4 to H5. search.
-intros. case H1.
-  % fatom
-  search.
-  % fshift
-  unfold 4. search. search. search. witness P. split. search.
-   intros. apply *H9 to *H10.
-   witness UE, LE. split. search.
-   Hn : assert exists VV, merge U2 UE VV.
-      backchain merge_exists. backchain merge_2_is_list. case Hn.
-   witness VV. split. search.
-   witness LL. split. search.
-   apply merge_3_is_list to H15.
-   apply extension_is to H11. apply no_atoms_merge to H3 H18 H15.
-   backchain IH1.
-   unfold. intros. apply merge_unadj_3 to *H12 *H21. case H22.
-     H4 : case H4. apply *H4 to *H23.
-      apply merge_unadj_1 to *H15 *H25. search.
-     apply merge_unadj_2 to *H15 *H23. search.
-  % fbang
-  unfold 5. search. search. witness P. split. search. intros.
-   apply *H8 to *H9. witness UE, LL. split. search.
-   Hn : assert exists VV, merge U2 UE VV.
-      backchain merge_exists. backchain merge_2_is_list. case Hn.
-   witness VV. split. search.
-   apply merge_3_is_list to H13.
-   apply extension_is to H10. apply no_atoms_merge to *H3 *H16 H13.
-   backchain IH1.
-   unfold. intros. apply merge_unadj_3 to *H11 *H19. case H20.
-     H4 : case H4. apply *H4 to *H21.
-      apply merge_unadj_1 to *H13 *H23. search.
-     apply merge_unadj_2 to *H13 *H21. search.
-  % fjoin
-  apply IH2 to *H6 _ _ _. apply IH2 to *H7 _ _ _. search.
-  % femp
+  (forall X1 X2 U1 U2 L F,
+     llfoc X1 U1 L F ->
+     subset U1 U2 -> leq X1 X2 ->
+     llfoc X2 U2 L F).
+IH1 : induction on 1 1. abbrev IH1 IH2 "...". split.
+intros Hll Hsub Hleq. Hll1 : case Hll.
+  Hleq : case Hleq. apply IH2 to *Hll3 _ _. search.
+  Hleq : case Hleq. Hllf : apply IH2 to *Hll3 _ _.
+  Hsub : case Hsub. apply merge_unadj_1 to *Hsub Hll1.
   search.
 
-Split $monotone as ll_monotone, llfoc_monotone.
+intros Hllf Hsub Hleq. Hllf1 : case Hllf.
+  % fatom
+  Hleq : case Hleq. apply leq_2_is_nat to Hleq.
+  apply subset_2_is_list to *Hsub. search.
+  % fshift
+  Hleq : case Hleq. unfold 4. backchain leq_2_is_nat. backchain subset_2_is_list. search.
+  witness P. split. search. intros Hsubf. Hll1 : apply *Hllf5 to *Hsubf.
+  witness UE, LE. split. search.
+  Hn : assert exists VV, merge U2 UE VV. backchain merge_exists. backchain subset_2_is_list.
+     backchain merge_2_is_list. Hvv : case Hn.
+  witness VV. split. search.
+  witness LL. split. search.
+  Hsub : case Hsub. Hsub : apply merge_sym to *Hsub.
+  Hsub : apply change_merge_order to Hvv *Hsub Hll2.
+  Hsub : apply merge_sym to *Hsub.
+  apply IH1 to *Hll4 _ *Hleq. search.
+  % fbang
+  Hleq : case Hleq. unfold 5. backchain leq_2_is_nat. search. search.
+  witness P. split. search. intros Hsubf. Hll1 : apply *Hllf5 to *Hsubf.
+  witness UE, LL. split. search.
+  Hn : assert exists VV, merge U2 UE VV. backchain merge_exists.
+     backchain merge_2_is_list. Hvv : case Hn.
+  witness VV. split. search.
+  Hvvsub : assert subset UU VV. unfold. intros Hadj.
+    Hmrg : apply merge_unadj_3 to *Hll2 *Hadj. Hmrg1 : case Hmrg.
+      Hsub : case Hsub. Hadj : apply Hsub to Hmrg1.
+        apply merge_unadj_1 to *Hvv *Hadj. search.
+    apply merge_unadj_2 to *Hvv *Hmrg1. search.
+  Hvvl : apply merge_3_is_list to Hvv.
+  Hvvna : assert is_list VV. backchain is_list_merge with J = U2, K = UE.
+    apply extension_is to Hll1. search.
+  apply IH1 to *Hll3 *Hvvl *Hvvna *Hvvsub *Hleq. search.
+  % fjoin
+  Hleq : case Hleq. apply IH2 to *Hllf2 _ _ _ _. apply IH2 to *Hllf3 _ _ _ _. search.
+  % femp
+  Hleq : case Hleq. apply leq_2_is_nat to Hleq. search.
+
+Split $monotone_ind as ll_monotone_ind, llfoc_monotone_ind.
+
+Theorem $monotone_full : forall X1 X2 U1 U2,
+  leq X1 X2 -> subset U1 U2 -> is_list U2 -> is_list U2 ->
+  (forall L, ll X1 U1 L -> ll X2 U2 L) /\
+  (forall F L, llfoc X1 U1 L F -> llfoc X2 U2 L F).
+intros. Hmono1 : apply $monotone_ind. split.
+intros. backchain Hmono1.
+intros. backchain Hmono2.
+
+Split $monotone_full as ll_monotone_full, llfoc_monotone_full.
+
+Theorem $monotone_same_ht : forall X U1 U2,
+  is_nat X -> subset U1 U2 -> is_list U2 -> is_list U2 ->
+  (forall L, ll X U1 L -> ll X U2 L) /\
+  (forall F L, llfoc X U1 L F -> llfoc X U2 L F).
+intros. Hleq : assert leq X X. backchain leq_refl. split.
+intros. backchain ll_monotone_full.
+intros. backchain llfoc_monotone_full.
+
+Split $monotone_same_ht as ll_monotone_same_ht, llfoc_monotone_same_ht.
+
+Theorem $monotone_same_unr : forall X1 X2 U,
+  leq X1 X2 ->
+  (forall L, ll X1 U L -> ll X2 U L) /\
+  (forall F L, llfoc X1 U F L -> llfoc X2 U F L).
+intros. assert subset U U. split.
+intros. apply ll_is to H3. backchain ll_monotone_full.
+intros. apply llfoc_is to H3. backchain llfoc_monotone_full.
+
+Split $monotone_same_unr as ll_monotone_same_unr, llfoc_monotone_same_unr.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generalized identity
 
-Theorem id : forall P N F U L,
-  {dual P N} ->
-  {subf F P} ->
-  extension F U L ->
-  llfoc U L F.
+Theorem $gid_lemma :
+  (forall P N F U L V,
+    {dual P N} -> {subf F P} -> extension F U L ->
+    exists X, is_nat X /\ llfoc X U L F)
+/\
+  (forall P N, {dual P N} ->
+    exists X, is_nat X /\ ll X ($pf P :: $pf (shp N) :: nil)).
+
+
+
 induction on 1. intros. case H1.
   % atoms
   case H2. case H3. search.
   % tensor
-  case H2. case H3. unfold.
+  case H2. case H3.
    apply IH to *H4 *H6 *H8.
    apply IH to *H5 *H7 *H9.
-   apply merge_subset to H10.
-   apply merge_subset to _ with J = U3, K = U2, L = U. backchain merge_sym.
-   apply llfoc_is to H12. apply llfoc_is to H13.
-   apply no_atoms_merge to *H17 *H20 H10. apply merge_3_is_list to H10.
-   apply llfoc_monotone to H12 _ _ H14.
-   apply llfoc_monotone to H13 _ _ H15.
+   apply lequate to *H12 *H14. apply leq_2_is_nat to H16.
+   assert is_list U. apply llfoc_is to H13. apply llfoc_is to H15.
+     apply is_list_merge to H21 H25 H10. search.
+   apply merge_3_is_list to H10.
+   apply merge_subset to H10. apply merge_sym to *H10. apply merge_subset to *H22.
+   apply llfoc_monotone_full to *H16 *H21 H20 H19 *H13.
+   apply llfoc_monotone_full to *H17 *H23 *H20 *H19 *H15.
    search.
   % one
   case H2. case H3. search.
-  % plus
+  % choice
   case H2.
     apply IH to *H4 *H6 *H3. search.
     apply IH to *H5 *H6 *H3. search.
   % zero
   case H2.
+  % fex
+  case H2. inst *H4 with n1 = T.
+  apply IH to *H6 *H5 *H3. search.
+  % bang
+  skip.
+  % shift
+  case H2. case H3.
+
+Theorem gid_lemma : forall P N, {dual P N} ->
+  exists X, is_nat X /\ forall F U L, {subf F P} -> extension F U L -> llfoc X U L F.
+induction on 1. intros. case H1.
+  % atoms
+  witness s z. split. search. intros. case H2. case H3. search.
+  % tensor
+  apply IH to *H2. apply *IH to *H3.
+   Hn : assert exists Y, leq X Y /\ leq X1 Y. backchain lequate. Hleq1 : case Hn.
+   witness s Y. split.  apply leq_2_is_nat to Hleq1. search. intros.
+   case H8. case H9.
+   apply *H5 to H10 H12. apply *H7 to H11 H13. unfold.
+   apply merge_subset to H14.
+   apply merge_subset to _ with J = U3, K = U2, L = U. backchain merge_sym.
+   apply llfoc_is to H16. apply llfoc_is to H17. clear H20 H24.
+   apply is_list_merge to *H22 *H26 H14. apply merge_3_is_list to H14.
+   apply llfoc_monotone_full to *Hleq1 *H18 H29 H28 *H16.
+   apply llfoc_monotone_full to *Hleq2 *H19 *H29 *H28 *H17.
+   search.
+  % one
+  witness s z. split. search. intros. case H2. case H3. search.
+  % choice
+  apply IH to *H2. apply IH to *H3.
+   Hn : assert exists Y, leq X Y /\ leq X1 Y. backchain lequate. Hleq1 : case Hn.
+   witness Y. split.  apply leq_2_is_nat to Hleq1. search. intros.
+  case H8.
+    apply *H5 to H10 H9. apply llfoc_monotone_same_unr to *Hleq1 *H11. search.
+    apply *H7 to H10 H9. apply llfoc_monotone_same_unr to *Hleq2 *H11. search.
+  % zero
+  witness z. split. search. intros. case H2.
   % exists
+  apply *IH to *H2. witness s X. split. search. intros.
+  case H5.
   case H2. H4 : inst *H4 with n1 = T.
    apply IH to *H4 *H5 *H3. search.
   % bang
   case H2. case H3.
    apply dual_det_1 to H4 *H5. apply dual_det_1 to H4 *H6.
+   assert forall F U L, {subf F P3} -> extension F U L -> exists X, llfoc X U L F.
+     intros. backchain IH.
+
+
    unfold. search. search. witness P3. split. search. intros.
    apply extension_exists to H8. witness U1, L1. split. search.
    apply IH to H4 H8 *H9.
@@ -293,3 +345,27 @@ induction on 1. intros. case H1.
     unfold 2. witness $pf P3, nil, L1. split. search. search.
     backchain merge_nil_equal.
   unfold 1. witness P3, L1. apply llfoc_is to H11. search.
+
+Theorem gid : forall U P N, {dual P N} -> is_list U -> is_list U -> ll U ($pf P :: $pf (shp N) :: nil).
+intros. unfold 1. witness shp N, $pf P :: nil. split. search.
+witness fshift N. split. search. unfold. search. search. search.
+witness P. split. search. intros.
+apply extension_exists to H4. witness U1, L. split. search.
+apply extension_is to H5. apply merge_exists to H2 H6.
+witness L1. split. search.
+witness $pf P :: L. split. apply merge_nil_equal to H8. search.
+apply gid_lemma to H1 H4 *H5.
+apply merge_sym to *H9. apply merge_subset to H11.
+apply is_list_merge to H7 H3 H11. apply merge_3_is_list to H11.
+apply llfoc_monotone to *H10 *H14 *H13 *H12.
+search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% cut-elimination
+
+Kind weight type.
+Type heavy, light weight.
+
+Define is_weight : weight -> prop by
+; is_weight light
+; is_weight heavy := is_weight light.

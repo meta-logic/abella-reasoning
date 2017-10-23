@@ -183,3 +183,9 @@ induction on 1. intros. case H1.
   apply leq_refl to H2. search.
   apply leq_refl to H2. search.
   apply IH to H2. search.
+
+Theorem lequate : forall X Y,
+  is_nat X -> is_nat Y ->
+  exists Z, leq X Z /\ leq Y Z.
+intros. apply max_exists to H1 H2.
+apply max_leq to H3. search.
