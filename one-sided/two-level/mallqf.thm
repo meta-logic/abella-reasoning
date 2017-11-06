@@ -19,6 +19,34 @@ Define is_fm : o -> prop by
 ; is_fm (form (exs A)) := nabla x, is_fm (form (A x))
 .
 
+Define is_pos : o -> prop by
+; is_pos (form (natom A))
+; is_pos (form (tens A B))
+; is_pos (form one)
+; is_pos (form (plus A B))
+; is_pos (form zero)
+; is_pos (form (exs A))
+.
+
+Define is_neg : o -> prop by
+; is_neg (form (atom A))
+; is_neg (form (wth A B))
+; is_neg (form top)
+; is_neg (form (par A B))
+; is_neg (form bot)
+; is_neg (form (all A))
+.
+
+Define is_neg_or_atom : o -> prop by
+; is_neg_or_atom (form (natom A))
+; is_neg_or_atom (form F) := is_neg (form F)
+.
+
+Define is_pos_or_atom : o -> prop by
+; is_pos_or_atom (form (atom A))
+; is_pos_or_atom (form F) := is_pos (form F)
+.
+
 Theorem dual_is : forall A B,
   { dual A B } -> is_fm (form A) /\ is_fm (form B).
 induction on 1. intros. case H1.
@@ -56,19 +84,6 @@ induction on 1. intros. case H1.
   apply IH to H2 with A = (X\ form (A1 X n2)).
     apply H3 with t = t. search.
 
-% Theorem is_dual_inst : forall A B,
-%   nabla (x : term), dual (A x) (B x) -> forall t, dual (A t) (B t).
-% induction on 1. intros. case H1.
-%   search.
-%   apply IH to H2. apply H4 with t = t.
-%     apply IH to H3. apply H6 with t = t. search.
-%   search.
-%   apply IH to H2. apply H4 with t = t.
-%     apply IH to H3. apply H6 with t = t. search.
-%   search.
-%   apply IH to H2 with A = (X\ A1 X n2), B = (X\ B1 X n2).
-%     apply H3 with t = t. search.
-
 Import "../../lib/merge" with is_o := is_fm.
 
 Theorem is_list_inst : forall (L : term -> olist),
@@ -103,9 +118,64 @@ induction on 1. intros. case H1.
     apply IH to H4. apply *H9 with t = t.
     search.
 
+%% FOCUSED FIRST-ORDER MALL
+
+% Two contexts are used to delay the application of synchronous rules
+% (if only one context is used, we needed to reason on all formulas of
+% the context before starting a focused phase).
+
+% The working context can be processed in order during the async phase.
+
+% By convention, all atoms have positive polarity (because of how dual is defined).
+
 Define 
-  mall : olist -> prop 
-  mallfoc : olist -> fm -> prop
+  mall : olist -> olist -> prop,
+  mallfoc : olist -> o -> prop
 by
-% TODO
+% Identity
+; mallfoc (form (natom A) :: nil) (form (atom A))
+% Decide
+; mall G nil :=
+    exists GG P, is_pos P /\ adj GG P G /\ mallfoc G P
+% Release
+; mallfoc G F :=
+    is_neg_or_atom F /\ mall G (F :: nil)
+% Store
+; mall G (F :: L) :=
+    exists GF, is_pos_or_atom F /\ adj G F GF /\ mall GF L
+% ASYNCHRONOUS PHASE
+; mall G (form bot :: L) :=
+    mall G L
+; mall G (form (par A B) :: L) :=
+    mall G (form A :: form B :: L)
+; mall G (form top :: L)
+; mall G (form (wth A B) :: L) :=
+    mall G (form A :: L) /\ mall G (form B :: L)
+; mall G (form (all A) :: L) :=
+    nabla x, mall G (form (A x) :: L)
+% SYNCHRONOUS PHASE
+; mallfoc G (form one)
+; mallfoc G (form (tens A B)) :=
+    exists G1 G2, merge G1 G2 G /\ mallfoc G1 (form A) /\ mallfoc G2 (form B)
+; mallfoc G (form (plus A B)) :=
+    mallfoc G (form A)
+; mallfoc G (form (plus A B)) :=
+    mallfoc G (form B)
+; mallfoc G (form (exs A)) :=
+    exists x, mallfoc G (form (A x))
 .
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem generalized_id : forall A B,
+  { dual A B } -> mallfoc (form B :: nil) (form A).
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. apply IH to H3.
+    skip.
+skip.
+skip.
+skip.
+skip.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
