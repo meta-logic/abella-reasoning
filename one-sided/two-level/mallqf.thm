@@ -1,0 +1,111 @@
+Specification "mallq".
+
+Set witnesses on.
+
+Type form fm -> o.
+
+Define is_fm : o -> prop by
+; is_fm (form (atom A))
+; is_fm (form (natom A))
+; is_fm (form (tens A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form one)
+; is_fm (form (par A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form bot)
+; is_fm (form (wth A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form top)
+; is_fm (form (plus A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form zero)
+; is_fm (form (all A)) := nabla x, is_fm (form (A x))
+; is_fm (form (exs A)) := nabla x, is_fm (form (A x))
+.
+
+Theorem dual_is : forall A B,
+  { dual A B } -> is_fm (form A) /\ is_fm (form B).
+induction on 1. intros. case H1.
+  search.
+  apply IH to *H2. apply IH to *H3. search.
+  search.
+  apply IH to *H2. apply IH to *H3. search.
+  search.
+  apply IH to *H2. search.
+
+%% FYI: Abella cannot infer the type of A
+Theorem is_fm_inst : forall (A : term -> o),
+  nabla x, is_fm (A x) -> forall t, is_fm (A t).
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+      apply H3 with t = t. search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+    apply H3 with t = t. search.
+
+% Theorem is_dual_inst : forall A B,
+%   nabla (x : term), dual (A x) (B x) -> forall t, dual (A t) (B t).
+% induction on 1. intros. case H1.
+%   search.
+%   apply IH to H2. apply H4 with t = t.
+%     apply IH to H3. apply H6 with t = t. search.
+%   search.
+%   apply IH to H2. apply H4 with t = t.
+%     apply IH to H3. apply H6 with t = t. search.
+%   search.
+%   apply IH to H2 with A = (X\ A1 X n2), B = (X\ B1 X n2).
+%     apply H3 with t = t. search.
+
+Import "../../lib/merge" with is_o := is_fm.
+
+Theorem is_list_inst : forall (L : term -> olist),
+  nabla x, is_list (L x) -> forall t, is_list (L t).
+induction on 1. intros. case H1.
+  search.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+
+Theorem adj_inst : forall K A L,
+  nabla (x : term), adj (K x) (A x) (L x) -> forall t, adj (K t) (A t) (L t).
+induction on 1. intros. case H1.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply is_list_inst to H3. apply H6 with t = t. search.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t. search. 
+
+% Corollary:
+% adj J (A x) (K x) -> adj J (A t) (K t)
+
+Theorem merge_inst : forall J K L,
+  nabla (x : term), merge (J x) (K x) (L x) -> forall t, merge (J t) (K t) (L t).
+induction on 1. intros. case H1.
+  search.
+  apply adj_inst to H2. apply *H5 with t = t.
+    apply adj_inst to H3. apply *H7 with t = t.
+    apply IH to H4. apply *H9 with t = t.
+    search.
+  apply adj_inst to H2. apply *H5 with t = t.
+    apply adj_inst to H3. apply *H7 with t = t.
+    apply IH to H4. apply *H9 with t = t.
+    search.
+
+Define 
+  mall : olist -> prop 
+  mallfoc : olist -> fm -> prop
+by
+% TODO
+.
