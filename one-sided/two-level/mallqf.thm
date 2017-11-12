@@ -20,7 +20,7 @@ Define is_fm : o -> prop by
 .
 
 Define is_pos : o -> prop by
-; is_pos (form (natom A))
+; is_pos (form (atom A))
 ; is_pos (form (tens A B))
 ; is_pos (form one)
 ; is_pos (form (plus A B))
@@ -29,7 +29,7 @@ Define is_pos : o -> prop by
 .
 
 Define is_neg : o -> prop by
-; is_neg (form (atom A))
+; is_neg (form (natom A))
 ; is_neg (form (wth A B))
 ; is_neg (form top)
 ; is_neg (form (par A B))
@@ -38,12 +38,12 @@ Define is_neg : o -> prop by
 .
 
 Define is_neg_or_atom : o -> prop by
-; is_neg_or_atom (form (natom A))
+; is_neg_or_atom (form (atom A))
 ; is_neg_or_atom (form F) := is_neg (form F)
 .
 
 Define is_pos_or_atom : o -> prop by
-; is_pos_or_atom (form (atom A))
+; is_pos_or_atom (form (natom A))
 ; is_pos_or_atom (form F) := is_pos (form F)
 .
 
@@ -126,7 +126,7 @@ induction on 1. intros. case H1.
 
 % The working context can be processed in order during the async phase.
 
-% By convention, all atoms have positive polarity (because of how dual is defined).
+% By convention, all atoms have positive polarity (because of the way dual is defined).
 
 Define 
   mall : olist -> olist -> prop,
@@ -136,7 +136,7 @@ by
 ; mallfoc (form (natom A) :: nil) (form (atom A))
 % Decide
 ; mall G nil :=
-    exists GG P, is_pos P /\ adj GG P G /\ mallfoc G P
+    exists GG P, is_pos P /\ adj GG P G /\ mallfoc GG P
 % Release
 ; mallfoc G F :=
     is_neg_or_atom F /\ mall G (F :: nil)
@@ -168,10 +168,13 @@ by
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem generalized_id : forall A B,
-  { dual A B } -> mallfoc (form B :: nil) (form A).
+  { dual A B } -> mall (form A :: nil) (form B :: nil).
 induction on 1. intros. case H1.
-  search.
-  apply IH to H2. apply IH to H3.
+  unfold 4. witness (form (natom A1) :: form (atom A1) :: nil). split.
+    search.
+    search.
+    unfold 2. witness (form (natom A1) :: nil). witness (form (atom A1)). search.
+  apply IH to H2. apply IH to H3. unfold 6. %% CANNOT STORE :(
     skip.
 skip.
 skip.
