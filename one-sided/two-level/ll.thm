@@ -1,0 +1,338 @@
+Specification "ll".
+
+Set witnesses on.
+
+Kind nat type.
+Import "../../lib/nat".
+
+Type form fm -> o.
+
+Define is_fm : o -> prop by
+; is_fm (form (atom A))
+; is_fm (form (natom A))
+; is_fm (form (tens A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form one)
+; is_fm (form (par A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form bot)
+; is_fm (form (wth A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form top)
+; is_fm (form (pls A B)) := is_fm (form A) /\ is_fm (form B)
+; is_fm (form zero)
+; is_fm (form (bang A)) := is_fm (form A)
+; is_fm (form (qm A)) := is_fm (form A)
+; is_fm (form (all A)) := nabla x, is_fm (form (A x))
+; is_fm (form (exs A)) := nabla x, is_fm (form (A x))
+.
+
+Theorem dual_is : forall A B,
+  { dual A B } -> is_fm (form A) /\ is_fm (form B).
+induction on 1. intros. case H1.
+  search.
+  apply IH to *H2. apply IH to *H3. search.
+  search.
+  apply IH to *H2. apply IH to *H3. search.
+  search.
+  apply IH to *H2. search.
+  apply IH to *H2. search.
+
+%% FYI: Abella cannot infer the type of A
+Theorem is_fm_inst : forall (A : term -> o),
+  nabla x, is_fm (A x) -> forall t, is_fm (A t).
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H3 with t = t.
+    apply IH to H2. apply H5 with t = t.
+    search. 
+  apply IH to H2. apply H3 with t = t.
+    apply IH to H2. apply H5 with t = t.
+    search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+      apply H3 with t = t. search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+    apply H3 with t = t. search.
+
+% Theorem is_dual_inst : forall A B,
+%   nabla (x : term), dual (A x) (B x) -> forall t, dual (A t) (B t).
+% induction on 1. intros. case H1.
+%   search.
+%   apply IH to H2. apply H4 with t = t.
+%     apply IH to H3. apply H6 with t = t. search.
+%   search.
+%   apply IH to H2. apply H4 with t = t.
+%     apply IH to H3. apply H6 with t = t. search.
+%   search.
+%   apply IH to H2 with A = (X\ A1 X n2), B = (X\ B1 X n2).
+%     apply H3 with t = t. search.
+
+Import "../../lib/merge" with is_o := is_fm.
+
+Theorem is_list_inst : forall (L : term -> olist),
+  nabla x, is_list (L x) -> forall t, is_list (L t).
+induction on 1. intros. case H1.
+  search.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+
+Theorem adj_inst : forall K A L,
+  nabla (x : term), adj (K x) (A x) (L x) -> forall t, adj (K t) (A t) (L t).
+induction on 1. intros. case H1.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply is_list_inst to H3. apply H6 with t = t. search.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t. search.
+
+% Corollary:
+% adj J (A x) (K x) -> adj J (A t) (K t)
+
+Theorem merge_inst : forall J K L,
+  nabla (x : term), merge (J x) (K x) (L x) -> forall t, merge (J t) (K t) (L t).
+induction on 1. intros. case H1.
+  search.
+  apply adj_inst to H2. apply *H5 with t = t.
+    apply adj_inst to H3. apply *H7 with t = t.
+    apply IH to H4. apply *H9 with t = t.
+    search.
+  apply adj_inst to H2. apply *H5 with t = t.
+    apply adj_inst to H3. apply *H7 with t = t.
+    apply IH to H4. apply *H9 with t = t.
+    search.
+
+Define ll : nat -> olist -> olist -> prop by
+% init
+; ll (s X) QL L :=
+    is_nat X /\ is_list QL /\ 
+    exists A, adj (form (natom A) :: nil) (form (atom A)) L
+
+% tensor
+; ll (s X) QL L :=
+    exists A B LL JJ KK J K,
+      adj LL (form (tens A B)) L /\
+      merge JJ KK LL /\
+      adj JJ (form A) J /\ ll X QL J /\
+      adj KK (form B) K /\ ll X QL K 
+
+% one
+; ll (s X) QL (form one :: nil) :=
+    is_nat X /\ is_list QL
+
+% par
+; ll (s X) QL L :=
+    exists A B LL J K,
+      adj LL (form (par A B)) L /\
+      adj LL (form A) J /\
+      adj J (form B) K /\
+      ll X QL K
+
+% bot
+; ll (s X) QL L :=
+    exists LL,
+      adj LL (form bot) L /\
+      ll X QL LL
+
+% with
+; ll (s X) QL L :=
+    exists A B LL J K,
+      adj LL (form (wth A B)) L /\
+      adj LL (form A) J /\ ll X QL J /\
+      adj LL (form B) K /\ ll X QL K
+
+% top
+; ll (s X) QL L :=
+    exists LL,
+      adj LL (form top) L /\
+      is_nat X /\ is_list QL 
+% plus_1
+; ll (s X) QL L :=
+    exists A B LL J,
+      adj LL (form (pls A B)) L /\
+      adj LL (form A) J /\ ll X QL J
+
+% plus_2
+; ll (s X) QL L :=
+    exists A B LL J,
+      adj LL (form (pls A B)) L /\
+      adj LL (form B) J /\ ll X QL J
+
+% bang
+; ll (s X) QL (form (bang A) :: nil) :=
+    ll X QL (form A :: nil)
+
+% question mark
+; ll (s X) QL L :=
+    exists A LL, adj LL (form (qm A)) L /\
+    exists QK, adj QL (form A) QK /\
+    ll X QK LL
+
+% dereliction
+; ll (s X) QL L :=
+    exists A QK, adj QK (form A) QL /\
+    exists J, adj L (form A) J /\
+    ll X QL J
+
+; ll (s X) QL L :=
+    % Object-level exists is a meta-level exists
+    exists x A LL J,
+      adj LL (form (exs A)) L /\
+      adj LL (form (A x)) J /\ ll X QL J
+
+; ll (s X) QL L :=
+    % Object-level forall is meta-level nabla
+    % x is free in J.
+    exists A LL, adj LL (form (all A)) L /\
+    nabla x, exists J, adj LL (form (A x)) J /\ ll X QL J
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Structure
+
+Theorem ll_is : forall X QL L,
+  ll X QL L ->
+  is_nat X /\ is_list QL /\ is_list L.
+induction on 1. intros. case H1.
+  apply adj_3_is_list to H4. search.
+  apply IH to H5. apply adj_3_is_list to H2. search.
+  search. 
+  apply IH to H5. apply adj_3_is_list to H2. search.
+  apply IH to H3. apply adj_3_is_list to H2. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply IH to H2. case H5. search.
+  apply IH to H4. apply adj_1_is_list to H3. apply adj_3_is_list to H2. search.
+  apply IH to H4. apply adj_1_is_list to H3. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Height weakening
+
+Theorem ll_weaken_height : forall X Y QL L,
+  ll X QL L ->
+  leq X Y ->
+  ll Y QL L.
+induction on 1. intros. case H1.
+  case H2. apply leq_2_is_nat to H6. search.
+  case H2. apply IH to *H6 H9. apply IH to *H8 H9. search.
+  case H2. apply leq_2_is_nat to H5. search.
+  case H2. apply IH to *H6 H7. search.
+  case H2. apply IH to *H4 H5. search.
+  case H2. apply IH to *H7 H8. apply IH to *H5 H8. search.
+  case H2. apply leq_2_is_nat to H6. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H3 H4. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H5 H6. search.
+  case H2. apply IH to *H5 H6. search.
+
+Theorem ll_equalize_height : forall X QK K Y QL L,
+  ll X QK K ->
+  ll Y QL L ->
+  exists Z, ll Z QK K /\ ll Z QL L.
+intros. apply ll_is to H1. apply ll_is to H2.
+apply max_exists to H3 H6. apply max_leq to H9.
+apply ll_weaken_height to H1 H10.
+apply ll_weaken_height to H2 H11.
+search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Unbounded context weakening
+
+Theorem ll_weaken_q : forall X QJ QK QL J,
+  ll X QJ J ->
+  merge QJ QK QL ->
+  ll X QL J.
+induction on 1. intros. apply merge_3_is_list to H2. case H1.
+  search.
+  apply IH to *H7 H2. apply IH to *H9 H2. search.
+  search.
+  apply IH to *H7 H2. search.
+  apply IH to *H5 H2. search.
+  apply IH to *H6 H2. apply IH to *H8 H2. search.
+  search.
+  apply IH to *H6 H2. search.
+  apply IH to *H6 H2. search.
+  apply IH to *H4 H2. search.
+  apply adj_2_is_o to H5. apply adj_exists to H7 H3.
+   assert merge QK1 QK M.
+   apply IH to *H6 H9.
+   search.
+  apply IH to *H6 H2. apply merge_unadj_1 to H2 H4.
+   search.
+  apply IH to *H6 H2. search.
+  apply IH to *H6 H2. search.
+
+Theorem ll_weaken_q1 : forall X QJ J A QL,
+  ll X QJ J ->
+  adj QJ A QL ->
+  ll X QL J.
+intros. assert merge QJ (A :: nil) QL.
+  apply adj_2_is_o to H2.
+   apply adj_1_is_list to H2.
+   apply merge_nil_equal to H4. apply merge_sym to *H5.
+   search.
+  backchain ll_weaken_q.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Theorem ll_perm_q : forall X QK QL L,
+  ll X QK L ->
+  perm QK QL ->
+  ll X QL L.
+induction on 1. intros. case H1.
+  apply perm_2_is_list to H2. search.
+  apply IH to H6 H2. apply IH to H8 H2. search.
+  apply perm_2_is_list to H2. search.
+  apply IH to *H6 H2. search.
+  apply IH to *H4 H2. search.
+  apply IH to *H5 H2. apply IH to *H7 H2. search.
+  apply perm_2_is_list to H2. search.
+  apply IH to *H5 H2. search.
+  apply IH to *H5 H2. search.
+  apply IH to *H3 H2. search.
+  Ht : assert 0 exists QL1, adj QL (form A) QL1.
+    apply perm_2_is_list to H2. apply adj_2_is_o to H4.
+    apply adj_exists to H7 H6. search.
+    case Ht.
+   apply adj_preserves_perm to H4 H6 H2.
+   apply IH to H5 H7. search.
+  apply IH to H5 H2.
+   apply adj_perm to H2 H3. search.
+  apply IH to *H5 H2. search.
+  apply IH to *H5 H2. search.
+
+Theorem ll_perm_l : forall X QL K L,
+  ll X QL K ->
+  perm K L ->
+  ll X QL L.
+induction on 1. intros. case H1.
+  apply adj_perm_full to H2 H5.
+   apply perm_cons_1 to *H7. apply perm_nil_1 to *H9. case H8.
+   search.
+
+  apply adj_perm_full to *H2 *H3.
+   apply perm_merge_3 to *H4 H10.
+   search.
+
+  apply perm_cons_1 to *H2. apply perm_nil_1 to *H6. case H5.
+    search.
