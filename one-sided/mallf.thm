@@ -266,7 +266,7 @@ Theorem $cut :
     merge J K L ->
     exists Z, mallfoc Z L F).
 IHrank1 : induction on 1 1 1. IHht1 : induction on 3 3 3.
-abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
+% abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
 split.
 intros. case H3.
   apply adj_same_result_diff_both to *H2 *H6. case H9.
@@ -356,7 +356,7 @@ intros Hdual Hadj Hpos Hneg Hmr. Hpos : case Hpos.
       Hmr : case Hmr1.
     apply IHht1 to *Hdual *Hadj *Hpos5 *Hneg Hmr1.
     search.
-  witness s Z.
+  witness s z.
 
 
   witness (s X1). unfold 3. search. backchain merge_3_is_list.
