@@ -485,15 +485,67 @@ intros. case H2 (keep).
   % tensor
   skip.
   % one
-  skip.
+  case H5.
+    % cut formula is the one
+    case H1.
+    apply merge_nil_perm to *H8.
+    apply bot_inv to *H7 *H6.
+    backchain mell_perm_l.
+    % cut formula is not the one
+    case H11.
   % par
-  skip.
+  IH : apply IHht to H1 *H12 _ with W = light. IH : case IH.
+  apply adj_same_result_diff to H5 H9. case H13. case H1.
+    % negative cut formula cannot be principal in the other branch
+    apply adj_swap to H14 H9.
+    apply adj_same_result to H5 H16.
+    apply perm_merge_1 to *H8 *H17.
+    apply merge_unadj_1 to H18 H15.
+    apply adj_swap to *H14 *H10. apply adj_swap to *H22 *H11.
+    Ht : assert exists LL3, adj LL2 A1 LL3.
+      apply adj_2_is_o to H21. apply merge_3_is_list to H20. backchain adj_exists.
+      case Ht.
+    Ht : assert exists LL4, adj LL3 B1 LL4.
+      apply adj_2_is_o to H23. apply adj_3_is_list to H25. backchain adj_exists.
+      case Ht.
+    assert merge U2 KK LL4.
+    apply IH to _ H24 H6 H7 H27.
+    search.
   % bot
-  skip.
+  IH : apply IHht to H1 *H10 _ with W = light. IH : case IH.
+  apply adj_same_result_diff to H5 H9. case H11. case H1.
+    % negative cut formula cannot be principal in the other branch
+    apply adj_swap to H12 H9. apply adj_same_result to H5 H14.
+    apply perm_merge_1 to *H8 *H15.
+    apply merge_unadj_1 to H16 H13.
+    apply IH to H4 H12 H6 H7 H18. search.
   % bang
-  skip.
+  Ht : assert JJ = nil.
+    case H5. search. case H11.
+    case Ht.
+  case H5. case H1. rename AA to B1.
+  IH : apply IHrk to H12 H9 _ with W = heavy. IH : case IH.
+  Ht : assert exists QQ, adj QQL B1 QQ /\ mell QQ KK.
+    apply dual_is to H12. apply mell_is to H7.
+    apply adj_exists to H14 H15.
+    apply qm_inv to H7 H6 H17.
+    search. case Ht.
+  apply IH to _ *H4 *H13 *H14.
+  apply merge_nil_perm to *H8. backchain mell_perm_l with K = KK.
   % qm
-  skip.
+  apply adj_same_result_diff to H5 H9. case H12. case H1.
+    % negative cut formula cannot be principal in the other branch
+    apply adj_swap to H13 H9. apply adj_same_result to H5 H15.
+    apply perm_merge_1 to *H8 H16.
+    IH : apply IHht to H1 H11 _ with W = light. IH : case IH.
+    apply merge_unadj_1 to H17 H14.
+    Ht : assert exists QQK, adj QQL A1 QQK /\ incl QK QQK.
+      apply adj_2_is_o to H10. case H4. apply merge_3_is_list to H21.
+      apply adj_exists to H20 H22.
+      search. case Ht.
+    apply mell_weaken_q1 to *H7 H20.
+    IH : apply *IH to *H21 H13 H6 H22 H19.
+    search.
   % dl
   skip.
 
