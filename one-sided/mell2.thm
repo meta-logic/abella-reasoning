@@ -451,19 +451,23 @@ Define is_weight : weight -> prop by
 ; is_weight light
 ; is_weight heavy := is_weight light.
 
+Define incl : olist -> olist -> prop by
+incl J L := exists K, merge J K L.
+
 Theorem $cut_admit : forall A B QL J W,
   dual A B -> mell QL J -> is_weight W ->
      (W = light /\
-      forall JJ KK K LL,
+      forall QQL JJ KK K LL,
+        incl QL QQL ->
         adj JJ A J ->
         adj KK B K ->
-        mell QL K ->
+        mell QQL K ->
         merge JJ KK LL ->
-        mell QL LL)
+        mell QQL LL)
   \/ (W = heavy /\
-      forall QQ K,
-        J = A :: nil -> adj QL B QQ -> mell QQ K ->
-        mell QL K).
+      forall QQL QQ K,
+        J = A :: nil -> incl QL QQL -> adj QQL B QQ -> mell QQ K ->
+        mell QQL K).
 IHrk : induction on 1.
 IHht : induction on 2.
 IHwt : induction on 3.
@@ -471,13 +475,13 @@ abbrev IHrk IHht IHwt "...".
 intros. case H3. left. split. search.
 intros. case H2 (keep).
   % id
-  apply adj_same_result_diff to H4 H9. case H10.
+  apply adj_same_result_diff to H5 H10. case H11.
     %% cut formula is part of the identity rule.
-    case H1. apply perm_cons_2 to *H11. apply perm_sym to *H13. apply perm_nil_1 to *H14. case H12.
-    apply merge_unadj_1 to *H7 _. apply merge_nil_perm to *H18.
-    assert perm K LL. apply mell_perm_l to *H6 *H20. search.
+    case H1. apply perm_cons_2 to *H12. apply perm_sym to *H14. apply perm_nil_1 to *H15. case H13.
+    apply merge_unadj_1 to *H8 _. apply merge_nil_perm to *H19.
+    assert perm K LL. apply mell_perm_l to *H7 *H21. search.
     %% cut formula is not part of the identity
-    case H11. case H1. case H13.
+    case H12. case H1. case H14.
   % tensor
   skip.
   % one
@@ -493,194 +497,71 @@ intros. case H2 (keep).
   % dl
   skip.
 
-right. split. search. intros. case H5.
-apply *IHwt to H1 H2 *H4. Hc : case H8.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% UPTO HERE
-
-
-  % tensor
-  case H2. IHht : apply *IHht to H1 H15 _ with W = light. IHht : case IHht. clear IHwt.
-  apply adj_same_result_diff to H4 H9. case H16.
-    %% cut formula is principal
-    case H1.
-    IHrk1 : apply IHrk to *H18 H15 _ with W = light. IHrk1 : case IHrk1.
-    IHrk2 : apply IHrk to *H19 H15 _ with W = light. IHrk2 : case IHrk2. clear IHrk.
-    Hi : assert 0 exists KKA KKB, adj KK AA KKA /\ adj KKA BB KKB /\ mell Y QL KKB.
-      apply adj_2_is_o to H6. case H20. apply adj_1_is_list to H6.
-      apply adj_exists to H21 H23. apply adj_3_is_list to H24. apply adj_exists to H22 H25.
-      apply par_inv to H7 H6 H24 H26. search.
-      Hi1 : case Hi.
-    apply perm_merge_1 to *H8 H17.
-    Ht : assert 0 exists U, merge KK1 KKA U.
-      apply adj_1_is_list to H13. apply adj_1_is_list to Hi2. apply merge_exists to H21 H22. search.
-      case Ht.
-    apply *IHrk2 to H13 H14 Hi2 Hi3 H21.
-    apply merge_unadj_2 to H21 Hi1.
-    Ht : assert 0 exists V, merge JJ1 LL2 V.
-      apply adj_1_is_list to H11. apply adj_1_is_list to H23. apply merge_exists to H25 H26. search.
-      case Ht.
-    apply *IHrk1 to H11 H12 H23 H22 H25.
-    apply merge_assoc to *H10 *H24 *H25 *H20.
-    apply mell_perm_l to *H26 *H27. search.
-    %% cut formula is not principal
-    apply adj_swap to H17 H9. apply adj_same_result to H4 H19.
-    apply perm_merge_1 to *H8 *H20.
-    apply merge_unadj_1 to H21 H18.
-    apply merge_unadj_3 to H10 H17. case H24.
-      %% cut formula goes to the left
-      apply adj_swap to *H25 *H11.
-      Ht : assert 0 exists V, merge U1 KK V.
-        apply adj_1_is_list to H28. apply adj_1_is_list to H6. apply merge_exists to H29 H30. search.
-        case Ht.
-      apply IHht to H28 H12 H6 H7 H29.
-      apply merge_unadj_1 to H29 H27.
-      apply mell_equalize_height to *H30 *H14.
-      assert 0 merge LL3 KK1 LL2.
-        apply merge_sym to *H26.
-        apply merge_1_is_list to H35. apply merge_3_is_list to H32. apply merge_exists to *H36 *H37.
-        apply merge_assoc to *H35 *H32 H38 *H23.
-        apply merge_sym to *H38. backchain perm_merge_3.
-      search.
-      %% cut formula goes to the right
-      apply adj_swap to *H25 *H13.
-      Ht : assert 0 exists V, merge U1 KK V.
-        apply adj_1_is_list to H28. apply adj_1_is_list to H6. apply merge_exists to H29 H30. search.
-        case Ht.
-      apply IHht to H28 H14 H6 H7 H29.
-      apply merge_unadj_1 to H29 H27.
-      apply mell_equalize_height to *H30 *H12.
-      assert 0 merge JJ1 LL3 LL2.
-        apply merge_1_is_list to H26. apply merge_3_is_list to H32. apply merge_exists to *H35 *H36.
-        apply merge_assoc to *H26 *H32 H37 *H23.
-        backchain perm_merge_3.
-      search.
-   % one
-  case H4.
-    %% cut formula is the one
-    case H1.
-    apply merge_nil_perm to *H8.
-    apply bot_inv to H7 H6.
-    apply mell_perm_l to *H14 H13. search.
-   %% cut formula isn't the one
-   case H12.
-  % par
-  case H2. IH : apply IHht to H1 *H13 _ with W = light. IH : case IH. clear IHrk IHht IHwt.
-  apply adj_same_result_diff to H4 H9. case H14.
-    case H1.
-    %% cut formula is not principal
-    apply adj_swap to H15 H9. apply adj_same_result to H4 H17.
-    apply perm_merge_1 to *H8 *H18.
-    apply merge_unadj_1 to H19 H16.
-    apply adj_swap to *H15 *H10. apply adj_swap to *H23 *H11.
-    Ht : assert exists LL3, adj LL2 A1 LL3.
-      apply adj_2_is_o to H22. apply merge_3_is_list to H21. backchain adj_exists.
-      case Ht.
-    Ht : assert exists LL4, adj LL3 B1 LL4.
-      apply adj_2_is_o to H24. apply adj_3_is_list to H26. backchain adj_exists.
-      case Ht.
-    assert merge U2 KK LL4.
-    apply IH to H25 H12 H6 H7 H28.
-    search.
-  % bot
-  case H2. IH : apply IHht to H1 *H11 _ with W = light. IH : case IH. clear IHrk IHht IHwt.
-  apply adj_same_result_diff to H4 H9. case H12.
-    case H1.
-    %% cut formula is not principal
-    apply adj_swap to H13 H9. apply adj_same_result to H4 H15.
-    apply perm_merge_1 to *H8 *H16.
-    apply merge_unadj_1 to H17 H14.
-    apply IH to H13 H10 H6 H7 H19.
-    search.
-  % bang
-  Ht : assert JJ = nil.
-    case H4. search. case H11.
-    case Ht.
-  case H4. case H1.
-  Ht : assert exists QQ, adj QL AA QQ /\ mell Y QQ KK.
-    apply dual_is to H12. apply mell_is to H7.
-    apply adj_exists to H14 H16.
-    apply qm_inv to H7 H6 H18. search.
-    case Ht.
-  case H2. Hc : apply IHrk to H12 *H15 _ with W = heavy. Hc : case Hc.
-  apply Hc to H9 H13 H14.
-  apply merge_nil_perm to H8.
-  apply mell_perm_l to *H16 *H17. search.
-  % qm
-  apply adj_same_result_diff to H4 H9. case H12.
-    case H1.
-    apply adj_swap to H13 H9. apply adj_same_result to H4 H15.
-     apply perm_merge_1 to *H8 H16.
-     case H2. IH : apply IHht to H1 *H18 _ with W = light. IH : case IH.
-     apply mell_weaken_q1 to *H7 H10.
-     apply merge_unadj_1 to H17 H14.
-     apply IH to H13 H11 H6 H19 H21.
-     assert mell (s Z) QL LL. search.
-  % dl
-  case H2. IH : apply IHht to H1 *H12 _ with W = light. IH : case IH. clear IHrk IHht IHwt.
-   apply adj_swap to H4 H10.
-   Ht : assert 0 exists LLA1, adj LL A1 LLA1.
-     apply adj_2_is_o to H10. apply merge_3_is_list to H8. backchain adj_exists. case Ht.
-   assert merge U KK LLA1.
-   apply IH to H14 H11 H6 H7 H16.
-   search.
-
 right. split. search.
-  apply *IHwt to H1 H2 *H4. Hc : case H5.
-  IHqc : induction on 3. intros. case H8.
-    % id
-    apply adj_1_is_list to H7. search.
-    % tensor
-    apply IHqc to H6 H7 *H12. apply IHqc to H6 H7 *H14.
-     apply mell_equalize_height to *H15 *H16. search.
-    % one
-    apply adj_1_is_list to H7. search.
-    % par
-    apply IHqc to H6 H7 *H12. search.
-    % bot
-    apply IHqc to H6 H7 *H10. search.
-    % bang
-    apply IHqc to H6 H7 *H9. search.
-    % qm
-    apply adj_swap to *H7 *H10.
-     apply mell_weaken_q1 to *H6 H12.
-     apply IHqc to *H14 *H13 *H11.
-     search.
-    % dl
-    apply adj_same_result_diff to H7 H9. case H12.
-      %% The cut formula is also derelicted.
-      apply IHqc to H6 H7 *H11.
-      apply dual_is to H1.
-       assert adj nil A (A :: nil).
-       assert merge nil K K.
-         apply adj_1_is_list to H10. backchain merge_nil_equal.
-       apply Hc to H17 H6 H10 H14 H18.
-       search.
-      %% the cut formula is not derelicted
-      rename KK to QKK. apply adj_swap to *H13 *H9.
-       apply adj_same_result to H7 H15.
-       apply mell_perm_q to *H6 H16.
-       apply IHqc to *H17 H15 *H11.
-       apply perm_sym to *H16. apply mell_perm_q to *H18 H19.
-       apply adj_perm to H19 H14.
-       search.
+apply *IHwt to H1 H2 *H4. Hc : case H5.
+IHqc : induction on 4. intros. case H6. case H9.
+  % id
+  apply adj_1_is_list to H8. search.
+  % tensor
+  apply IHqc to _ H7 H8 *H13. apply IHqc to _ H7 H8 *H15. search.
+  % one
+  apply adj_1_is_list to H8. search.
+  % par
+  apply IHqc to _ H7 H8 *H13. search.
+  % bot
+  apply IHqc to _ H7 H8 *H11. search.
+  % bang
+  apply IHqc to _ H7 H8 *H10. search.
+  % qm
+  apply adj_swap to *H8 *H11.
+   assert incl QL U. unfold. case H7.
+   Hkk : assert exists KK, adj K1 A1 KK.
+     apply merge_2_is_list to H15. apply adj_2_is_o to H13. search.
+     Hkk : case Hkk.
+   search.
+   apply IHqc to _ H15 H14 *H12.
+   assert mell QQL (A :: nil). case H7.
+     apply mell_weaken_q to *H2 *H17. search.
+   search.
+  % dl
+  apply adj_same_result_diff to H8 H10. case H13.
+    % the cut formula is also derelicted
+    apply IHqc to _ H7 H8 *H12.
+    apply dual_is to H1.
+    assert adj nil A (A :: nil).
+    assert merge nil K K.
+      apply adj_1_is_list to H11. backchain merge_nil_equal.
+    apply Hc to H7 H18 H11 H15 H19.
+    search.
+    % the cut formula is not derelicted
+    rename KK to QKK. apply adj_swap to *H14 *H10.
+    apply adj_same_result to H8 H16.
+    case H7 (keep). apply mell_weaken_q to *H2 *H18.
+    apply mell_perm_q to *H19 H17.
+    apply 0 IHqc to _ _ H16 H12 with QQL = U.
+      case H7. unfold. apply perm_merge_3 to H21 H17. search.
+    apply perm_sym to *H17. apply mell_perm_q to *H21 H22.
+    apply adj_perm to *H22 *H15. search.
 
-Theorem cut_admit_linear : forall A B X Y JJ J KK K QL LL,
+Theorem cut_admit_linear : forall A B JJ J KK K QL LL,
   dual A B ->
-  adj JJ A J -> mell X QL J ->
-  adj KK B K -> mell Y QL K ->
+  adj JJ A J -> mell QL J ->
+  adj KK B K -> mell QL K ->
   merge JJ KK LL ->
-  exists Z, mell Z QL LL.
+  mell QL LL.
 intros. apply mell_is to H3.
-apply $cut_admit to H1 H7 _ with W = light. case H10.
-backchain H11.
+apply $cut_admit to H1 H3 _ with W = light. case H9.
+assert incl QL QL. unfold. witness nil.
+backchain merge_sym. backchain merge_nil_equal.
+backchain H10.
 
-Theorem cut_admit_exponential : forall A B X Y QL QQ K,
+Theorem cut_admit_exponential : forall A B QL QQ K,
   dual A B ->
-  mell X QL (A :: nil) ->
-  adj QL B QQ -> mell Y QQ K ->
-  exists Z, mell Z QL K.
+  mell QL (A :: nil) ->
+  adj QL B QQ -> mell QQ K ->
+  mell QL K.
 intros. apply mell_is to H2.
-apply $cut_admit to H1 H5 _ with W = heavy. case H8.
-backchain H9.
+apply $cut_admit to H1 H2 _ with W = heavy. case H7.
+assert incl QL QL. unfold. witness nil.
+backchain merge_sym. backchain merge_nil_equal.
+backchain H8.
