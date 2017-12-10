@@ -22,6 +22,19 @@ Define is_fm : o -> prop by
 Import "../../lib/merge" with is_o := is_fm.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Natural numbers (for n-way split)
+
+Kind nat type.
+
+Type z nat.
+Type s nat -> nat.
+
+Define is_nat : nat -> prop by
+; is_nat z
+; is_nat (s N) := is_nat N
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % List of list of formulas (o list list)
 
 Type fmlist olist -> o.
@@ -50,32 +63,29 @@ Define flatten : olist -> olist -> prop by
 ; flatten (fmlist H :: TL) L := exists F,
     flatten TL F /\ merge H F L.
 
-% n-way merge
-% First two are lists of fmlists
-% Third one is a list of forms
-Define mergeN : olist -> olist -> olist -> prop by
-; mergeN L1 L2 L := exists F1 F2,
-    flatten L1 F1 /\ flatten L2 F2 /\ merge F1 F2 L
+Define length : olist -> nat -> prop by
+; length nil z
+; length (H :: L) (s N) := length L N
 .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Define is_pos : o -> prop by
 ; is_pos (form (atom A))
-; is_pos (form (tens A B))
+; is_pos (form (tens A B)) := is_fm (form A) /\ is_fm (form B)
 ; is_pos (form one)
-; is_pos (form (plus A B))
+; is_pos (form (plus A B)) := is_fm (form A) /\ is_fm (form B)
 ; is_pos (form zero)
-; is_pos (form (exs A))
+; is_pos (form (exs A)) := nabla x, is_fm (form (A x))
 .
 
 Define is_neg : o -> prop by
 ; is_neg (form (natom A))
-; is_neg (form (wth A B))
+; is_neg (form (wth A B)) := is_fm (form A) /\ is_fm (form B)
 ; is_neg (form top)
-; is_neg (form (par A B))
+; is_neg (form (par A B)) := is_fm (form A) /\ is_fm (form B)
 ; is_neg (form bot)
-; is_neg (form (all A))
+; is_neg (form (all A)) := nabla x, is_fm (form (A x))
 .
 
 Define is_neg_or_atom : o -> prop by
@@ -248,16 +258,110 @@ by
 .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Auxiliary lemmas
+
+Theorem pos_is_fm : forall P,
+  is_pos P -> is_fm P.
+intros. case H1.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+
+Theorem psf_1_is_fm : forall P Ps,
+  pos_sub_f P Ps -> is_fm P.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. apply IH to H3. search.
+  search.
+  apply IH to H2. apply IH to H3. search.
+  search.
+  apply IH to H2. search.
+  apply pos_is_fm to H2. search.
+
+Theorem neg_is_fm : forall N,
+  is_neg N -> is_fm N.
+intros. case H1.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+
+Theorem nsf_1_is_fm : forall N Ns,
+  neg_sub_f N Ns -> is_fm N.
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. apply IH to H3. search.
+  search.
+  skip. %% TODO
+  skip. %% TODO
+  search.
+  apply IH to H2. search.
+  apply neg_is_fm to H2. search.
+
+Theorem pos_or_neg : forall F,
+  is_fm F -> is_pos F \/ is_neg F.
+intros. case H1.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+  search.
+
+% Better way to do the sequences of searches above??
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Deriving one phase
 
 Theorem async_phase : forall G N Ps,
   mall G (N :: nil) -> is_neg N -> pos_sub_f N Ps ->
   forall P, member (fmlist P) Ps -> mall G P.
-skip.
+induction on 2. induction on 3. intros. case H2 (keep).
+  % Negated atom (Ps = nil, vacuously true)
+  case H3. case H4. case H5.
+  % With
+  case H3.
+    skip.
+    case H7.
+  % Top
+  case H3. case H4. case H5.
+  % Par
+  case H3.
+    skip.
+    case H7.
+  % Bot
+  case H3. case H4. case H5.
+  % all A
+  case H3.
+    apply psf_1_is_fm to H6. apply pos_or_neg to H7. case H8.
+      % A is positive
+      case H6.
+        case H9. case H9. case H9. case H9. case H9. case H9. % impossible cases
+        case H4. case H1.
+          case H11. case H14.
+          search.
+        case H11.
+      % A is negative
+      skip. %% need is_neg with * to apply the IH :((
+    case H6.
 
-Theorem sync_phase : forall G Gs P Ns,
-  mallfoc G P -> is_pos P -> neg_sub_f P Ns -> mergeN Gs nil G ->
+Theorem sync_phase : forall G Gs P Ns L,
+  mallfoc G P -> is_pos P -> neg_sub_f P Ns -> length Ns L -> flatten Gs G -> length Gs L ->
   forall N, forall Gi, member N Ns -> member (fmlist Gi) Gs -> mallfoc Gi N.
 skip.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Theorem generalized_id : forall A B,
   { dual A B } -> mall (form A :: nil) (form B :: nil).
