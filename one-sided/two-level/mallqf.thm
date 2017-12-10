@@ -257,6 +257,7 @@ skip.
 Theorem sync_phase : forall G Gs P Ns,
   mallfoc G P -> is_pos P -> neg_sub_f P Ns -> mergeN Gs nil G ->
   forall N, forall Gi, member N Ns -> member (fmlist Gi) Gs -> mallfoc Gi N.
+skip.
 
 Theorem generalized_id : forall A B,
   { dual A B } -> mall (form A :: nil) (form B :: nil).
