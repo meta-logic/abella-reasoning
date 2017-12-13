@@ -2,8 +2,6 @@ sig mallq.
 
 kind term, atm, fm type.
 
-type a, b, c, d, e, f atm.
-
 %% We reuse the o type to define LL formulas
 type atom, natom   atm -> fm.
 type tens, par     fm -> fm -> fm.
