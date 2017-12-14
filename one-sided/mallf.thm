@@ -1,8 +1,5 @@
 Specification "mallf".
 
-Kind nat type.
-Import "../lib/nat".
-
 Type $pf pf -> o.
 Type $natom atm -> o.
 Define is_fm : o -> prop by
@@ -92,148 +89,106 @@ induction on 1. intros. case H1.
 %% Synthetic first-order MALL
 
 Define
-  mall : nat -> olist -> prop,
-  mallfoc : nat -> olist -> foc -> prop
+  mall : olist -> prop,
+  mallfoc : olist -> foc -> prop
 by
-; mall (s X) L :=
+; mall L :=
     exists P LL, adj LL ($pf P) L /\
     exists F, subf F P /\
-    mallfoc X LL F
+    mallfoc LL F
 
-; mallfoc (s X) ($natom A :: nil) (fatom A) := is_nat X
+; mallfoc ($natom A :: nil) (fatom A)
 
-; mallfoc (s X) L (fshift N) :=
-    is_nat X /\ is_list L /\
+; mallfoc L (fshift N) :=
+    is_list L /\
     exists P, {dual P N} /\
     forall F, subf F P ->
     exists LE, extension F LE /\
     exists LL, merge L LE LL /\
-    mall X LL
+    mall LL
 
-; mallfoc (s X) L (fjoin F1 F2) :=
+; mallfoc L (fjoin F1 F2) :=
     exists J K, merge J K L /\
-    mallfoc X J F1 /\ mallfoc X K F2
+    mallfoc J F1 /\ mallfoc K F2
 
-; mallfoc (s X) nil femp := is_nat X.
+; mallfoc nil femp.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% inversion
 
 Theorem $mall_is :
-  (forall X L, mall X L -> is_nat X /\ is_list L)
+  (forall L, mall L -> is_list L)
 /\
-  (forall X L F, mallfoc X L F -> is_nat X /\ is_list L /\ exists P, is_fm ($pf P) /\ subf F P).
+  (forall L F, mallfoc L F -> is_list L /\ exists P, is_fm ($pf P) /\ subf F P).
 IH1 : induction on 1 1. split.
 intros. case H1. apply IH2 to *H4. apply adj_3_is_list to *H2. search.
 intros. case H1.
   search.
-  split. search. search. witness shp N. split. search. search.
+  split. search. witness shp N. split. search. search.
   apply IH2 to *H3. apply IH2 to *H4. apply merge_3_is_list to *H2.
-   split. search. search. witness tens P P1.
-   case H7. case H11. search.
-  split. search. search. witness one. search.
+   split. search. witness tens P P1.
+   case H6. case H9. search.
+  split. search. witness one. search.
 
 Split $mall_is as mall_is, mallfoc_is.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% height growth
-
-Theorem $mall_grow :
-  (forall X Y L, leq X Y -> mall X L -> mall Y L)
-/\
-  (forall X Y L F, leq X Y -> mallfoc X L F -> mallfoc Y L F).
-IH1 : induction on 2 2. split.
-intros. case H2. case H1. apply IH2 to *H6 *H5. search.
-intros. case H2.
-  case H1. apply leq_2_is_nat to *H4. search.
-  case H1.
-    assert forall F, subf F P ->
-           exists LE, extension F LE /\
-           exists LL, merge L LE LL /\ mall Y1 LL.
-    intros. apply *H6 to *H8. apply IH1 to *H7 *H11. search.
-    apply leq_2_is_nat to *H7. search.
-  case H1. apply IH2 to H6 *H4. apply IH2 to *H6 *H5. search.
-  case H1. apply leq_2_is_nat to *H4. search.
-
-Split $mall_grow as mall_grow, mallfoc_grow.
-
-Theorem $mall_adjust :
-  (forall X K Y L, mall X K -> mall Y L -> exists Z, mall Z K /\ mall Z L)
-/\
-  (forall X K F Y L G, mallfoc X K F -> mallfoc Y L G -> exists Z, mallfoc Z K F /\ mallfoc Z L G).
-split.
-intros. apply mall_is to H1. apply mall_is to H2. apply lequate to *H3 *H5.
- apply mall_grow to *H7 *H1. apply mall_grow to *H8 *H2. search.
-intros. apply mallfoc_is to H1. apply mallfoc_is to H2. apply lequate to *H3 *H7.
- apply mallfoc_grow to *H11 *H1. apply mallfoc_grow to *H12 *H2. search.
-
-Split $mall_adjust as mall_adjust, mallfoc_adjust.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generalized identity
 
-Theorem gid_lemma : forall P N, {dual P N} ->
-  exists X, is_nat X /\ forall F L,
-  subf F P -> extension F L -> mallfoc X L F.
+Theorem gid_lemma : forall P N F L,
+  {dual P N} -> subf F P -> extension F L ->
+  mallfoc L F.
 induction on 1. intros. case H1.
   % atoms
-  witness s z. split. search. intros. case H2. case H3. case H4. search.
+  case H2. case H3. case H4. search.
   % tensor
-  apply IH to *H2. apply IH to *H3.
-   apply lequate to *H4 *H6. witness s Z. split.
-     apply leq_2_is_nat to *H8. search.
-   intros. case H10. case H11. apply *H5 to *H12 *H14.
-    apply *H7 to *H13 *H15. apply mallfoc_grow to *H8 *H17.
-    apply mallfoc_grow to *H9 *H18. search.
+  case H2. case H3.
+  apply IH to *H4 *H6 *H8. apply IH to *H5 *H7 *H9.
+  search.
   % one
-  witness s z. split. search. intros. case H2. case H3. search.
+  case H2. case H3. search.
   % plus
-  apply IH to *H2. apply IH to *H3.
-   apply lequate to *H4 *H6. witness Z. split.
-     apply leq_2_is_nat to *H8. search.
-   intros. case H10.
-     apply *H5 to *H12 *H11. apply mallfoc_grow to *H8 *H13. search.
-     apply *H7 to *H12 *H11. apply mallfoc_grow to *H9 *H13. search.
+  case H2.
+    backchain IH with P = P1.
+    backchain IH with P = Q.
   % zero
-  witness s z. split. search. intros. case H2.
+  case H2.
   % fex
-  apply IH to H2. witness X. split. search. intros. case H5.
-   permute (n1 n2) H6. apply *H4 to *H7 *H6. search.
+  case H2. permute (n1 n2) H3. apply IH to *H4 *H5 *H3. search.
   % shift
-  apply IH to H2. witness s (s X). split. search. intros.
-  case H5. apply dual_det_1 to *H7 H2. case H6. apply dual_det_1 to *H8 H2.
-  unfold. search. search. witness P1. split. search. intros.
-  apply extension_exists to H10.
-  apply *H4 to H10 H11. witness L1. split. search.
-  witness $pf P1 :: L1. split. apply extension_is to H11. apply merge_nil_equal to H13. search.
-  unfold. witness P1, L1. split. apply extension_is to H11. apply merge_nil_equal to H13. search.
+  case H2. case H3. apply dual_det_1 to *H6 H4. apply dual_det_1 to *H5 H4.
+  unfold. search. witness P1. split. search. intros.
+  apply extension_exists to H8. witness L1. split. search.
+  apply IH to H4 H8 H9.
+  witness $pf P1 :: L1. split. apply extension_is to H9. apply merge_nil_equal to H11. search.
+  unfold. witness P1, L1. split. apply extension_is to H9. apply merge_nil_equal to H11. search.
   search.
 
-Theorem gid : forall P N, {dual P N} -> exists X, is_nat X /\ mall X ($pf P :: $pf (shp N) :: nil).
-intros. apply gid_lemma to H1. witness s (s (s X)). split. search.
-unfold. witness shp N, $pf P :: nil. split. search.
-witness fshift N. split. search. unfold. search. search.
+Theorem gid : forall P N, {dual P N} -> mall ($pf P :: $pf (shp N) :: nil).
+intros. unfold. witness shp N, $pf P :: nil. split. search.
+witness fshift N. split. search. unfold. search.
 witness P. split. search. intros.
-apply extension_exists to H4. apply *H3 to H4 H5.
+apply extension_exists to H2.
 witness L. split. search.
-witness $pf P :: L. apply extension_is to H5. apply merge_nil_equal to H7.
-search.
+witness $pf P :: L. apply extension_is to H3. apply merge_nil_equal to H4.
+split. search.
+apply gid_lemma to H1 H2 H3. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Permutations
 
-Theorem mallfoc_perm : forall J F K X,
-  mallfoc X J F -> perm J K -> mallfoc X K F.
+Theorem mallfoc_perm : forall J F K,
+  mallfoc J F -> perm J K -> mallfoc K F.
 intros. case H1.
-  apply perm_cons_1 to H2. case H5. case H4. search.
-   case H6.
-  unfold. search. backchain perm_2_is_list. witness P. split. search. intros.
-   apply *H6 to *H7. apply perm_merge_1 to *H9 *H2. search.
+  apply perm_cons_1 to H2. case H4. case H3. search.
+   case H5.
+  unfold. backchain perm_2_is_list. witness P. split. search. intros.
+   apply *H5 to *H6. apply perm_merge_1 to *H8 *H2. search.
   apply perm_merge_3 to *H3 *H2. search.
-  case H2. search. case H4.
+  case H2. search. case H3.
 
-Theorem mall_perm : forall J K X,
-  mall X J -> perm J K -> mall X K.
+Theorem mall_perm : forall J K,
+  mall J -> perm J K -> mall K.
 intros. case H1. apply adj_perm_full to H2 H3.
 apply mallfoc_perm to *H5 H7. search.
 
@@ -241,52 +196,53 @@ apply mallfoc_perm to *H5 H7. search.
 %% Full cut-elimination
 
 Theorem $cut :
-  (forall P N J JP K L X Y,
+  (forall P N J JP K L,
     {dual P N} ->
-    adj J ($pf P) JP -> mall X JP ->
+    adj J ($pf P) JP -> mall JP ->
     (forall F KE KN,
      subf F P -> extension F KE -> merge K KE KN ->
-     mall Y KN) ->
+     mall KN) ->
     merge J K L ->
-    exists Z, mall Z L)
+    mall L)
 /\
-  (forall P N F J K KE KN L X Y,
+  (forall P N F J K KE KN L,
     {dual P N} ->
-    subf F P -> mallfoc X J F ->
-    extension F KE -> merge K KE KN -> mall Y KN ->
+    subf F P -> mallfoc J F ->
+    extension F KE -> merge K KE KN -> mall KN ->
     merge J K L ->
-    exists Z, mall Z L)
+    mall L)
 /\
-  (forall P N F J JP K L X Y,
+  (forall P N F J JP K L,
     {dual P N} ->
-    adj J ($pf P) JP -> mallfoc X JP F ->
+    adj J ($pf P) JP -> mallfoc JP F ->
     (forall F KE KN,
      subf F P -> extension F KE -> merge K KE KN ->
-     mall Y KN) ->
+     mall KN) ->
     merge J K L ->
-    exists Z, mallfoc Z L F).
+    mallfoc L F).
 IHrank1 : induction on 1 1 1. IHht1 : induction on 3 3 3.
-% abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
+abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
 split.
-intros. case H3.
-  apply adj_same_result_diff_both to *H2 *H6. case H9.
-    Hex : apply extension_exists to H7.
-    Ht1 : apply merge_2_is_list to H5. Ht2 : apply extension_is to Hex.
-    Hmr : apply merge_exists to *Ht1 *Ht2.
-    apply *H4 to H7 Hex Hmr.
-    apply perm_merge_1 to *H5 *H10.
-    apply IHht2 to *H1 *H7 *H8 *Hex *Hmr *H11 *H12. search.
 
-   apply merge_unadj_1 to *H5 *H10.
-   apply perm_merge_1 to *H14 *H12.
-   apply IHht3 to *H1 *H11 *H8 *H4 *H15.
+intros Hdual Hadj Hpos Hneg Hjk. Hpos1 : case Hpos.
+Hdiff : apply adj_same_result_diff_both to *Hadj *Hpos1. Hdiff1 : case Hdiff.
+   Hex : apply extension_exists to Hpos2.
+   Ht1 : apply merge_2_is_list to Hjk. Ht2 : apply extension_is to Hex.
+   Hmr : apply merge_exists to *Ht1 *Ht2.
+   Hn : apply *Hneg to Hpos2 Hex Hmr.
+   Hperm : apply perm_merge_1 to *Hjk *Hdiff1.
+   backchain IHht2.
+
+   Hmr1 : apply merge_unadj_1 to *Hjk *Hdiff1.
+   Hp1 : apply perm_merge_1 to *Hmr2 *Hdiff3.
+   apply IHht3 to *Hdual *Hdiff2 *Hpos3 *Hneg *Hp1.
    search.
 
 intros Hdual Hsubf Hpos Hex Hexmr Hneg Hmr. Hdual1 : case Hdual.
   case Hsubf. case Hpos. case Hex.
     Hmr : apply merge_sym to *Hmr.
     apply merge_perm_det to *Hexmr *Hmr.
-    witness Y. backchain mall_perm.
+    backchain mall_perm.
 
   Hsubf1 : case Hsubf. Hpos : case Hpos. Hex1 : case Hex. rename Hex3 to Hex.
   Hn : assert 0 exists U, merge K L2 U /\ merge U L3 KN.
@@ -310,7 +266,7 @@ intros Hdual Hsubf Hpos Hex Hexmr Hneg Hmr. Hdual1 : case Hdual.
   case Hsubf. case Hpos. case Hex. Hexmr : apply merge_sym to *Hexmr.
   Hp : apply merge_nil_perm to *Hmr. Hmr : apply perm_merge_2 to *Hexmr *Hp.
   Hp : apply merge_nil_perm to *Hmr. Hp : apply perm_sym to *Hp.
-  witness Y. backchain mall_perm.
+  backchain mall_perm.
 
   Hsubf : case Hsubf.
   backchain IHrank2.
@@ -325,7 +281,7 @@ intros Hdual Hsubf Hpos Hex Hexmr Hneg Hmr. Hdual1 : case Hdual.
 
   Hsubf : case Hsubf.
   Hpos : case Hpos. Hex : case Hex.
-  apply dual_det_1 to *Hsubf Hdual1. apply dual_det_1 to *Hpos2 Hdual1. apply dual_det_1 to *Hex Hdual1.
+  apply dual_det_1 to *Hsubf Hdual1. apply dual_det_1 to *Hpos1 Hdual1. apply dual_det_1 to *Hex Hdual1.
   Hadj : assert 0 exists U, adj K ($pf P1) U /\ perm KN U.
      Hn1 : apply merge_unadj_2 to Hexmr _.
      Hn1 : apply merge_sym to *Hn2. Hp : apply merge_nil_perm to *Hn2.
@@ -333,43 +289,30 @@ intros Hdual Hsubf Hpos Hex Hexmr Hneg Hmr. Hdual1 : case Hdual.
      Hp : apply adj_perm_source to *Hp *Hn1. search.
   Hadj : case Hadj. Hneg : apply mall_perm to *Hneg *Hadj1.
   Hmr : apply merge_sym to *Hmr.
-  unabbrev IHrank1.
-  Hfa : assert forall F KE KN, subf F P1 -> extension F KE -> merge J KE KN -> mall X1 KN.
+  Hfa : assert forall F KE KN, subf F P1 -> extension F KE -> merge J KE KN -> mall KN.
     intros Hsubf Hex Hmr.
-    Hpos1 : apply *Hpos3 to *Hsubf. Hp : apply extension_det to *Hex *Hpos2.
+    Hpos1 : apply *Hpos2 to *Hsubf. Hp : apply extension_det to *Hex *Hpos1.
     Hmr1 : apply perm_merge_2 to *Hmr1 *Hp.
-    Hp : apply merge_perm_det to *Hpos3 *Hmr1.
-    backchain mall_perm.
+    Hp : apply merge_perm_det to *Hpos2 *Hmr1.
+    clear Hneg. backchain mall_perm.
   apply IHrank1 to *Hdual1 *Hadj *Hneg *Hfa *Hmr.
   search.
 
 intros Hdual Hadj Hpos Hneg Hmr. Hpos : case Hpos.
   Hadj : case Hadj. case Hadj1.
 
-  unabbrev IHht1.
-  Hr : assert forall F, subf F P1 -> exists LE, extension F LE /\ exists U, merge J LE U /\ exists V, merge U K V /\ exists Z, mall Z V.
-    intros Hf.
-    Hpos : apply *Hpos3 to Hf.
-    Hadj : apply merge_unadj_1 to *Hpos4 *Hadj.
-    Hmr : assert exists U, merge LL1 K U.
-      apply adj_1_is_list to Hadj. apply merge_2_is_list to Hmr. apply merge_exists to H1 H2. search.
-      Hmr : case Hmr1.
-    apply IHht1 to *Hdual *Hadj *Hpos5 *Hneg Hmr1.
-    search.
-  witness s z.
-
-
-  witness (s X1). unfold 3. search. backchain merge_3_is_list.
+  unfold 3. backchain merge_3_is_list.
   witness P1. split. search. intros Hsubf.
-  Hpos1 : apply *Hpos3 to *Hsubf.
+  Hpos1 : apply *Hpos2 to *Hsubf.
   witness LE. split. search.
-  Hpos1 : apply merge_unadj_1 to *Hpos4 *Hadj.
+  Hpos1 : apply merge_unadj_1 to *Hpos3 *Hadj.
   Hn : assert 0 exists U, merge LL1 K U. backchain merge_exists.
-     backchain merge_3_is_list. backchain merge_2_is_list. Hmr1 : case Hn.
-  apply IHht1 to *Hdual *Hpos4 *Hpos5 *Hneg Hmr1.
+    backchain merge_3_is_list. backchain merge_2_is_list. Hmr1 : case Hn.
+  apply IHht1 to *Hdual *Hpos3 *Hpos4 *Hneg Hmr1.
   witness U. split.
   Hmr : apply merge_sym to *Hmr. Hmr1 : apply merge_sym to *Hmr1.
-  backchain change_merge_order2. search.
+  backchain change_merge_order2.
+  search.
 
   Hadj1 : apply merge_unadj_3 to *Hpos *Hadj. Hadj1 : case Hadj1.
     Hn : assert 0 exists U, merge JJ K U. backchain merge_exists.
