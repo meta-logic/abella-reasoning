@@ -325,36 +325,49 @@ intros. case H1.
 % Deriving one phase
 
 Theorem async_phase : forall G N Ps,
-  mall G (N :: nil) -> is_neg N -> pos_sub_f N Ps ->
+  mall G (N :: nil) -> is_fm N -> is_neg N -> pos_sub_f N Ps ->
   forall P, member (fmlist P) Ps -> mall G P.
-induction on 2. induction on 3. intros. case H2 (keep).
-  % Negated atom (Ps = nil, vacuously true)
-  case H3. case H4. case H5.
-  % With
+induction on 2. induction on 4. intros. case H2 (keep).
+  % Atom -- invalid, not negative
   case H3.
-    skip.
-    case H7.
-  % Top
-  case H3. case H4. case H5.
+  % Negated atom -- no subformulas, vacuously true
+  case H4. case H5. case H6.
+  % Tensor -- invalid, not negative
+  case H3.
+  % One -- invalid, not negative
+  case H3.
   % Par
+  skip.
+  % Bot -- no subformulas, vacuously true
+  case H4. case H5. case H6.
+  % With
+  skip.
+  % Top -- no subformulas, vacuously true
+  case H4. case H5. case H6.
+  % Plus -- invalid, not negative
   case H3.
-    skip.
-    case H7.
-  % Bot
-  case H3. case H4. case H5.
-  % all A
+  % Zero -- invalid, not negative
   case H3.
-    apply psf_1_is_fm to H6. apply pos_or_neg to H7. case H8.
-      % A is positive
-      case H6.
-        case H9. case H9. case H9. case H9. case H9. case H9. % impossible cases
-        case H4. case H1.
+  % All
+  apply pos_or_neg to H6. case H7.
+    % A is positive (11.1)
+    case H4.
+      case H9.
+        % Invalid cases
+        case H8. case H8. case H8. case H8. case H8. case H8.
+        case H5. case H1.
           case H11. case H14.
           search.
         case H11.
-      % A is negative
-      skip. %% need is_neg with * to apply the IH :((
-    case H6.
+      case H9.           
+    % A is negative (11.2)
+    case H1.
+      case H9. case H12.
+      case H4.
+        apply IH1 to H9 H6 H8 H10. apply H11 to H5. search.
+        case H10.
+  % Exs -- invalid, not negative
+  case H3.
 
 Theorem sync_phase : forall G Gs P Ns L,
   mallfoc G P -> is_pos P -> neg_sub_f P Ns -> length Ns L -> flatten Gs G -> length Gs L ->
