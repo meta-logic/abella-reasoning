@@ -334,3 +334,4 @@ induction on 2. intros. case H2.
   apply perm_cons_1 to *H1.
    apply IH to *H5 *H3.
    backchain adj_preserves_member.
+

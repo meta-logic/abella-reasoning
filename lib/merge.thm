@@ -387,3 +387,4 @@ intros. case H1. backchain merge_1_is_list.
 
 Theorem subset_2_is_list : forall J K, subset J K -> is_list K.
 intros. case H1. backchain merge_3_is_list.
+
