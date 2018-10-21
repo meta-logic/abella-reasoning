@@ -1,0 +1,411 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                    %%
+%%       Intuitionistic Logic in      %%
+%%       Abella (.thm)                %%
+%%                                    %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% More verbose output
+Set instantiations on.
+Set witnesses on.
+Set subgoals off.
+
+Kind atm, tm       type.
+
+%Type a, b, c, d    atm.
+%Type r, s, t       tm.
+
+Type and, or, imp  o -> o -> o.
+Type fa, ex        (tm -> o) -> o.
+Type atom          atm -> o.
+Type top, bot      o.
+
+Define formula : o -> prop by
+; formula (imp A B) := formula A /\ formula B
+; formula (and A B) := formula A /\ formula B
+; formula (or A B) := formula A /\ formula B
+; formula (fa X\ A) := formula A
+; formula (ex X\ A) := formula A
+; formula top
+; formula bot
+; formula (atom A)
+.
+
+Import "../lib/merge" with is_o := formula.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Specification of LJ (additive calculus -- except for andL -- and 
+% no explicit contraction or weakening, auto-contraction of the main formula)
+
+Define lj : olist -> o -> prop by
+
+% 1. init
+; lj L A :=
+    exists L1, merge L1 (A :: nil) L
+
+% 2. top
+; lj L top
+
+% 3. bot
+; lj L C :=
+  exists L1, merge L1 (bot :: nil) L
+
+% 4. impR
+; lj L (imp A B) :=
+    exists L1, merge L (A :: nil) L1 /\ lj L1 B
+
+% 5. impL
+; lj L C :=
+    exists L1 A B, merge L1 ((imp A B) :: nil) L /\
+    lj L A /\
+    exists LB, merge L (B :: nil) LB /\
+    lj LB C
+
+% 6. andR
+; lj L (and A B) :=
+    lj L A /\ lj L B
+
+% 7. andL
+; lj L C :=
+    exists L1 A B, merge L1 ((and A B) :: nil) L /\
+    exists LAB, merge L (A :: B :: nil) LAB /\
+    lj LAB C
+
+% 8. orR1
+; lj L (or A B) :=
+    lj L A
+
+% 9. orR2
+; lj L (or A B) :=
+    lj L B
+
+% 10. orL
+; lj L C :=
+    exists L1 A B, merge L1 ((or A B) :: nil) L /\
+    exists LA, merge L (A :: nil) LA /\
+    exists LB, merge L (B :: nil) LB /\
+    lj LA C /\
+    lj LB C
+
+% 11. forallR
+; lj L (fa A) :=
+    forall X, lj L (A X)
+
+% 12. forallL
+; lj L C :=
+    exists L1 A, merge L1 ((fa A) :: nil) L /\
+    exists LA X, merge L ((A X) :: nil) LA /\
+    lj LA C
+
+% 13. existsR
+; lj L (ex A) :=
+    exists X, lj L (A X)
+
+% 14. existsL
+; lj L C :=
+    exists L1 A, merge L1 ((ex A) :: nil) L /\
+    exists LA, forall X, merge L ((A X) :: nil) LA /\
+    lj LA C
+.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% System testing
+
+Theorem forall_impl_exists : forall A,
+  lj ((fa A) :: nil) (ex A).
+intros. unfold 12. exists nil. exists A. split.
+  assert (is_list (fa A :: nil)). ????
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helper lemmas
+
+Theorem mlj_is_list : forall L R,
+  mlj L R -> is_list L /\ is_list R.
+
+induction on 1. intros. case H1.
+  apply adj_3_is_list to H2. apply adj_3_is_list to H3. search.
+  apply adj_1_is_list to H3. apply adj_3_is_list to H3. search.
+  apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply adj_1_is_list to H3. search.
+  apply adj_1_is_list to H3. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H4. search.
+  apply merge_3_is_list to H3. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply IH to H4. search.
+  apply IH to H4. apply adj_3_is_list to H2. search.
+  apply adj_3_is_list to H2. apply merge_3_is_list to H4. search.
+
+Theorem mlj_perm : forall L LL R RR,
+  mlj L R -> perm L LL -> perm R RR -> mlj LL RR.
+
+induction on 1. intros. case H1.
+  % init
+  apply adj_perm_result to H2 H4.
+  apply adj_perm_result to H3 H5. 
+  search.
+  % notR
+  skip.
+  % notL
+  skip.
+  % impR
+  skip.
+  % impL
+  skip.
+  % andR
+  skip.
+  % andL
+  skip.
+  % orR
+  skip.
+  % orL
+  skip. %% TODO finish this proof
+
+
+% Either the cut formula is the atom on which init operates,
+% or the proof can be finished already on the conclusion.
+Theorem init_case : forall C A L1 R1 R1C L2 L2C R2 L3 R3,
+  formula C ->
+  mlj L1 R1C ->
+  mlj L2C R2 ->
+  adj R1 C R1C ->
+  adj L2 C L2C ->
+  adj L3 (atom A) L1 ->
+  adj R3 (atom A) R1C ->
+  (exists L R, merge L1 L2 L /\ merge R1 R2 R /\ mlj L R) \/
+  C = (atom A).
+
+intros.
+  apply adj_3_is_list to H6. apply adj_1_is_list to H5.
+  apply merge_exists to H8 H9.
+  apply adj_1_is_list to H4.
+  apply mlj_is_list to H3.
+  apply merge_exists to H11 H13.
+  apply adj_same_result_diff to H7 H4.
+  case H15.
+    search.
+    apply merge_unadj_1 to H10 H6. apply merge_unadj_1 to H14 H16. search.
+
+% Given the hypothesis after applying the cut rule to the premise of notL, this
+% theorem shows that we can apply notL again to get a valid conclusion.
+Theorem notL_case : forall A L1 L1nA L2 L R1 R1A R2 R,
+  merge R1A R2 R ->
+  adj R1 A R1A ->
+  adj L1 (not A) L1nA ->
+  merge L1 L2 L ->
+  mlj L R ->
+  (exists L R, merge L1nA L2 L /\ merge R1 R2 R /\ mlj L R).
+
+intros.
+  apply merge_unadj_1 to H1 H2.
+  apply adj_3_is_list to H3. apply merge_2_is_list to H4.
+  apply merge_exists to H8 H9.
+  apply merge_unadj_1 to H10 H3.
+  apply merge_perm_det to H4 H12.
+  apply merge_3_is_list to H1. apply perm_refl to H14.
+  apply mlj_perm to H5 H13 H15. 
+  search.     
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cut-elimination proof
+
+Theorem cut_admissibility : forall C L1 R1 R1C L2 L2C R2,
+  formula C ->
+  mlj L1 R1C -> mlj L2C R2 ->
+  adj R1 C R1C -> adj L2 C L2C ->
+  exists L R, merge L1 L2 L /\ merge R1 R2 R /\ mlj L R.
+
+induction on 1. induction on 2. induction on 3. intros.
+case H1 (keep).
+
+% Cut on (not A)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H7 H8.
+  case H9.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  apply adj_swap to H4 H8.
+  apply IH1 to H1 H9 H3 H11 H5.
+  apply notL_case to H13 H10 H7 H12 H14.
+  search.
+      
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (imp A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  apply adj_swap to H4 H9.
+  apply IH1 to H1 H10 H3 H12 H5.
+  apply notL_case to H14 H11 H8 H13 H15.
+  search.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+ 
+% Cut on (and A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  apply adj_swap to H4 H9.
+  apply IH1 to H1 H10 H3 H12 H5.
+  apply notL_case to H14 H11 H8 H13 H15.
+  search.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (or A B)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H8 H9.
+  case H10.
+    search.
+
+  % notR
+  skip.
+
+  % notL
+  apply adj_swap to H4 H9.
+  apply IH1 to H1 H10 H3 H12 H5.
+  apply notL_case to H14 H11 H8 H13 H15.
+  search.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
+
+% Cut on (atom A)
+
+  % Rules on the left branch
+  case H2 (keep).
+
+  % init
+  apply init_case to H1 H2 H3 H4 H5 H6 H7.
+  case H8.
+    search.
+    % cut-principal case
+    apply adj_3_is_list to H6. apply adj_1_is_list to H5.
+    apply merge_exists to H9 H10.
+    apply adj_1_is_list to H4. apply mlj_is_list to H3.
+    apply merge_exists to H12 H14.
+    apply merge_unadj_1 to H11 H6.
+    %% TODO: continue here (needs a lemma that says weakened sequents are provable)
+    skip.
+
+  % notR
+  skip.
+
+  % notL
+  apply adj_swap to H4 H7.
+  apply IH1 to H1 H8 H3 H10 H5.
+  apply notL_case to H12 H9 H6 H11 H13.
+  search.
+
+  % impR
+  skip.
+
+  % impL
+  skip.
+
+  % andR
+  skip.
+
+  % andL
+  skip.
+
+  % orR
+  skip.
+
+  % orL
+  skip.
