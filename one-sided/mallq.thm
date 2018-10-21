@@ -1,3 +1,13 @@
+%
+% Multiplicative Additive LL with Quantifiers
+%
+% This is an attempt at proving cut-elimination of MALLQ solely inside
+% Abella. The proof fails on the case for exists: see observation on
+% the 'skip' on that case.
+%
+% Even if the proof is not complete, it is worth keeping this file as
+% a reminder of exatcly where and how it fails.
+
 Set witnesses on.
 
 Kind term, atm type.
