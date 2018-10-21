@@ -1,14 +1,14 @@
 Specification "llf".
 
 Kind nat type.
-Import "../lib/nat".
+Import "../../lib/nat".
 
 Type $pf pf -> o.
 Type $natom atm -> o.
 Define is_fm : o -> prop by
 ; is_fm ($pf P) := exists N, {dual P N}
 ; is_fm ($natom A).
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Theorem $dual_det :
   (forall P1 P2 N, {dual P1 N} -> {dual P2 N} -> P1 = P2)

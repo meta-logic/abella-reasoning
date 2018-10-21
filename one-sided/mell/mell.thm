@@ -1,5 +1,5 @@
 Kind nat type.
-Import "../lib/nat".
+Import "../../lib/nat".
 
 Kind atm type.
 
@@ -36,7 +36,7 @@ induction on 1. intros. case H1.
   search.
   apply IH to *H2. search.
 
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Define mell : olist -> olist -> prop by
 %% 1
@@ -471,7 +471,7 @@ Theorem $cut_admit : forall A B QL J W,
 IHrk : induction on 1.
 IHht : induction on 2.
 IHwt : induction on 3.
-abbrev IHrk IHht IHwt "...".
+%abbrev IHrk IHht IHwt "...".
 intros. case H3. left. split. search.
 intros. case H2 (keep).
   % id

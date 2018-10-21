@@ -28,7 +28,7 @@ induction on 1. intros. case H1.
   apply IH to *H2. apply IH to *H3. search.
   search.
 
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Define mll : olist -> prop by
 ; mll L :=

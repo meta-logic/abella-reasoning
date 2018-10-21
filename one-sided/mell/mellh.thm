@@ -1,5 +1,5 @@
 Kind nat type.
-Import "../lib/nat".
+Import "../../lib/nat".
 
 Kind atm type.
 
@@ -36,7 +36,7 @@ induction on 1. intros. case H1.
   search.
   apply IH to *H2. search.
 
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Define mell : nat -> olist -> olist -> prop by
 %% 1

@@ -32,7 +32,7 @@ Define is_fm : o -> prop by
 ; is_fm ($pf P) := exists N, {dual P N}
 ; is_fm ($natom A)
 .
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Define extend : olist -> olist -> foc -> olist -> olist -> prop by
 ; extend QL LL (fatom A) QL L :=

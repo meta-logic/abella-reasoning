@@ -6,7 +6,7 @@ Define is_fm : o -> prop by
 ; is_fm ($pf P) := exists N, {dual P N}
 ; is_fm ($natom A).
 
-Import "../lib/merge" with is_o := is_fm.
+Import "../../lib/merge" with is_o := is_fm.
 
 Theorem $dual_det :
   (forall P1 P2 N, {dual P1 N} -> {dual P2 N} -> P1 = P2)
@@ -86,7 +86,7 @@ induction on 1. intros. case H1.
   case H2. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Synthetic first-order MALL
+%% Synthetic MALL
 
 Define
   mall : olist -> prop,
@@ -221,7 +221,7 @@ Theorem $cut :
     merge J K L ->
     mallfoc L F).
 IHrank1 : induction on 1 1 1. IHht1 : induction on 3 3 3.
-abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
+%abbrev IHrank1 IHrank2 IHrank3 IHht1 IHht2 IHht3 "...".
 split.
 
 intros Hdual Hadj Hpos Hneg Hjk. Hpos1 : case Hpos.

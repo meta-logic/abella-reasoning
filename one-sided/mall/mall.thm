@@ -1,16 +1,6 @@
-%
-% Multiplicative Additive LL with Quantifiers
-%
-% This is an attempt at proving cut-elimination of MALLQ solely inside
-% Abella. The proof fails on the case for exists: see observation on
-% the 'skip' on that case.
-%
-% Even if the proof is not complete, it is worth keeping this file as
-% a reminder of exatcly where and how it fails.
+Kind atm type.
 
-Set witnesses on.
-
-Kind term, atm type.
+Type a, b, c, d, e, f atm.
 
 %% We reuse the o type to define LL formulas
 Type atom, natom   atm -> o.
@@ -18,11 +8,6 @@ Type tens, par     o -> o -> o.
 Type one, bot      o.
 Type wth, plus     o -> o -> o.
 Type top, zero     o.
-%% A quantifier on the object level is defined using the
-%% HOAS (or lambda-parse trees) approach, i.e., a binder
-%% on the object level is a binder on the meta-level
-%% (hence the first function argument).
-Type all, exs      (term -> o) -> o.
 
 Define is_fm : o -> prop by
 ; is_fm (atom A)
@@ -35,9 +20,6 @@ Define is_fm : o -> prop by
 ; is_fm top
 ; is_fm (plus A B) := is_fm A /\ is_fm B
 ; is_fm zero
-%% nabla or exists or forall?
-; is_fm (all A) := nabla x, is_fm (A x)
-; is_fm (exs A) := nabla x, is_fm (A x)
 .
 
 Define dual : o -> o -> prop by
@@ -46,8 +28,6 @@ Define dual : o -> o -> prop by
 ; dual one bot
 ; dual (plus A B) (wth AA BB) := dual A AA /\ dual B BB
 ; dual zero top
-%% nabla or exists or forall?
-; dual (exs A) (all B) := nabla x, dual (A x) (B x)
 .
 
 Theorem dual_is : forall A B, dual A B -> is_fm A /\ is_fm B.
@@ -57,81 +37,8 @@ induction on 1. intros. case H1.
   search.
   apply IH to *H2. apply IH to *H3. search.
   search.
-  apply IH to *H2. search.
 
-%% FYI: Abella cannot infer the type of A
-Theorem is_fm_inst : forall (A : term -> o),
-  nabla x, is_fm (A x) -> forall t, is_fm (A t).
-induction on 1. intros. case H1.
-  search.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t.
-    search.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t.
-    search.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t.
-    search.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t.
-    search.
-  search.
-  apply IH to H2 with A = (X\ A1 X n2).
-      apply H3 with t = t. search.
-  apply IH to H2 with A = (X\ A1 X n2).
-    apply H3 with t = t. search.
-
-Theorem is_dual_inst : forall A B,
-  nabla (x : term), dual (A x) (B x) -> forall t, dual (A t) (B t).
-induction on 1. intros. case H1.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t. search.
-  search.
-  apply IH to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t. search.
-  search.
-  apply IH to H2 with A = (X\ A1 X n2), B = (X\ B1 X n2).
-    apply H3 with t = t. search.
-
-Import "../lib/merge" with is_o := is_fm.
-
-Theorem is_list_inst : forall (L : term -> olist),
-  nabla x, is_list (L x) -> forall t, is_list (L t).
-induction on 1. intros. case H1.
-  search.
-  apply is_fm_inst to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t.
-    search.
-
-Theorem adj_inst : forall K A L,
-  nabla (x : term), adj (K x) (A x) (L x) -> forall t, adj (K t) (A t) (L t).
-induction on 1. intros. case H1.
-  apply is_fm_inst to H2. apply H4 with t = t.
-    apply is_list_inst to H3. apply H6 with t = t. search.
-  apply is_fm_inst to H2. apply H4 with t = t.
-    apply IH to H3. apply H6 with t = t. search.
-
-% Corollary:
-% adj J (A x) (K x) -> adj J (A t) (K t)
-
-Theorem merge_inst : forall J K L,
-  nabla (x : term), merge (J x) (K x) (L x) -> forall t, merge (J t) (K t) (L t).
-induction on 1. intros. case H1.
-  search.
-  apply adj_inst to H2. apply *H5 with t = t.
-    apply adj_inst to H3. apply *H7 with t = t.
-    apply IH to H4. apply *H9 with t = t.
-    search.
-  apply adj_inst to H2. apply *H5 with t = t.
-    apply adj_inst to H3. apply *H7 with t = t.
-    apply IH to H4. apply *H9 with t = t.
-    search.
+Import "../../lib/merge" with is_o := is_fm.
 
 Define mall : olist -> prop by
 ; mall L :=
@@ -177,74 +84,7 @@ Define mall : olist -> prop by
     exists A B LL J,
       adj LL (plus A B) L /\
       adj LL B J /\ mall J
-
-; mall L :=
-    % Object-level exists is a meta-level exists
-    exists x A LL J,
-      adj LL (exs A) L /\
-      adj LL (A x) J /\ mall J
-
-; mall L :=
-    % Object-level forall is meta-level nabla
-    % x is free in J.
-    exists A LL, adj LL (all A) L /\
-    nabla x, exists J, adj LL (A x) J /\ mall J
 .
-
-Theorem mall_inst : forall L,
-  nabla (x : term), mall (L x) -> forall t, mall (L t).
-induction on 1. intros. case H1.
-  apply adj_inst to *H2. apply *H3 with t = t. search.
-
-  apply adj_inst to *H2. apply *H8 with t = t.
-  apply merge_inst to *H3. apply *H10 with t = t.
-  apply adj_inst to *H4. apply *H12 with t = t.
-  apply IH to *H5. apply *H14 with t = t.
-  apply adj_inst to *H6. apply *H16 with t = t.
-  apply IH to H7. apply *H18 with t = t.
-  search.
-
-  search.
-
-  apply adj_inst to *H2. apply *H6 with t = t.
-  apply adj_inst to *H3. apply *H8 with t = t.
-  apply adj_inst to *H4. apply *H10 with t = t.
-  apply IH to H5. apply *H12 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H4 with t = t.
-  apply IH to *H3. apply *H6 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H7 with t = t.
-  apply adj_inst to *H3. apply *H9 with t = t.
-  apply IH to *H4. apply *H11 with t = t.
-  apply adj_inst to *H5. apply *H13 with t = t.
-  apply IH to *H6. apply *H15 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H3 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H5 with t = t.
-  apply adj_inst to *H3. apply *H7 with t = t.
-  apply IH to *H4. apply *H9 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H5 with t = t.
-  apply adj_inst to *H3. apply *H7 with t = t.
-  apply IH to *H4. apply *H9 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H5 with t = t.
-  apply adj_inst to *H3. apply *H7 with t = t.
-  apply IH to *H4. apply *H9 with t = t.
-  search.
-
-  apply adj_inst to *H2. apply *H5 with t = t.
-  apply adj_inst to *H3 with A = (X\ A X n2). apply *H7 with t = t.
-  apply IH to *H4 with L = (X\ J n2 X). apply *H9 with t = t.
-  search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -267,8 +107,6 @@ induction on 1. intros. case H1.
    apply dual_is to H2. apply dual_is to H3.
    search.
   search.
-  apply IH to H2.
-   apply dual_is to H2. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -332,28 +170,12 @@ induction on 1. intros. case H1.
    apply adj_1_is_list to H6. apply adj_2_is_o to H4.
    unfold 8. search.
 
-  apply adj_perm_full to H2 H3.
+  apply adj_perm_full to *H2 *H3.
    assert perm J (B :: KK).
      apply adj_1_is_list to H6. apply adj_2_is_o to H4. apply perm_refl to H8. search.
-   apply IH to H5 H8.
+   apply IH to *H5 *H8.
    apply adj_1_is_list to H6. apply adj_2_is_o to H4.
    unfold 9. search.
-
-  apply adj_perm_full to H2 H3.
-   assert perm J (A x :: KK).
-     apply adj_1_is_list to H6. apply adj_2_is_o to H4.
-     apply perm_refl to H8. search.
-   apply IH to H5 H8.
-   apply adj_1_is_list to H6. apply adj_2_is_o to H4.
-   unfold 10. search.
-
-  apply adj_perm_full to H2 H3.
-   assert perm (J n1) (A n1 :: KK).
-     apply adj_1_is_list to H6. apply adj_2_is_o to H4.
-     apply perm_refl to H8. search.
-   apply IH to H5 H8.
-   apply adj_1_is_list to H6. apply adj_2_is_o to H4.
-   unfold 11. search.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Inversion theorems
@@ -409,18 +231,6 @@ induction on 1. intros. case H1.
    apply adj_swap to H7 H4.
    apply IH to *H5 H9.
    apply adj_swap to *H7 *H3. apply adj_same_result to *H12 *H2.
-   backchain mall_perm with K = U1.
-
-  apply adj_same_result_diff to H2 H3. case H6.
-   apply adj_swap to H7 H4.
-   apply IH to H5 H9.
-   apply adj_swap to H7 H3. apply adj_same_result to H12 H2.
-   backchain mall_perm with K = U1.
-
-  apply adj_same_result_diff to H2 H3. case H6.
-   apply adj_swap to H7 H4.
-   apply IH to H5 H9.
-   apply adj_swap to H7 H3. apply adj_same_result to H12 H2.
    backchain mall_perm with K = U1.
 
 Theorem par_inv : forall L JJ A B,
@@ -564,42 +374,6 @@ induction on 1. intros. case H1.
     backchain perm_trans with K = U1.
   apply mall_perm to *H21 *H22.
   search.
-
-  Ht : apply adj_2_is_o to H2. case Ht.
-  apply adj_2_is_o to H3.
-  apply adj_2_is_o to H4.
-  apply adj_1_is_list to H2.
-  apply adj_same_result_diff to H2 H3. case H11.
-  apply adj_1_is_list to H12.
-  apply adj_swap to H12 H4. apply IH to H5 H15.
-  apply perm_refl to H13.
-  apply mall_perm to H18 _ with L = (A1 x :: A :: B :: KK).
-  assert mall (exs A1 :: A :: B :: KK).
-  assert perm (exs A1 :: A :: B :: KK) (A :: B :: JJ).
-    unfold. witness A, exs A1 :: B :: KK, B :: JJ. split. search. search.
-    unfold. witness B, exs A1 :: KK, JJ. split. search. search.
-    apply adj_swap to *H12 *H3. apply adj_same_result to *H23 H2.
-    backchain perm_trans with K = U1.
-  apply mall_perm to *H21 *H22.
-  search.
-
-  Ht : apply adj_2_is_o to H2. case Ht.
-  apply adj_2_is_o to H3.
-  apply adj_2_is_o to H4.
-  apply adj_1_is_list to H2.
-  apply adj_same_result_diff to H2 H3. case H11.
-  apply adj_1_is_list to H12.
-  apply adj_swap to H12 H4. apply IH to H5 H15.
-  apply perm_refl to H13.
-  apply mall_perm to H18 _ with L = (A1 n1 :: A :: B :: KK).
-  assert mall (all A1 :: A :: B :: KK).
-  assert perm (all A1 :: A :: B :: KK) (A :: B :: JJ).
-    unfold. witness A, all A1 :: B :: KK, B :: JJ. split. search. search.
-    unfold. witness B, all A1 :: KK, JJ. split. search. search.
-    apply adj_swap to *H12 *H3. apply adj_same_result to *H23 H2.
-    backchain perm_trans with K = U1.
-  apply mall_perm to *H21 *H22.
-  search.   
 
 Theorem wth_inv : forall L JJ A B,
   mall L -> adj JJ (wth A B) L ->
@@ -765,46 +539,6 @@ case H1.
   apply mall_perm to *H18 _ with L = A :: JJ.
   apply mall_perm to *H19 _ with L = B :: JJ.
   search.
-
-  rename A1 to C.
-  Ht : apply adj_2_is_o to H3.
-  Hfm1 : apply adj_2_is_o to H4.
-  apply adj_same_result_diff to H2 H3. case H6.
-  apply adj_swap to H7 H4. apply IH to *H5 *H9.
-  apply adj_1_is_list to H7. apply perm_refl to H14.
-  apply mall_perm to *H11 _ with L = (A :: C x :: KK).
-  apply mall_perm to *H13 _ with L = (B :: C x :: KK).
-  assert mall (A :: exs C :: KK). clear H16.
-  assert mall (B :: exs C :: KK). clear H17.
-  assert perm (exs C :: KK) JJ.
-    apply adj_swap to *H7 *H3. apply adj_same_result to *H21 *H2.
-    backchain perm_trans with K = U1.
-  apply mall_perm to *H18 _ with L = A :: JJ.
-  apply mall_perm to *H19 _ with L = B :: JJ.
-  search.
-
-  rename A1 to C.
-  Ht : apply adj_2_is_o to H3.
-  Hfm1 : apply adj_2_is_o to H4.
-  apply adj_same_result_diff to H2 H3. case H6.
-  apply adj_swap to H7 H4. apply IH to *H5 *H9.
-  apply adj_1_is_list to H7. apply perm_refl to H14.
-  apply mall_perm to *H11 _ with L = (A :: C n1 :: KK).
-  apply mall_perm to *H13 _ with L = (B :: C n1 :: KK).
-  assert mall (A :: all C :: KK). clear H16.
-  assert mall (B :: all C :: KK). clear H17.
-  assert perm (all C :: KK) JJ.
-    apply adj_swap to *H7 *H3. apply adj_same_result to *H21 *H2.
-    backchain perm_trans with K = U1.
-  apply mall_perm to *H18 _ with L = A :: JJ.
-  apply mall_perm to *H19 _ with L = B :: JJ.
-  search.
-
-Theorem all_inv : forall L JJ A,
-  mall L -> adj JJ (all A) L ->
-  nabla x, exists J, adj JJ (A x) J /\ mall J.
-induction on 1. intros.
-skip. %% TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1038,67 +772,3 @@ induction on 1. induction on 3. intros. case H3.
       unfold. witness plus A1 B1, V, LL2. split. search. search.
       backchain merge_perm_det.
     backchain mall_perm with K = plus A1 B1 :: V.
-
-  %% exists
-  apply adj_same_result_diff to H2 H7. case H10.
-    %% cut formula is exs A1
-    case H1. apply all_inv to H5 H4.
-    apply perm_merge_1 to H6 H11.
-    apply is_dual_inst to H12. apply *H16 with t = x.
-    apply adj_inst to H13. apply *H18 with t = x.
-    apply mall_inst to H14. apply *H20 with t = x.
-    backchain IH with A = A1 x, B = B1 x.
-    skip.
-    % This proof cannot be finished because when dual (A1 n1) (B1 n1) is
-    % generalized to dual (A1 x) (B1 x), Abella cannot (and probably
-    % should not) recognize that the inductive measure remains decreased
-    % in the generalized version. So the IH cannot be applied on an
-    % instantiated proof. :(
-    % FYI: the induction follows if the two-level approach is used and
-    % mall and dual are specified in lambda-prolog.
-  
-    %% cut moves up the left branch
-    apply adj_1_is_list to H11. apply adj_1_is_list to H4.
-    Ht : assert 0 exists V, merge KK1 KK V.
-      apply merge_exists to H12 H13. search.
-      case Ht.
-    apply merge_3_is_list to H14. apply perm_refl to H15.
-    Ht : apply adj_2_is_o to H7. Hfm1 : case Ht.
-    Hfm2 : apply is_fm_inst to Hfm1. Hfmx : apply *Hfm2 with t = x.
-    assert 0 mall (exs A1 :: V).
-      apply adj_swap to H11 H8.
-      apply IH1 to H1 H18 H9 H4 H5 _ with LL = A1 x :: V.
-      search.
-    assert perm (exs A1 :: V) LL.
-      apply adj_swap to H11 H7.
-      apply adj_same_result to *H2 *H19.
-      apply perm_merge_1 to *H6 *H20.
-      apply merge_unadj_1 to H21 H18.
-      unfold. witness exs A1, V, LL2. split. search. search.
-      backchain merge_perm_det.
-    backchain mall_perm with K = exs A1 :: V.
-
-  %% forall
-  apply adj_same_result_diff to H2 H7. case H10.
-    % left cut-formula cannot be forall
-    case H1.
-
-    % cut moves up the left branch
-    apply adj_1_is_list to H11. apply adj_1_is_list to H4.
-    Ht : assert 0 exists V, merge KK1 KK V.
-      apply merge_exists to H12 H13. search.
-      case Ht.
-    apply merge_3_is_list to H14. apply perm_refl to H15.
-    Ht : apply adj_2_is_o to H7. Hfm1 : case Ht.
-    assert 0 mall (all A1 :: V).
-      apply adj_swap to H11 H8.
-      apply IH1 to H1 H18 H9 H4 H5 _ with LL = A1 n1 :: V.
-      search.
-    assert perm (all A1 :: V) LL.
-      apply adj_swap to H11 H7.
-      apply adj_same_result to *H2 *H19.
-      apply perm_merge_1 to *H6 *H20.
-      apply merge_unadj_1 to H21 H18.
-      unfold. witness all A1, V, LL2. split. search. search.
-      backchain merge_perm_det.
-    backchain mall_perm with K = all A1 :: V.
