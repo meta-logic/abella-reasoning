@@ -1,0 +1,40 @@
+├── one-sided
+│   ├── ll
+│   │   ├── ll.mod
+│   │   ├── ll.sig
+│   │   └── ll.thm        x Full LL (incomplete proof)
+│   ├── llf
+│   │   ├── llf.mod
+│   │   ├── llf.sig
+│   │   └── llf.thm       x LL synthetic calculus (search failed)
+│   ├── mall
+│   │   └── mall.thm      o MALL
+│   ├── mallf
+│   │   ├── mallf2.mod
+│   │   ├── mallf2.sig
+│   │   ├── mallf2.thm    x MALL synthetic calculus (subformula relation on the spec level -- typing error)
+│   │   ├── mallf.mod
+│   │   ├── mallf.sig
+│   │   └── mallf.thm     o MALL synthetic calculus
+│   ├── mallq
+│   │   ├── mallq-1l.thm  o MALL first-order (proof failed -- does not work in one level)
+│   │   ├── mallq.mod
+│   │   ├── mallq.sig
+│   │   └── mallq.thm     x MALL first-order (all_inv skipped)
+│   ├── mallqf
+│   │   ├── mallqf.thm    x MALL first-order focused (incomplete proof)
+│   │   ├── mallq.mod
+│   │   └── mallq.sig
+│   ├── mell
+│   │   ├── mellh.thm     o MALL + exponentials -- explicit height
+│   │   └── mell.thm      o MALL + exponentials
+│   ├── mll
+│   │   ├── mll-noadj.thm x MLL using only 'merge' for rules (incomplete)
+│   │   └── mll.thm       o MLL
+│   └── mllq
+│       └── mllq.thm      x MLL first-order (missing mllq specification?)
+└── two-sided
+    ├── lj.thm            x LJ (incomplete)
+    ├── mall-perm.thm     x MALL up to permutation (lemma not found)
+    ├── mall.thm          x MALL (search does not terminate)
+    └── mlj.thm           x LJ multi-conclusion (incomplete proof -- search failed)
