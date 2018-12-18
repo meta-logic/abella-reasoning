@@ -1,0 +1,1513 @@
+\documentclass{beamer}
+
+\usepackage{kclecture}
+\usepackage[italic,defaultmathsizes,eulergreek]{mathastext}
+\usepackage{proof}
+\usepackage{mathtools}
+
+\begin{document}
+
+\title{Formalizing the meta-theory of focusing\thanks{Joint work with:
+    Giselle Reis, Leonardo Lima}}
+
+\author{
+  {\larger\textbf{Kaustuv Chaudhuri}}
+  \\
+  Inria \& LIX
+}
+\date{
+  2018-02-28
+}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+
+  \begin{itemize}
+    \itemsep 1em
+  \item Project: formalizing deductive \& computational systems
+  \item Encode: formulas, sequents, proof systems
+  \item Prove: meta-theorems (think cut-admissibility)
+  \item Tool: Abella (\url{http://abella-prover.org})
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why formalize meta-theory?}
+
+  \begin{itemize}[<+->]\itemsep 1em
+  \item Proof theory abounds with formalisms
+    \begin{itemize}[<.->]
+    \item[---] natural deduction
+    \item[---] \{shallow, nested, labeled, hyper\} sequents
+    \item[---] calculus of structures
+    \item[---] subatomic, combinatorial, \dots
+    \end{itemize}
+  \item Many of our main results are syntactic
+    \begin{itemize}[<.->]
+    \item[---] cut-elimination
+    \item[---] invertibility, permutations, absorption, \dots
+    \item[---] focusing
+    \item[---] decidability, complexity, \dots
+    \end{itemize}
+  \item Syntactic proofs are kind of tedious
+    \begin{itemize}[<.->]
+    \item[---] induction
+    \item[---] large numbers of cases
+    \item[---] many cases similar
+    \item[---] detail $\longleftrightarrow$ comprehension
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% \begin{frame}
+%   \frametitle{Anecdata}
+%
+%   \begin{itemize}
+%   \item Girard's ``proof'' of cut-elimination for linear logic
+%     \begin{itemize}
+%     \item[---] Fixed by Danos in his PhD
+%     \end{itemize}
+%   \item Bierman's ``proof'' of cut-elimination for full intuitionistic
+%     linear logic (FILL)
+%     \begin{itemize}
+%     \item[---] Fixed by Bra\"uner and de Paiva
+%     \end{itemize}
+%   \item Valentini's ``proof'' of cut-elimination for provability logic
+%     (GL) in the system GLS$_V$
+%     \begin{itemize}
+%     \item[---] Fixed by Gor\'e and Ramanayake
+%     \item[---] Formalized in Isabelle/HOL by Dawson and Gor\'e
+%     \end{itemize}
+%   \item A number of incorrect ``proofs'' of cut-elimination for
+%     bi-intuitionistic logic
+%     \begin{itemize}
+%     \item[---] Fixed by Pinto and Uustalu
+%     \end{itemize}
+%   \item A ``proof'' of cut-free completeness for a certain formulation
+%     of nested sequents for the intuitionistic modal logic KD by
+%     Stra{\ss}burger and Marin
+%     \begin{itemize}
+%     \item[---] So far only sidestepped, not fixed
+%     \end{itemize}
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{The \alert<2->{computer} science solution}
+%
+%   \pause
+%
+%   \judg{Let's have a \alert{computer} check our work.}
+%
+%   \bigskip \pause
+%
+%   Benefits
+%   \begin{itemize}
+%   \item Computers don't get tired
+%   \item Computers don't get bored
+%   \item Computers don't forget stuff
+%   \end{itemize}
+%
+%   \bigskip \pause
+%
+%   Drawbacks
+%   \begin{itemize}
+%   \item Computers are kind of dumb
+%   \item Computers don't speak our language
+%   \item Computers require excessive detail
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{A sequent calculus for linear logic}
+
+  \onslide<2->{Classical, propositional, one-sided, multiplicative-additive}
+  \begin{gather*}
+    \linfer{
+      \ts a, \dual a
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, \D, A \TENS B
+    }{
+      \ts \G, A
+      &
+      \ts \D, B
+    }
+    \qquad
+    \linfer{
+      \ts \ONE
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, A \PAR B
+    }{
+      \ts \G, A, B
+    }
+    \qquad
+    \linfer{
+      \ts \G, \BOT
+    }{
+      \ts \G
+    }
+    \\[2ex]
+    \linfer{
+      \ts \G, A \WITH B
+    }{
+      \ts \G, A
+      &
+      \ts \G, B
+    }
+    \qquad
+    \linfer{
+      \ts \G, \TOP
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, A \PLUS B
+    }{
+      \ts \G, A
+    }
+    \qquad
+    \linfer{
+      \ts \G, A \PLUS B
+    }{
+      \ts \G, B
+    }
+  \end{gather*}
+
+  \pause\pause
+
+  \judg{
+    \infer=[cut]{
+      \ts \G, \D
+    }{
+      \ts \G, A
+      &
+      \ts \D, \dual A
+    }
+  }
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Commutative cases}
+
+  \begin{multline*}
+    \linfer={
+      \ts \G_1, \G_2, B \TENS C, D
+    }{
+      \infer{
+        \ts \G_1, \G_2, B \TENS C, A
+      }{
+        \deduce{
+          \ts \G_1, B
+        }{\DD_1}
+        &
+        \deduce{
+          \ts \G_2, C, A
+        }{\DD_2}
+      }
+      &
+      \deduce{
+        \ts \D, \dual A
+      }{\EE}
+    }
+    \quad \rightsquigarrow \quad
+    \infer{
+      \ts \G_1, \G_2, B \TENS C, \D
+    }{
+      \deduce{
+        \ts \G_1, B
+      }{\DD_1}
+      &
+      \infer={
+        \ts \G_2, C, \D
+      }{
+        \deduce{
+          \ts \G_2, C, A
+        }{\DD_2}
+        &
+        \deduce{
+          \ts \D, \dual A
+        }{\EE}
+      }
+    }
+  \end{multline*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Principal cases}
+
+  \begin{gather*}
+    \linfer={
+      \ts \G_1, \G_2, \D
+    }{
+      \linfer{
+        \ts \G_1, \G_2, A \TENS B
+      }{
+        \deduce{\ts \G_1, A}{\DD_1}
+        &
+        \deduce{\ts \G_2, B}{\DD_2}
+      }
+      &
+      \linfer{
+        \ts \D, \dual A \PAR \dual B
+      }{
+        \deduce{\ts \D, \dual A, \dual B}{\EE}
+      }
+    }
+    \quad \rightsquigarrow \quad
+    \infer={
+      \ts \G_1, \G_2, \D
+    }{
+      \deduce{\ts \G_1, A}{\DD_1}
+      &
+      \infer={
+        \ts \G_2, \D, \dual A
+      }{
+        \deduce{\ts \G_2, B}{\DD_2}
+        &
+        \deduce{\ts \D, \dual A, \dual B}{\EE}
+      }
+    }
+  \end{gather*}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Principal cases \alert{-- or maybe}}
+
+  \begin{multline*}
+    \linfer={
+      \ts \G_1, \G_2, \D
+    }{
+      \infer{
+        \ts \G_1, \G_2, A \TENS B
+      }{
+        \deduce{\ts \G_1, A}{\DD_1}
+        &
+        \deduce{\ts \G_2, B}{\DD_2}
+      }
+      &
+\alert{
+      \deduce{
+        \ts \D, \dual A \PAR \dual B
+      }{\EE}
+}
+    }
+    \quad \rightsquigarrow\\
+    \infer={
+      \ts \G_1, \G_2, \D
+    }{
+      \deduce{\ts \G_1, A}{\DD_1}
+      &
+      \infer={
+        \ts \G_2, \D, \dual A
+      }{
+        \deduce{\ts \G_2, B}{\DD_2}
+        &
+ \alert{
+       \infer[$\PAR^{-1}$]{
+         \ts \D, \dual A, \dual B
+       }{
+         \deduce{
+           \ts \D, \dual A \PAR \dual B
+         }{\EE}
+       }
+}
+      }
+    }
+  \end{multline*}
+\end{frame}
+
+\begin{frame}[t]
+  \frametitle{Lexicographic induction}
+
+  \begin{align*}
+    P, Q, \dotsc &::=
+    a \mid A \TENS B \mid \ONE \mid
+    A \PLUS B \mid \ZERO \\
+    N, M, \dotsc &::=
+    \dual a \mid A \PAR B \mid \BOT \mid
+    A \WITH B \mid \TOP
+  \end{align*}
+
+  \pause
+
+  \judg{
+    \infer={
+      \ts \G, \D
+    }{
+      \deduce{\ts \G, P}{\DD}
+      &
+      \ts \D, \dual P
+    }
+  }
+
+  \pause
+
+  The inductive hypothesis may be used whenever:
+  \begin{enumerate}
+  \item either the size of $P$ (= rank) is smaller, or
+  \item the rank is the same and the height of $\DD$ is smaller.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Encoding an inference rule}
+
+  \larger
+
+  \judg{
+    \infer{
+      \ts \G, \D, A \TENS B
+    }{
+      \ts \G, A
+      &
+      \ts \D, B
+    }
+  }
+
+  \pause
+
+  \begin{gather*}
+    \infer{
+      \ts (\G', \D'), A \TENS B
+    }{
+      \ts \G
+      &
+      (\G = \G', A)
+      &
+      \ts \D
+      &
+      (\D = \D', B)
+    }
+  \end{gather*}
+
+  \pause
+
+  \begin{gather*}
+    \infer{
+      \ts ((\G \setminus A), (\D \setminus B)), A \TENS B
+    }{
+      \ts \G
+      &
+      \qquad
+      \ts \D
+    }
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Principal cases}
+
+  \judg{
+    \smaller
+    \infer{
+      \ts (\G \setminus A), (\D \setminus \dual A)
+    }{
+      \ts \G
+      &
+      \qquad
+      \ts \D
+    }
+
+  }
+
+  \begin{multline*}
+    \linfer={
+      \ts
+      ((\G_1\setminus A), (\G_2\setminus B)),
+      (\D \setminus \dual A \PAR \dual B)
+    }{
+      \infer{
+        \ts ((\G_1\setminus A), (\G_2\setminus B)),
+        A \TENS B
+      }{
+        \deduce{\ts \G_1}{\DD_1}
+        &
+        \qquad
+        \deduce{\ts \G_2}{\DD_2}
+      }
+      &
+      \deduce{
+        \ts \D
+      }{\EE}
+    }
+    \quad \rightsquigarrow\\
+    \infer[\alert{$=$}]{
+      \alert{
+        \ts
+        ((\G_1 \setminus A),
+        (\G_2 \setminus B)),
+        (\D \setminus \dual A \PAR \dual B)
+      }
+    }{
+    \infer={
+      \ts
+      (\G_1 \setminus A),
+      ((\G_2 \setminus B),
+      (\D \setminus \dual A \PAR \dual B))
+    }{
+      \deduce{\ts \G_1}{\DD_1}
+      &
+      \infer[\alert{$=$}]{
+        \alert{
+          \ts ((\G_2\setminus B),
+          (\D\setminus\dual A \PAR \dual B)), \dual A
+        }
+      }{
+      \infer={
+        \ts (\G_2\setminus B),
+        ((\D\setminus\dual A \PAR \dual B), \dual A)
+      }{
+        \deduce{\ts \G_2}{\DD_2}
+        &
+       \infer[$\PAR^{-1}$]{
+         \ts
+         ((\D\setminus \dual A \PAR \dual B),
+         \dual A), \dual B
+       }{
+         \deduce{
+           \ts \D
+         }{\EE}
+       }
+      }}
+    }}
+  \end{multline*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A multiset theory}
+
+  \begin{itemize}
+  \item $\G, \D = \D, \G$
+  \item $(\G, \D), \W = (\G, \D), \W$ \pause
+  \item $(\G \setminus A) \setminus B = (\G \setminus B) \setminus A$ \pause
+  \item $(\G,\D) \setminus A =
+    \begin{cases}
+      (\G\setminus A), \D \\
+      \G, (\D\setminus A)
+    \end{cases}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Formalizing multisets}
+
+  \begin{lstlisting}
+Define adj : olist -> o -> olist -> prop by
+  adj nil A (A :: nil) ;
+  adj (B :: L) A (B :: K) := adj L A K.
+
+Define merge : olist -> olist -> olist -> prop by
+  merge nil nil nil ;
+  merge J K L :=
+    exists A JJ LL, adj JJ A J /\ adj LL A L
+      /\ merge JJ K LL ;
+  merge J K L :=
+    exists A KK LL, adj KK A K /\ adj LL A L
+      /\ merge J KK LL.
+
+Define perm : olist -> olist -> prop by
+  perm J K := merge J nil K.
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Multiset properties}
+
+  \begin{itemize}
+  \item $(\G, \D), \W = \G, (\D, \W)$
+  \end{itemize}
+
+\begin{lstlisting}
+Theorem merge_assoc : forall G D W GD DW GDW,
+  merge G D GD -> merge GD W GDW ->
+  merge D W DW -> merge G DW GDW.
+
+Theorem merge_assoc_perm : forall G D W GD DW U V,
+  merge G D GD -> merge GD W U ->
+  merge D W DW -> merge G DW V ->
+  perm U V.
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile,fragile,fragile]
+  \frametitle{Multiset properties}
+
+  \begin{itemize}
+  \item $(\G \setminus A) \setminus B = (\G \setminus B) \setminus A$
+  \end{itemize}
+
+\begin{lstlisting}
+Theorem adj_reorder : forall G A D B W,
+  adj G A D -> adj D B W ->
+  exists U, adj G B U /\ adj U A W.
+\end{lstlisting}
+
+  \pause
+
+  \begin{itemize}
+  \item $(\G,\D) \setminus A =
+    \begin{cases}
+      (\G\setminus A), \D \\
+      \G, (\D\setminus A)
+    \end{cases}$
+  \end{itemize}
+
+\begin{lstlisting}
+Theorem merge_unadj : forall G D W A U,
+  merge G D W -> adj U A W ->
+     (exists GG, adj GG A G /\ merge GG D U)
+  \/ (exists DD, adj DD A D /\ merge G DD U).
+\end{lstlisting}
+
+\end{frame}
+
+% \begin{frame}[fragile]
+%   \frametitle{More properties}
+%
+% \begin{lstlisting}
+% Theorem adj_same_result : forall G D A W,
+%   adj G A W -> adj D A W -> perm G D.
+%
+% Theorem adj_diamond : forall G A D B W,
+%   adj G A W -> adj D B W ->
+%      (A = B /\ perm G D)
+%   \/ (exists U, adj U B G /\ adj U A D).
+% \end{lstlisting}
+% \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Formalizing Formulas}
+
+\begin{lstlisting}
+Kind atm type.
+
+Type atom, natom   atm -> o.
+Type tens, par     o -> o -> o.
+Type one,  bot     o.
+Type wth,  plus    o -> o -> o.
+Type top,  zero    o.
+
+Define dual : o -> o -> prop by
+; dual (atom A) (natom A)
+; dual (tens A B) (par AA BB) := dual A AA /\ dual B BB
+; dual one bot
+; dual (plus A B) (wth AA BB) := dual A AA /\ dual B BB
+; dual zero top.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Formalizing MALL}
+
+  \mbox{} \bigskip
+
+\begin{lstlisting}
+Define mall : olist -> prop by
+  % init
+; mall L :=
+    exists A, adj (natom A :: nil) (atom A) L
+
+  % tensor
+; mall L :=
+    exists A B LL, adj LL (tens A B) L /\
+    exists JJ KK, merge JJ KK LL /\
+    exists J, adj JJ A J /\ mall J /\
+    exists K, adj KK B K /\ mall K.
+
+; mall (one :: nil)
+
+  % par
+; mall L :=
+    exists A B LL, adj LL (par A B) L /\
+    exists J, adj LL A J /\
+    exists K, adj J B K /\
+    mall K
+
+; mall L :=
+    exists LL,
+      adj LL bot L /\
+      mall LL
+...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Meta-theory: inversion}
+
+  \judg{
+    \infer[$\PAR^{-1}$]{
+      \ts \G, A, B
+    }{
+      \ts \G, A \PAR B
+    }
+  }
+
+\begin{lstlisting}
+Theorem par_inv : forall G A B D,
+  mall G -> adj D (tens A B) G ->
+  exists U V, adj D A U /\ adj U B V /\ mall V.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Meta-theory: cut}
+
+  \judg{
+    \smaller
+    \infer{
+      \ts (\G \setminus A), (\D \setminus \dual A)
+    }{
+      \ts \G
+      &
+      \qquad
+      \ts \D
+    }
+  }
+
+\begin{lstlisting}
+Theorem cut_admit : forall A B G GG D DD W,
+  dual A B ->
+  mall G -> adj GG A G ->
+  mall D -> adj DD B D ->
+  merge GG DD W -> mall W.
+induction on 1. induction on 2.
+  ...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exponentials}
+
+  \begin{gather*}
+    \linfer{
+      \ts \Xi ; a, \dual a
+    }{}
+    \quad
+    \linfer{
+      \ts \Xi ; \G, \D, A \TENS B
+    }{
+      \ts \Xi ; \G, A
+      &
+      \ts \Xi ; \D, B
+    }
+    \quad
+    \linfer{
+      \ts \Xi ; \ONE
+    }{}
+    \quad
+    \linfer{
+      \ts \Xi ; \G, A \PAR B
+    }{
+      \ts \Xi ; \G, A, B
+    }
+    \quad
+    \linfer{
+      \ts \Xi ; \G, \BOT
+    }{
+      \ts \Xi ; \G
+    }
+    \\[2ex]
+    \linfer{
+      \ts \Xi ; \G, A \WITH B
+    }{
+      \ts \Xi ; \G, A
+      &
+      \ts \Xi ; \G, B
+    }
+    \quad
+    \linfer{
+      \ts \Xi ; \G, \TOP
+    }{}
+    \quad
+    \linfer{
+      \ts \Xi ; \G, A \PLUS B
+    }{
+      \ts \Xi ; \G, A
+    }
+    \quad
+    \linfer{
+      \ts \Xi ; \G, A \PLUS B
+    }{
+      \ts \Xi ; \G, B
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      \ts \Xi ; \BANG A
+    }{
+      \ts \Xi ; A
+    }
+    \qquad
+    \linfer{
+      \ts \Xi ; \G, \QM A
+    }{
+      \ts \Xi, A ; \G
+    }
+    \qquad
+    \linfer{
+      \ts \Xi, A ; \G
+    }{
+      \ts \Xi, A ; \G, A
+    }
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exponentials: lexicographic cuts}
+
+  \judg{
+    \linfer[hcut]{
+      \ts \Xi ; \G
+    }{
+      \deduce{\ts \Xi ; P}{\DD}
+      &
+      \ts \Xi, \dual P ; \G
+    }
+    \qquad
+    \linfer[lcut]{
+      \ts \Xi ; \G, \D
+    }{
+      \deduce{\ts \Xi ; \G, P}{\DD}
+      &
+      \ts \Xi ; \G, \dual P
+    }
+  }
+
+  \quad
+
+  The inductive hypothesis may be used whenever:
+  \begin{enumerate}
+  \item either the size of $P$ (= rank) is smaller; or
+  \item the rank is the same and the height of $\DD$ is smaller; or
+  \item a lcut is reduced to a hcut of the same rank and $\DD$-height.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Encoding dyadic sequents}
+
+  \mbox{}\bigskip
+
+\begin{lstlisting}
+Define mell : olist -> olist -> prop by
+; mell QL L :=
+    exists A, adj (natom A :: nil) (atom A) L
+
+; mell QL L :=
+    exists A QK, adj QK A QL /\
+    exists J, adj L A J /\
+    mell QL J
+
+; mell QL L :=
+    exists A B LL, adj LL (tens A B) L /\
+    exists JJ KK, merge JJ KK LL /\
+      (exists J, adj JJ A J /\ mell QL J) /\
+      (exists K, adj KK B K /\ mell QL K)
+
+; mell QL (one :: nil)
+
+; mell QL L :=
+    exists A B LL, adj LL (par A B) L /\
+    exists J, adj LL A J /\
+    exists K, adj J B K /\
+    mell QL K
+
+; mell QL L :=
+    exists LL, adj LL bot L /\
+    mell QL LL
+
+; mell QL (bang A :: nil) :=
+    mell QL (A :: nil)
+
+; mell QL L :=
+    exists A LL, adj LL (qm A) L /\
+    exists QK, adj QL A QK /\
+    mell QK LL.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Meta-theory: lexicographic cuts}
+
+\begin{lstlisting}
+Kind weight type.
+Type heavy, light weight.
+
+Define is_weight : weight -> prop by
+; is_weight light
+; is_weight heavy := is_weight light.
+
+Theorem cut_admit: forall A B G Wt,
+   dual A B -> mell QL G -> is_weight Wt ->
+      (Wt = heavy /\ G = A :: nil /\
+       forall QK, adj QL B QK -> mell QK D ->
+       mell QL D)
+   \/ (Wt = light /\
+       forall GG D DD W, adj GG A G ->
+       mell QL D -> adj DD B D ->
+       merge GG DD W -> mell QL W).
+induction on 1. induction on 2. induction on 3.
+  ...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Focusing}
+
+  \begin{gather*}
+    \linfer{
+      \ts \foc{a}, \dual a
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, \D, \foc{A \TENS B}
+    }{
+      \ts \G, \foc{A}
+      &
+      \ts \D, \foc{B}
+    }
+    \qquad
+    \linfer{
+      \ts \foc{\ONE}
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, A \PAR B
+    }{
+      \ts \G, A, B
+    }
+    \qquad
+    \linfer{
+      \ts \G, \BOT
+    }{
+      \ts \G
+    }
+    \\[2ex]
+    \linfer{
+      \ts \G, A \WITH B
+    }{
+      \ts \G, A
+      &
+      \ts \G, B
+    }
+    \qquad
+    \linfer{
+      \ts \G, \TOP
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, \foc{A \PLUS B}
+    }{
+      \ts \G, \foc{A}
+    }
+    \qquad
+    \linfer{
+      \ts \G, \foc{A \PLUS B}
+    }{
+      \ts \G, \foc{B}
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      \ts \G, P
+    }{
+      \ts \G, \foc{P}
+      &
+      (\G \text{ all positive})
+    }
+    \qquad
+    \linfer{
+      \ts \G, \foc{N}
+    }{
+      \ts \G, N
+    }
+  \end{gather*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Polarized focusing}
+
+  \begin{align*}
+    P, Q, \dotsc &::=
+    a \mid P \TENS Q \mid \ONE \mid
+    P \PLUS Q \mid \ZERO \mid \SHP N \\
+    N, M, \dotsc &::=
+    \dual a \mid N \PAR M \mid \BOT \mid
+    N \WITH M \mid \TOP \mid \SHN P \\
+    \text{neutral} &::= \dual a \mid \SHN P
+  \end{align*}
+
+  \begin{gather*}
+    \linfer{
+      \ts \foc{a}, \dual a
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, \D, \foc{P \TENS Q}
+    }{
+      \ts \G, \foc{P}
+      &
+      \ts \G, \foc{Q}
+    }
+    \qquad
+    \linfer{
+      \ts \foc{\ONE}
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, N \PAR M
+    }{
+      \ts \G, N, M
+    }
+    \qquad
+    \linfer{
+      \ts \G, \BOT
+    }{
+      \ts \G
+    }
+    \\[2ex]
+    \linfer{
+      \ts \G, N \WITH M
+    }{
+      \ts \G, N
+      &
+      \ts \G, M
+    }
+    \qquad
+    \linfer{
+      \ts \G, \TOP
+    }{}
+    \qquad
+    \linfer{
+      \ts \G, \foc{P \PLUS Q}
+    }{
+      \ts \G, \foc{P}
+    }
+    \qquad
+    \linfer{
+      \ts \G, \foc{P \PLUS Q}
+    }{
+      \ts \G, \foc{Q}
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      \ts \G, \SHN P
+    }{
+      \ts \G, \foc{P}
+      &
+      (\G \text{ all neutral})
+    }
+    \qquad
+    \linfer{
+      \ts \G, \foc{\SHP N}
+    }{
+      \ts \G, N
+    }
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Synthetic focusing}
+
+  \begin{gather*}
+    \linfer{
+      a \in a \mathstrut
+    }{}
+    \qquad
+    \linfer{
+      \SHP N \in \SHP N
+    }{}
+    \qquad
+    \linfer{
+      \W_1, \W_2 \in P \TENS Q
+    }{
+      \W_1 \in P & \W_2 \in Q
+    }
+    \qquad
+    \linfer{
+      \cdot \in \ONE
+    }{}
+    \\[2ex]
+    \linfer{
+      \W \in P \PLUS Q
+    }{
+      \W \in P
+    }
+    \qquad
+    \linfer{
+      \W \in P \PLUS Q
+    }{
+      \W \in Q
+    }
+\onslide<2->{\alert{
+    \qquad
+    \linfer{
+      \W \in \exists x. P
+    }{
+      \W \in [t/x] P
+    }
+}}
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      \ts \dual a : \foc{a}
+    }{}
+    \qquad
+    \linfer{
+      \ts \cdot : \foc{\cdot}
+    }{}
+    \qquad
+    \linfer{
+      \ts \G_1, \G_2 : \foc{\W_1, \W_2}
+    }{
+      \ts \G_1 : \foc{\W_1}
+      &
+      \ts \G_2 : \foc{\W_2}
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      \ts \G, \SHN P
+    }{
+      (\W \in P) & \ts \G : \foc{\W}
+    }
+    \qquad
+    \linfer{
+      \ts \G : \foc{\SHP \dual P}
+    }{
+      \Bigl\{{
+        \ts \G, \dual \W
+      }\Bigr\}_{\mathrlap{\W \in P}}
+    }
+  \end{gather*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Formalizing synthetics}
+
+\begin{lstlisting}
+Kind foc type.
+Type fatom  atm -> foc.
+Type fshift nf -> foc.
+Type fjoin  foc -> foc -> foc.
+Type femp   foc.
+
+Define subf : foc -> pf -> prop by
+; subf (fatom A) (atom A)
+; subf (fshift N) (shp N)
+; subf (fjoin F1 F2) (tens P Q) :=
+    subf F1 P /\ subf F2 Q
+; subf F (oplus P Q) := subf F P
+; subf F (oplus P Q) := subf F Q
+; nabla x, subf (F x) (fex P) :=
+    nabla x, subf (F x) (P x)
+; subf femp one.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Formalizing synthetic focusing}
+
+  \smaller
+
+\begin{lstlisting}
+Define
+  mall : olist -> prop,
+  mallfoc : olist -> foc -> prop
+by
+; mall L :=
+    exists P LL, adj LL P L /\
+    exists F,    subf F P /\
+                 mallfoc LL F
+
+; mallfoc (natom A :: nil) (fatom A)
+
+; mallfoc L (fshift N) :=
+    exists P,  dual P N /\
+    forall F,  subf F P ->
+    exists LL, extend L F LL /\
+               mall LL
+
+; mallfoc L (fjoin F1 F2) :=
+    exists J K, merge J K L /\
+    mallfoc J F1 /\ mallfoc K F2
+
+; mallfoc nil femp.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Synthetic meta-theory}
+
+  \judg{
+    \infer={
+      \ts \G, \D
+    }{
+      \ts \G, \SHN P
+      &
+      \ts \D, \SHN \SHP \dual P
+    }
+  }
+
+\begin{lstlisting}[
+  emph={mall},
+  emphstyle=\color{abellabad}]
+Theorem cut_admit : forall P N J JP K L,
+   dual P N ->
+   adj J (shn P) JP       -> mall JP ->
+   adj K (shn (shp N)) KN -> mall KN ->
+   merge J K L            -> mall L.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Synthetic meta-theory: but really!}
+
+  Principal:
+  \judg{
+    \infer={
+      \ts \G, \D
+    }{
+      (\W \in P)
+      &
+      \ts \G : \foc{\W}
+      &
+      \ts \D : \foc{\SHP \dual P}
+    }
+  }
+
+  Commutative:
+  \judg{
+    \infer={
+      \ts \G, \D : [\W]
+    }{
+      \ts \G, \SHN P : [\W]
+      &
+      \ts \D : \foc{\SHP \dual P}
+    }
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Some stats}
+
+  \centering
+  \url{https://github.com/meta-logic/abella-reasoning}
+
+  \vspace{1cm}
+
+  \begin{tabu}{l|c|c}
+    & ordinary & synthetic \\\hline
+    \vrule width 0pt height 1.3em
+    Prop. MALL & \alert{774} & --- \\
+    Prop. MELL & 694 & --- \\
+    Prop. LL & 1230 & --- \\[1ex]
+    $\forall$MALL & --- & \alert{490} \\
+    $\forall$LL & --- & ---
+  \end{tabu}\\
+  {\scriptsize (unfiltered lines of text)}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Abella's induction}
+
+  So far we have used Abella's \emph{implicit} heights in our
+  inductive proofs.
+
+  \bigskip
+
+\begin{lstlisting}
+Theorem trivial : forall x, nat x -> lt x (s x).
+induction on 1. intros. case H1.
+  search.
+  apply IH to H2. search.
+\end{lstlisting}
+
+  \pause
+
+\begin{lstlisting}
+IH : forall x, nat x * -> lt x (s x)
+============================
+ forall x, nat x @ -> lt x (s x)
+\end{lstlisting}
+
+  \pause
+
+\begin{lstlisting}
+Variables: X
+IH : forall x, nat x * -> lt x (s x)
+H2 : nat X *
+============================
+ lt (s X) (s (s X))
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Explicit heights in sequents}
+
+  \smaller[2]
+
+\begin{lstlisting}[emph={s,H},emphstyle={\color{red}}]
+Define mallh : nat -> olist -> prop by
+  % init
+; mallh (s H) L :=
+    exists A, adj (natom A :: nil) (atom A) L
+
+  % tensor
+; mallh (s H) L :=
+    exists A B LL, adj LL (tens A B) L /\
+    exists JJ KK, merge JJ KK LL /\
+    exists J, adj JJ A J /\ mallh H J /\
+    exists K, adj KK B K /\ mallh H K.
+
+; mallh (s H) (one :: nil)
+
+  % par
+; mallh (s H) L :=
+    exists A B LL, adj LL (par A B) L /\
+    exists J, adj LL A J /\
+    exists K, adj J B K /\ mallh H K
+
+; mallh (s H) L :=
+    exists LL, adj LL bot L /\ mallh H LL
+...
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Equivalence}
+
+  Abella's induction is strong enough to prove the following theorems.
+
+  {\smaller[2]
+\begin{lstlisting}
+Theorem equiv_ltr: forall H L, mallh H L -> mall L.
+
+Theorem equiv_rtl: forall L, mall L -> exists H, nat H /\ mallh H L.
+\end{lstlisting}}
+
+   \bigskip \pause
+
+   This allows us to drop down to explicit heights if we ever need
+   them, but to continue without explicit heights in general.
+\end{frame}
+
+\begin{frame}
+  \frametitle{A mystery}
+
+  \begin{itemize}
+  \item I initially thought that we could do the same thing for the
+    synthetic version of the calculus.
+  \item To my surprise:
+    \begin{itemize}
+    \item I couldn't show the equivalence between the two formalisms
+    \item I couldn't even prove cut-elimination by itself in the
+      version with explicit heights
+    \end{itemize}
+  \item The culprit is the following rule:
+    \begin{gather*}
+      \infer{
+        \ts \G : \foc{\SHP \dual P}
+      }{
+        \Bigl\{{
+          \ts \G, \dual \W
+        }\Bigr\}_{\mathrlap{\W \in P}}
+      }
+    \end{gather*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Synthetic focusing with explicit heights}
+
+  \smaller
+
+  For $H$ a natural number, write\\[1ex]
+  \begin{tabu}{l@{\qquad}l}
+    $H \ts \G$ & neutral sequent of max. deriv. height $H$ \\
+    $H \ts \G : \foc{\W}$ & focused sequent of max. deriv. height $H$
+  \end{tabu}
+
+
+  \begin{gather*}
+    \linfer{
+      a \in a \mathstrut
+    }{}
+    \qquad
+    \linfer{
+      \SHP N \in \SHP N
+    }{}
+    \qquad
+    \linfer{
+      \W_1, \W_2 \in P \TENS Q
+    }{
+      \W_1 \in P & \W_2 \in Q
+    }
+    \qquad
+    \linfer{
+      \cdot \in \ONE
+    }{}
+    \\[2ex]
+    \linfer{
+      \W \in P \PLUS Q
+    }{
+      \W \in P
+    }
+    \qquad
+    \linfer{
+      \W \in P \PLUS Q
+    }{
+      \W \in Q
+    }
+    \qquad
+    \linfer{
+      \W \in \exists x. P
+    }{
+      \W \in [t/x] P
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      H \ts \dual a : \foc{a}
+    }{}
+    \qquad
+    \linfer{
+      H \ts \cdot : \foc{\cdot}
+    }{}
+    \qquad
+    \linfer{
+      H \ts \G_1, \G_2 : \foc{\W_1, \W_2}
+    }{
+      H \ts \G_1 : \foc{\W_1}
+      &
+      H \ts \G_2 : \foc{\W_2}
+    }
+    \\
+    \hbox to .8\linewidth{\dotfill}
+    \\[1ex]
+    \linfer{
+      (H + 1) \ts \G, \SHN P
+    }{
+      (\W \in P) & H \ts \G : \foc{\W}
+    }
+    \qquad
+    \linfer{
+      (H + 1) \ts \G : \foc{\SHP \dual P}
+    }{
+      \Bigl\{{
+        H \ts \G, \dual \W
+      }\Bigr\}_{\mathrlap{\W \in P}}
+    }
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cut rules with explicit heights}
+
+  Principal:
+  \judg{
+    \infer={
+      H_3 \ts \G, \D
+    }{
+      (\W \in P)
+      &
+      H_1 \ts \G : \foc{\W}
+      &
+      H_2 \ts \D : \foc{\SHP \dual P}
+    }
+  }
+
+  Commutative:
+  \judg{
+    \infer={
+      H_3 \ts \G, \D : [\W]
+    }{
+      H_1 \ts \G, \SHN P : [\W]
+      &
+      H_2 \ts \D : \foc{\SHP \dual P}
+    }
+  }
+
+  $H_1, H_2, H_3$ unrelated, or maybe $H_1\ H_2 \ge H_3 \ge H_1 + H_2$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Commutative case in detail}
+
+  \begin{gather*}
+    \infer={
+      H_3 \ts \G, \D : [\W]
+    }{
+      H_1 \ts \G, \SHN P : [\W]
+      &
+      \infer{
+        H_2 + 1 \ts \D : \foc{\SHP \dual P}
+      }{
+        \Bigl\{{
+          H_2 \ts \D, \dual{\W'}
+        }\Bigr\}_{\mathrlap{\W' \in P}}
+      }
+    }
+  \end{gather*}
+
+  \bigskip
+
+  \begin{align*}
+    IH &:\quad \forall \W' \in P.\,\ \exists H_3.\,\
+    H_3 \ts \G, \D : \foc{\W} \\
+    \text{goal} &:\quad
+    \exists H_3'.\,\ \forall \W' \in P.\,\ H_3' \ts \G', \D, \dual{\W'}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Strong continuity?}
+
+  This is reminiscent of the so called \emph{strong continuity
+    principle}, which is a consequence of Brouwer's fan theorem:
+  %
+  \begin{gather*}
+    (\forall s\in \mathrm{N}^*\mkern -2mu.\, \exists p.\, A(s, p))
+    \supset
+    (\exists f \in K_0.\, \forall s.\, A(s, f(s)))
+  \end{gather*}
+  %
+  where $K_0$ is the class of all computable functions that depend on
+  only a \alert{finite prefix} of its input.
+
+  \bigskip \pause
+
+  TODO: figure out if Abella's induction has enough strength to do
+  some kinds of bar induction (cf. recent work by Vincent Rahli, Bob
+  Constable, \emph{et al}), and then to see if the SCP or a suitable
+  variant can be derived.
+\end{frame}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% TeX-master: t
+%%% End:

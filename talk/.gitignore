@@ -1,0 +1,9 @@
+auto/
+*.aux
+*.listing
+*.log
+*.nav
+*.pdf
+*.toc
+*.vrb
+*.snm

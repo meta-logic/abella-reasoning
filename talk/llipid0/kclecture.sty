@@ -1,0 +1,176 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{kclecture}[2018/02/13 kclecture]
+
+\RequirePackage{xspace}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{fontspec}
+\RequirePackage[Symbol]{upgreek}
+\RequirePackage{tikz}
+\RequirePackage{relsize}
+\RequirePackage{framed}
+\RequirePackage{letltxmacro}
+\RequirePackage{listings}
+\RequirePackage{tcolorbox}
+\RequirePackage{tabu}
+
+\ProcessOptions
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mode<presentation>
+{
+  \usetheme{Pittsburgh}
+  \setbeamercolor{alerted text}{fg=red!50!black}
+  \usefonttheme{serif}
+  \ifxetex
+  \defaultfontfeatures{Mapping=tex-text}
+  \else
+  \defaultfontfeatures{Ligatures=TeX}
+  \fi
+  \setmainfont{Alegreya} %
+  % \setmainfont{TeX Gyre Bonum}
+  % \setmainfont{Georgia-Bold}
+  % \setmainfont{Trebuchet MS}
+  \setsansfont{FreeSans}
+  % \setmonofont{Inconsolata}
+  % \setmonofont{FreeMono}
+  \setmonofont{DejaVu Sans Mono}
+  % \setbeamertemplate{navigation symbols}{}
+  % \setbeamertemplate{footline}{\insertpagenumber}
+  \setbeamertemplate{frametitle}[default][left]
+  \useinnertheme{default}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tcbuselibrary{listings}
+\tcbuselibrary{skins}
+
+\fboxrule 1pt
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\colorlet{lprolog}{blue!30!black}
+\colorlet{abellatop}{blue!50!black}
+\colorlet{abellatac}{orange!40!black}
+\colorlet{abellabad}{red!80!yellow}
+
+\lstdefinelanguage{lprolog}{%
+  alsoletter={-},
+  classoffset=0,%
+  morekeywords={sig,module,type,kind,o,pi,sigma,end},%
+  keywordstyle=\color{lprolog},%
+  classoffset=0,%
+  otherkeywords={:-,=>,<=,\&},%
+  sensitive=true,%
+  morestring=[bd]",%
+  morecomment=[l]\%,%
+  morecomment=[n]{/*}{*/},%
+}
+
+\lstdefinelanguage{abella}[]{lprolog}{%
+  alsoletter={-},
+  classoffset=1,%
+  morekeywords={Close,CoDefine,Define,Kind,Query,Quit,Specification,
+    Set,Split,Theorem,Type,Undo,by,as,prop,true,false,forall,exists,nabla},%
+  keywordstyle=\color{abellatop},%
+  classoffset=2,%
+  morekeywords={abbrev,apply,backchain,case,coinduction,cut,
+    induction,inst,intros,monotone,on,permute,rename,left,right,witness,
+    search,split,to,unabbrev,unfold,assert,with},%
+  keywordstyle=\bfseries\color{abellatac},%
+  classoffset=3,%
+  morekeywords={undo,abort,skip,clear},%
+  keywordstyle=\color{abellabad}\bfseries\underbar,%
+  classoffset=0,%
+}
+
+\lstset{%
+  basicstyle=\smaller\ttfamily,%
+  keywordstyle=\bfseries\usebeamercolor[fg]{alerted text},%
+  breakatwhitespace=true,breaklines=true,%
+  language=abella,
+  commentstyle=\itshape,%
+  xleftmargin=1em,%
+  mathescape=true,
+  rangeprefix=\%\ ,
+  rangesuffix=\ \%,
+  includerangemarker=false,
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\makeenv[3]{
+  \newtcolorbox{#1}[1][#2]{
+    colback=#3!5!white,
+    colframe=#3!75!black,
+    title={##1},
+    left=1ex,right=1ex,top=1ex,bottom=1ex,
+    arc=1pt,
+  }
+}
+\makeenv{defn}{Definition}{magenta}
+\makeenv{thm}{Theorem}{cyan}
+
+\newtcblisting{code}[2][]{
+  size=minimal,
+  listing only,
+  listing options={language=#2,#1}
+}
+
+\newtcbox\judg{
+  center,
+  enhanced, drop shadow,
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*\TAB{\mbox{\qquad}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*\dual[1]{{\mathstrut\overline{#1}}}
+\newcommand*\ts{{\mathstrut\vdash}\mkern 2mu}
+\newcommand*\bts{\mathbin{\mathstrut\vdash}}
+
+\renewcommand*\G{\Gamma}
+\newcommand*\D{\Delta}
+\newcommand*\W{\Omega}
+
+\newcommand*\DD{\mathcal{D}}
+\newcommand*\EE{\mathcal{E}}
+\newcommand*\FF{\mathcal{F}}
+
+\providecommand\amp{\hbox{\sffamily\upshape\&}}
+\providecommand\invamp{\rotatebox[origin=c]{180}{\amp}}
+
+\newcommand*\TENS{\otimes}
+\newcommand*\ONE{\mathsf{1}}
+\newcommand*\WITH{\mathbin{\amp}}
+\newcommand*\TOP{\top}
+
+\newcommand*\PAR{\mathbin{\invamp}}
+\newcommand*\BOT{\bot}
+\newcommand*\PLUS{\oplus}
+\newcommand*\ZERO{\mathsf{0}}
+
+\newcommand*\BANG{{\mathsf{!}}}
+\newcommand*\QM{{\mathsf{?}}}
+
+\newcommand*\SHP{{\downarrow}}
+\newcommand*\SHN{{\uparrow}}
+
+\newcommand*\foc[1]{\left[#1\right]}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\endinput
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: luatex
+%%% TeX-master: "1.tex"
+%%% End:
