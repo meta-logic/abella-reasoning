@@ -571,8 +571,9 @@ induction on 1. induction on 3. intros. case H3.
       apply merge_unadj_2 to H22 H17.
       apply adj_1_is_list to H24. apply adj_1_is_list to H9. apply merge_exists to *H27 *H26.
       apply IH to H15 H9 H10 H24 H23 H28.
-      apply perm_sym to *H14. apply perm_merge_3 to *H8 *H30.
-      apply merge_assoc to *H31 *H25 *H28 *H6. backchain mall_perm with K = L1.
+      apply perm_merge_1 to *H6 *H14.
+      apply merge_assoc to *H8 *H25 *H28 *H30.
+      backchain mall_perm with K = L1.
    %% cut formula is some other formula -- height decreases
    apply merge_unadj_3 to H8 H14. case H15.
      %% cut formula goes to left operand
