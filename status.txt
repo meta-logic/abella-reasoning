@@ -20,7 +20,7 @@
 │   │   ├── mallq-1l.thm  o MALL first-order (proof failed -- does not work in one level)
 │   │   ├── mallq.mod
 │   │   ├── mallq.sig
-│   │   └── mallq.thm     x MALL first-order (all_inv skipped)
+│   │   └── mallq.thm     o MALL first-order
 │   ├── mallqf
 │   │   ├── mallqf.thm    x MALL first-order focused (incomplete proof)
 │   │   ├── mallq.mod
