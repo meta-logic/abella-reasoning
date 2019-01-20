@@ -411,7 +411,7 @@ case H1.
     apply mall_perm to *H26 *H35.
     search.
 
-    % with in left branch of tensor
+    % with in right branch of tensor
     apply adj_swap to H12 H7. apply IH to *H8 *H15.
     apply adj_1_is_list to H14. apply perm_refl to H20.
     apply mall_perm to *H17 _ with L = (D :: A :: KK2).
