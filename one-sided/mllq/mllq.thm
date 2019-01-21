@@ -54,6 +54,44 @@ Define mll : nat -> olist -> prop by
     mll X K
 .
 
+%% FYI: Abella cannot infer the type of A
+Theorem is_fm_inst : forall (A : term -> o),
+  nabla x, is_fm (A x) -> forall t, is_fm (A t).
+induction on 1. intros. case H1.
+  search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t.
+    search.
+  search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+      apply H3 with t = t. search.
+  apply IH to H2 with A = (X\ form (A1 X n2)).
+    apply H3 with t = t. search.
+
+Theorem adj_inst : forall K A L,
+  nabla (x : term), adj (K x) (A x) (L x) -> forall t, adj (K t) (A t) (L t).
+induction on 1. intros. case H1.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply is_list_inst to H3. apply H6 with t = t. search.
+  apply is_fm_inst to H2. apply H4 with t = t.
+    apply IH to H3. apply H6 with t = t. search.
+
+% Corollary:
+% adj J (A x) (K x) -> adj J (A t) (K t)
+
 Theorem mll_ht_weak : forall X Y L,
   mll X L -> leq X Y -> mll Y L.
 induction on 1. intros. case H1.
@@ -712,8 +750,164 @@ case H1.
 Theorem all_inv : forall L JJ A,
   mll L -> adj JJ (all A) L ->
   nabla x, exists J, adj JJ (A x) J /\ mll J.
-induction on 1. intros.
-skip. %% TODO
+%% TODO check
+induction on 1. intros. case H1.
+  apply adj_same_result_diff to H2 H3. case H4. case H5. case H7.
+
+  apply adj_same_result_diff to H2 H3. case H9.
+  apply merge_unadj_3 to H4 H10. case H11.
+    apply adj_swap to H12 H5. apply IH to H6 H15.
+     apply adj_swap to H14 H16.
+     apply adj_1_is_list to H10. apply adj_2_is_o to H16.
+     assert merge (U1 n1) KK (form (A n1) :: KK1).
+     apply adj_2_is_o to H3.
+     assert mall (form (tens A1 B) :: form (A n1) :: KK1).
+     apply adj_swap to H10 H3.
+     apply adj_same_result to H26 H2. apply adj_perm_full to H27 H25.
+     apply adj_1_is_list to H2.
+     assert perm (form (tens A1 B) :: form (A n1) :: KK1) (form (A n1) :: JJ).
+     apply mall_perm to H24 H31. search.
+
+    apply adj_swap to H12 H7. apply IH to H8 H15.
+     apply adj_swap to H14 H16.
+     apply adj_1_is_list to H10. apply adj_2_is_o to H16.
+     assert merge JJ1 (U1 n1) (form (A n1) :: KK1).
+     apply adj_2_is_o to H3.
+     assert mall (form (tens A1 B) :: form (A n1) :: KK1).
+     apply adj_swap to H10 H3.
+     apply adj_same_result to H26 H2. apply adj_perm_full to H27 H25.
+     apply adj_1_is_list to H2.
+     assert perm (form (tens A1 B) :: form (A n1) :: KK1) (form (A n1) :: JJ).
+     apply mall_perm to H24 H31. search.
+
+  case H2. case H4.
+
+  apply adj_same_result_diff to H2 H3. case H7.
+  apply adj_swap to H8 H4. apply adj_swap to H10 H5.
+  apply IH to H6 H12.
+  apply adj_swap to H11 H13. apply adj_swap to H9 H15.
+  apply adj_1_is_list to H18. apply adj_2_is_o to H3.
+  assert mall (form (par A1 B) :: U3 n1).
+  apply adj_1_is_list to H2. apply adj_2_is_o to H13.
+  assert perm (form (par A1 B) :: (U3 n1)) (form (A n1) :: JJ).
+    unfold. witness (form (A n1)). witness form (par A1 B) :: KK.
+      witness JJ. split. search. search.
+    apply adj_swap to H8 H3. apply adj_same_result to H25 H2.
+    backchain perm_trans with K = U4.
+    apply adj_1_is_list to H24.
+    unfold. witness form (par A1 B). witness KK. witness KK.
+      split. search. search. backchain perm_refl.
+  apply mall_perm to H21 H24. search.
+
+  apply adj_same_result_diff to H2 H3. apply adj_2_is_o to H2. case H6. case H5.
+  apply IH to H4 H8.
+  apply adj_3_is_list to H9.
+  assert mall (form bot :: (J n1)).
+  apply adj_1_is_list to H2.
+  assert perm (form bot :: (J n1)) (form (A n1) :: JJ).
+    unfold. witness form (A n1). witness form bot :: KK.
+      witness JJ. split. search. search.
+    apply adj_swap to H8 H3. apply adj_same_result to H15 H2.
+    backchain perm_trans with K = U.
+    apply adj_1_is_list to H14. apply perm_refl to H17. search.
+  apply mall_perm to H12 H14. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  Ht : apply adj_2_is_o to H3. case Ht.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H12.
+  apply adj_1_is_list to H13.
+  apply adj_swap to H13 H4. apply IH to H5 H16.
+  apply adj_swap to H13 H6. apply IH to H7 H20.
+  apply perm_refl to H14.
+  apply mall_perm to H18 _ with L = (form A1 :: form (A n1) :: KK).
+  apply mall_perm to H22 _ with L = (form B :: form (A n1) :: KK).
+  assert mall (form (wth A1 B) :: form (A n1) :: KK).
+  assert perm (form (wth A1 B) :: form (A n1) :: KK) (form (A n1) :: JJ).
+    unfold. witness form (A n1). witness (form (wth A1 B) :: KK). witness JJ.
+      split. search. search.
+    apply adj_swap to H13 H3. apply adj_same_result to H28 H2.
+    backchain perm_trans with K = U2.
+  apply mall_perm to H26 H27. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H6.
+  apply adj_swap to H7 H3. apply adj_same_result to H9 H2.
+  apply adj_perm to H10 H8.
+  apply adj_1_is_list to H11. apply perm_refl to H12.
+  assert perm (form top :: form (A n1) :: KK1) (form (A n1) :: JJ).
+  apply mall_perm to _ H14. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  Ht : apply adj_2_is_o to H3. case Ht.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H10.
+  apply adj_1_is_list to H11.
+  apply adj_swap to H11 H4. apply IH to H5 H14.
+  apply perm_refl to H12.
+  apply mall_perm to H16 _ with L = (form A1 :: form (A n1) :: KK).
+  assert mall (form (plus A1 B) :: form (A n1) :: KK).
+  assert perm (form (plus A1 B) :: form (A n1) :: KK) (form (A n1) :: JJ).
+    unfold. witness form (A n1). witness (form (plus A1 B) :: KK). witness JJ.
+      split. search. search.
+    apply adj_swap to H11 H3. apply adj_same_result to H21 H2.
+    backchain perm_trans with K = U1.
+  apply mall_perm to H19 H20. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  Ht : apply adj_2_is_o to H3. case Ht.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H10.
+  apply adj_1_is_list to H11.
+  apply adj_swap to H11 H4. apply IH to H5 H14.
+  apply perm_refl to H12.
+  apply mall_perm to H16 _ with L = (form B :: form (A n1) :: KK).
+  assert mall (form (plus A1 B) :: form (A n1) :: KK).
+  assert perm (form (plus A1 B) :: form (A n1) :: KK) (form (A n1) :: JJ).
+    unfold. witness form (A n1). witness (form (plus A1 B) :: KK). witness JJ.
+      split. search. search.
+    apply adj_swap to H11 H3. apply adj_same_result to H21 H2.
+    backchain perm_trans with K = U1.
+  apply mall_perm to H19 H20. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  apply adj_2_is_o to H3.
+  apply adj_2_is_o to H4.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H10.
+  apply adj_1_is_list to H11.
+  apply adj_swap to H11 H4. apply IH to H5 H14.
+  apply perm_refl to H12.
+  apply mall_perm to H16 _ with L = (form (A1 x) :: form (A n1) :: KK).
+  assert mall (form (exs A1) :: form (A n1) :: KK).
+  assert perm (form (exs A1) :: form (A n1) :: KK) (form (A n1) :: JJ).
+    unfold. witness form (A n1). witness form (exs A1) :: KK. witness JJ.
+      split. search. search.
+    apply adj_swap to H11 H3. apply adj_same_result to H21 H2.
+    backchain perm_trans with K = U1.
+  apply mall_perm to H19 H20. search.
+
+  Ht : apply adj_2_is_o to H2. case Ht.
+  apply adj_2_is_o to H3.
+  apply adj_2_is_o to H4.
+  apply adj_1_is_list to H2.
+  apply adj_same_result_diff to H2 H3. case H10.
+    apply perm_sym to H11.
+    apply adj_perm_source to H12 H4.
+    apply mall_perm to H5 H14. search.
+
+    apply adj_1_is_list to H11.
+    apply adj_swap to H11 H4. apply IH to H5 H14.
+    apply perm_refl to H12.
+    apply mall_perm to H16 _ with L = (form (A1 n1) :: form (A n2) :: KK).
+    assert mall (form (all A1) :: form (A n2) :: KK).
+    assert perm (form (all A1) :: form (A n2) :: KK) (form (A n2) :: JJ).
+      unfold. witness form (A n2). witness form (all A1) :: KK. witness JJ. split. search. search.
+      apply adj_swap to H11 H3. apply adj_same_result to H21 H2.
+      backchain perm_trans with K = U1.
+    apply mall_perm to H19 H20. search.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

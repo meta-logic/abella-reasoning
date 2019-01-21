@@ -32,7 +32,7 @@
 │   │   ├── mll-noadj.thm x MLL using only 'merge' for rules (incomplete)
 │   │   └── mll.thm       o MLL
 │   └── mllq
-│       └── mllq.thm      x MLL first-order (missing mllq specification?)
+│       └── mllq.thm      x MLL first-order (search failed)
 └── two-sided
     ├── lj.thm            x LJ (incomplete)
     ├── mall-perm.thm     x MALL up to permutation (lemma not found)
