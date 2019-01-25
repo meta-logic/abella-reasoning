@@ -513,7 +513,13 @@ case H1 (keep).
           apply add_to_merge_left to H17 H32.
 
           % 5. prove conclusion
-          search.
+          exists G8. exists M. split.
+          search. search.
+          unfold 14.
+            exists A2, B2, LL, LL1, D7, D8, G7, G8. split.
+              search. search. search. search. search. search.
+              apply perm_sym to H45. search.
+              apply perm_1_is_list to H45. apply perm_refl to H53. search.
    
         % plusR1 case
         apply IH2 to H1 H2 H19 H4 H5.
@@ -559,7 +565,12 @@ case H1 (keep).
           apply perm_refl to *H55.
 
           % 5. Prove conclusion
-          search.
+          exists M. exists D8. split.
+          search. search.
+          unfold 17. exists A2, B2, LL, LL1, G7, G8, D7, D8. split.
+            search. search. search. search. search. search.
+            apply perm_sym to H54. search.
+            apply perm_1_is_list to H54. apply perm_refl to *H57. search.
 
       % 2. the tensorR is applied to another formula -- permutes down
       apply merge_unadj_3 to H9 H16.
@@ -690,7 +701,9 @@ case H1 (keep).
       apply change_merge_order to H28 H19 H33.
       apply merge_sym to *H25.
       apply merge_sym to *H28.
-      search.
+      exists M. exists L1. split. search. search.
+      unfold 9. exists A1, B1, L, G3, G5, G1', LL, D3, D5. split.
+        search. search. search. search. search. search. search.
 
     % zeroL case
     apply adj_3_is_list to H8.
@@ -748,7 +761,11 @@ case H1 (keep).
     apply add_to_merge_right to H42 H24.
     apply adj_same_result to H43 H4.
     apply perm_merge_2 to H44 H46.
-    search.
+    exists G6. exists M. split. search. search.
+    unfold 14. exists A1, B1, LL, LL1, D5, D6, G5, G6. split.
+      search. search. search. search. search. search.
+      apply perm_sym to H37. search.
+      apply perm_1_is_list to H37. apply perm_refl to *H48. search.
 
     % plusR1 case
     apply adj_same_result_diff to H4 H8. case H11.
@@ -792,7 +809,8 @@ case H1 (keep).
     apply merge_perm_det to H39 H37.
     apply perm_2_is_list to H40.
     apply perm_refl to *H41.
-    search.
+    exists M. exists D5. split. search. search.
+    unfold 17. exists A1, B1, LL, LL1, G5, G6, D5, D6. search.
 
   %% 2. Plus case
   case H2 (keep).
@@ -858,6 +876,8 @@ case H1 (keep).
       apply add_to_merge_right to H39 H38.
       apply adj_same_result to H40 H4.
       apply perm_merge_2 to H41 H43.
+      exists L. exists M. split. search. search.
+      unfold 5. exists A1, B1, L1, D3, D5, D1'1, LL, G3, G5.
       search.
 
     % botL case
@@ -919,6 +939,8 @@ case H1 (keep).
       apply merge_sym to H33.
       apply merge_sym to H17.
       apply change_merge_order to H33 H19 H35.
+      exists M. exists L1. split. search. search.
+      unfold 9. exists A1, B1, L, G3, G5, G1', LL, D3, D5.
       search.
 
     % zeroL case
@@ -977,6 +999,8 @@ case H1 (keep).
     apply add_to_merge_right to H42 H24.
     apply adj_same_result to H43 H4.
     apply perm_merge_2 to H44 H46.
+    exists G5, M. split. search. search.
+    unfold 14. exists A1, B1, LL, LL1, D5, D6, G5, G6.
     search.
 
     % plusR1 case
@@ -1057,6 +1081,8 @@ case H1 (keep).
           apply merge_sym to *H22.
           apply change_merge_order to H30 H42 H43.
           apply merge_sym to *H44.
+          exists L, M. split. search. search.
+          unfold 5. exists A2, B2, L1, D4, D6, D1'1, LL, G6, G5. 
           search.
 
         % botL case
@@ -1126,7 +1152,9 @@ case H1 (keep).
           apply merge_sym to H15.
           apply change_merge_order to H48 H49 H50.
           apply merge_sym to H51.
-          apply merge_sym to H48. 
+          apply merge_sym to H48.
+          exists M, L1. split. search. search.
+          unfold 9. exists A2, B2, L. exists G3, G5. exists G1', LL. exists D4, D6.
           search.
 
         % zeroL case
@@ -1194,6 +1222,8 @@ case H1 (keep).
         apply perm_merge_1 to H36 H18.
         apply merge_perm_det to H44 H28.
         apply add_to_merge_left to H13 H28.
+        exists G5, M. split. search. search.
+        unfold 14. exists A2, B2, LL. exists LL1, D6, D7.
         search.        
 
         % plusR1 case
@@ -1239,8 +1269,11 @@ case H1 (keep).
           apply perm_merge_1 to H26 H19.
           apply perm_merge_1 to H36 H20.
           apply merge_perm_det to H49 H48.
-          apply perm_2_is_list to H50.
+          apply perm_1_is_list to H50.
           apply perm_refl to *H51.
+          apply perm_sym to H50.
+          exists M, D7. split. search. search.
+          unfold 17. exists A2, B2, LL. exists LL1, G5, G6. exists D6, D7.
           search.
 
       % 2. the cut-formula is not principal
@@ -1332,6 +1365,8 @@ case H1 (keep).
           apply merge_sym to *H22.
           apply change_merge_order to H30 H42 H43.
           apply merge_sym to *H44.
+          exists L, M. split. search. search.
+          unfold 5. exists A2, B2, L1. exists D4, D6, D4', LL. exists G4, G6.
           search.
 
         % botL case
@@ -1403,7 +1438,9 @@ case H1 (keep).
           apply merge_sym to H15.
           apply change_merge_order to H48 H49 H50.
           apply merge_sym to H51.
-          apply merge_sym to H48. 
+          apply merge_sym to H48.
+          exists M, L1. split. search. search.
+          unfold 9. exists A2, B2, L. exists G3, G5, G3', LL. exists D4, D6.
           search.
 
         % zeroL case
@@ -1471,6 +1508,8 @@ case H1 (keep).
         apply perm_merge_1 to H36 H18.
         apply merge_perm_det to H44 H28.
         apply add_to_merge_left to H13 H28.
+        exists G5, M. split. search. search.
+        unfold 14. exists A2, B2, LL. exists LL1, D6, D7. exists G5, G6.
         search.
 
         % plusR1 case
@@ -1517,8 +1556,11 @@ case H1 (keep).
           apply perm_merge_1 to H26 H19.
           apply perm_merge_1 to H36 H20.
           apply merge_perm_det to H49 H48.
-          apply perm_2_is_list to H50.
+          apply perm_1_is_list to H50.
           apply perm_refl to *H51.
+          apply perm_sym to H50.
+          exists M, D7. split. search. search.
+          unfold 17. exists A2, B2, LL. exists LL1, G5, G6. exists D6, D7.
           search.
 
       % 2. the cut-formula is not principal
@@ -1549,8 +1591,11 @@ case H1 (keep).
     apply perm_sym to *H26.
     apply perm_merge_2 to H28 H38.
     apply merge_perm_det to H39 H37.
-    apply perm_2_is_list to H40.
+    apply perm_1_is_list to H40.
     apply perm_refl to *H41.
+    apply perm_sym to H40.
+    exists M, D6. split. search. search.
+    unfold 17. exists A1, B1, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 3. With case
@@ -1617,6 +1662,8 @@ case H1 (keep).
       apply add_to_merge_right to H39 H38.
       apply adj_same_result to H40 H4.
       apply perm_merge_2 to H41 H43.
+      exists L, M. split. search. search.
+      unfold 5. exists A1, B1, L1. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -1678,6 +1725,8 @@ case H1 (keep).
       apply merge_sym to H33.
       apply merge_sym to H17.
       apply change_merge_order to H33 H19 H35.
+      exists M, L1. split. search. search.
+      unfold 9. exists A1, B1, L. exists G3, G5, G1', LL. exists D3, D5.
       search.
 
     % zeroL case
@@ -1792,6 +1841,8 @@ case H1 (keep).
           apply add_to_merge_left to H18 H46.
           apply merge_sym to H38.
           apply merge_sym to H35.
+          exists L1, M. split. search. search.
+          unfold 5. exists A2, B2, L. exists D5, D7, D1'1, LL. exists G5, G7.
           search.
 
         % botL case
@@ -1860,6 +1911,8 @@ case H1 (keep).
           apply merge_sym to *H56.
           apply merge_sym to H39.
           apply merge_sym to H44.
+          exists M, L1. split. search. search.
+          unfold 9. exists A2, B2, L. exists G5, G7, G1', LL. exists D5, D7.
           search.
         
         % zeroL case
@@ -1952,6 +2005,8 @@ case H1 (keep).
         apply merge_perm_det to H49 H33.
         apply perm_2_is_list to H50.
         apply add_to_merge_left to H18 H33.
+        exists G7, M. split. search. search.
+        unfold 14. exists A2, B2, LL. exists LL1, D7, D8. exists G7, G8.
         search.
    
         % plusR1 case
@@ -1986,8 +2041,11 @@ case H1 (keep).
         apply perm_merge_1 to H31 H24.
         apply perm_merge_1 to H41 H25.
         apply merge_perm_det to H54 H53.
-        apply perm_2_is_list to H55.
+        apply perm_1_is_list to H55.
         apply perm_refl to *H56.
+        apply perm_sym to H55.
+        exists M, D8. split. search. search.
+        unfold 17. exists A2, B2, LL. exists LL1, G7, G8. exists D7, D8.
         search.
 
       % 2. the cut-formula is not principal
@@ -2010,6 +2068,8 @@ case H1 (keep).
       apply add_to_merge_right to H42 H24.
       apply adj_same_result to H43 H4.
       apply perm_merge_2 to H44 H46.
+      exists G5, M. split. search. search.
+      unfold 14. exists A1, B1, LL. exists LL1, D5, D6. exists G5, G6.
       search.
 
     % plusR1 case
@@ -2052,8 +2112,11 @@ case H1 (keep).
     apply perm_sym to *H26.
     apply perm_merge_2 to H28 H38.
     apply merge_perm_det to H39 H37.
-    apply perm_2_is_list to H40.
+    apply perm_1_is_list to H40.
     apply perm_refl to *H41.
+    apply perm_sym to H40.
+    exists M, D6. split. search. search.
+    unfold 17. exists A1, B1, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 4. Par case
@@ -2120,6 +2183,8 @@ case H1 (keep).
       apply add_to_merge_right to H39 H38.
       apply adj_same_result to H40 H4.
       apply perm_merge_2 to H41 H43.
+      exists L, M. split. search. search.
+      unfold 5. exists A1, B1, L1. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -2216,6 +2281,8 @@ case H1 (keep).
           apply add_to_merge_left to H14 H44.
           apply merge_sym to H44.
           apply merge_sym to H31.
+          exists L, M. split. search. search.
+          unfold 5. exists A2, B2, L1. exists D5, D7, D1'1, LL.
           search.
 
         % botL case
@@ -2305,6 +2372,8 @@ case H1 (keep).
             apply merge_sym to H51.
             apply merge_sym to H35.
             apply merge_sym to H48.
+            exists M, L1. split. search. search.
+            unfold 9. exists A2, B2, L. exists G3, G5, G1', LL. exists D5, D7.
             search.
 
         % zeroL case
@@ -2371,7 +2440,11 @@ case H1 (keep).
         apply perm_merge_1 to H37 H19.
         apply merge_perm_det to H45 H29.
         apply add_to_merge_left to H14 H29.
-        search.       
+        exists G6, M. split. search. search.
+        unfold 14. exists A2, B2, LL. exists LL1, D7, D8. exists G5, G6. split.
+          search. search. search. search. search. search.
+          apply perm_sym to H42. search.
+          apply perm_1_is_list to H42. apply perm_refl to H49. search.
 
         % plusR1 case
         apply IH2 to H1 H2 H16 H4 H5.
@@ -2404,9 +2477,12 @@ case H1 (keep).
         apply perm_merge_1 to H27 H20.
         apply perm_merge_1 to H37 H21.
         apply merge_perm_det to H50 H49.
-        apply perm_2_is_list to H51.
+        apply perm_1_is_list to H51.
         apply perm_refl to *H52.
-        search.    
+        apply perm_sym to H51.
+        exists M, D8. split. search. search.
+        unfold 17. exists A2, B2, LL. exists LL1, G5, G6. exists D7, D8.
+        search.
 
       % 2. the cut-formula is not principal
       apply adj_swap to H13 H10.
@@ -2454,6 +2530,8 @@ case H1 (keep).
       apply merge_sym to H33.
       apply merge_sym to H17.
       apply change_merge_order to H33 H19 H35.
+      exists M, L1. split. search. search.
+      unfold 9. exists A1, B1, L. exists G3, G5, G1', LL. exists D3, D5.
       search.
 
     % zeroL case
@@ -2512,6 +2590,8 @@ case H1 (keep).
     apply add_to_merge_right to H42 H24.
     apply adj_same_result to H43 H4.
     apply perm_merge_2 to H44 H46.
+    exists G5, M. split. search. search.
+    unfold 14. exists A1, B1, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -2554,8 +2634,11 @@ case H1 (keep).
     apply perm_sym to *H26.
     apply perm_merge_2 to H28 H38.
     apply merge_perm_det to H39 H37.
-    apply perm_2_is_list to H40.
+    apply perm_1_is_list to H40.
     apply perm_refl to *H41.
+    apply perm_sym to H40.
+    exists M, D6. split. search. search.
+    unfold 17. exists A1, B1, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 5. Zero case
@@ -2621,6 +2704,8 @@ case H1 (keep).
       apply merge_sym to *H8.
       apply change_merge_order to H38 H20 H39.
       apply merge_sym to *H27. apply merge_sym to *H38.
+      exists L1, M. split. search. search.
+      unfold 5. exists A, B, L. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -2736,6 +2821,8 @@ case H1 (keep).
     apply add_to_merge_right to H40 H22.
     apply adj_same_result to H41 H4.
     apply perm_merge_2 to H42 H44.
+    exists G5, M. split. search. search.
+    unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -2779,6 +2866,8 @@ case H1 (keep).
     apply merge_perm_det to H37 H35.
     apply perm_2_is_list to H38.
     apply perm_refl to *H39.
+    exists M, D5. split. search. search.
+    unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 6. One case
@@ -2942,7 +3031,10 @@ case H1 (keep).
           apply perm_merge_1 to H37 H46.
           apply merge_sym to H41.
           apply merge_sym to H30.
-          case H8. search. case H50.
+          case H8.
+          exists M, L1. split. search. search.
+          unfold 9. exists A, B, L. exists G3, G5, G1', LL. exists D3, D5.
+          search. case H50.
 
         % zeroL case
         apply adj_same_result_diff to H9 H5. case H11.
@@ -3006,6 +3098,8 @@ case H1 (keep).
         apply perm_merge_1 to H32 H14.
         apply merge_perm_det to H40 H24.
         apply add_to_merge_left to H9 H24.
+        exists G5, M. split. search. search.
+        unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
         search.
 
         % plusR1 case
@@ -3042,6 +3136,8 @@ case H1 (keep).
         apply merge_perm_det to H45 H44.
         apply perm_2_is_list to H46.
         apply perm_refl to *H47.
+        exists M, D5. split. search. search.
+        unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
         search.
 
       % 2. the cut-formula is not principal
@@ -3103,6 +3199,8 @@ case H1 (keep).
       apply perm_merge_2 to H37 H39.
       apply merge_sym to H8.
       apply change_merge_order to H28 H20 H41.
+      exists L, M. split. search. search.
+      unfold 5. exists A, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -3165,6 +3263,8 @@ case H1 (keep).
       apply merge_sym to H31.
       apply merge_sym to H15.
       apply change_merge_order to H31 H17 H33.
+      exists M, L1. split. search. search.
+      unfold 9. exists A, B, L. exists G3, G5, G1', LL. exists D3, D5.
       search.
 
     % zeroL case
@@ -3222,6 +3322,8 @@ case H1 (keep).
     apply add_to_merge_right to H40 H22.
     apply adj_same_result to H41 H4.
     apply perm_merge_2 to H42 H44.
+    exists G5, M. split. search. search.
+    unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -3265,6 +3367,8 @@ case H1 (keep).
     apply merge_perm_det to H37 H35.
     apply perm_2_is_list to H38.
     apply perm_refl to *H39.
+    exists M, D5. split. search. search.
+    unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 7. Bot case
@@ -3331,6 +3435,8 @@ case H1 (keep).
       apply perm_merge_2 to H37 H39.
       apply merge_sym to H8.
       apply change_merge_order to H28 H20 H41.
+      exists L, M. split. search. search.
+      unfold 5. exists A, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -3414,6 +3520,8 @@ case H1 (keep).
           apply add_to_merge_left to H10 H38.
           apply merge_sym to H27.
           apply merge_sym to H34.
+          exists L, M. split. search. search.
+          unfold 5. exists A, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
           search.
 
         % botL case
@@ -3486,6 +3594,8 @@ case H1 (keep).
           apply merge_sym to *H47.
           apply merge_sym to *H44.
           apply merge_sym to *H31.
+          exists M, L1. split. search. search.
+          unfold 9. exists A, B, L. exists G3, G5, G1', LL. exists D3, D5.
           search.
 
         % zeroL case
@@ -3552,6 +3662,8 @@ case H1 (keep).
         apply perm_merge_1 to H33 H15.
         apply merge_perm_det to H41 H25.
         apply add_to_merge_left to H10 H25.
+        exists G5, M. split. search. search.
+        unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
         search.   
 
         % plusR1 case
@@ -3588,6 +3700,8 @@ case H1 (keep).
         apply merge_perm_det to H46 H45.
         apply perm_2_is_list to H47.
         apply perm_refl to *H48.
+        exists M, D5. split. search. search.
+        unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
         search.
 
       % the cut-formula is not principal
@@ -3644,6 +3758,8 @@ case H1 (keep).
       apply merge_sym to H31.
       apply merge_sym to H15.
       apply change_merge_order to H31 H17 H33.
+      exists M, L1. split. search. search.
+      unfold 9. exists A, B, L. exists G3, G5, G1', LL. exists D3, D5.
       search.
 
     % zeroL case
@@ -3701,6 +3817,8 @@ case H1 (keep).
     apply add_to_merge_right to H40 H22.
     apply adj_same_result to H41 H4.
     apply perm_merge_2 to H42 H44.
+    exists G5, M. split. search. search.
+    unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -3744,6 +3862,8 @@ case H1 (keep).
     apply merge_perm_det to H37 H35.
     apply perm_2_is_list to H38.
     apply perm_refl to *H39.
+    exists M, D5. split. search. search.
+    unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 8. Top case
@@ -3809,6 +3929,8 @@ case H1 (keep).
       apply merge_sym to *H8.
       apply change_merge_order to H38 H20 H39.
       apply merge_sym to *H27. apply merge_sym to *H38.
+      exists L1, M. split. search. search.
+      unfold 5. exists A, B, L. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -3958,6 +4080,8 @@ case H1 (keep).
           apply add_to_merge_left to H10 H38.
           apply merge_sym to H27.
           apply merge_sym to H34.
+          exists L, M. split. search. search.
+          unfold 5. exists A, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
           search.
 
         % botL case
@@ -4026,6 +4150,8 @@ case H1 (keep).
           apply merge_sym to *H47.
           apply merge_sym to *H44.
           apply merge_sym to *H31.
+          exists M, L1. split. search. search.
+          unfold 9. exists A, B, L. exists G3, G5, G1', LL. exists D3, D5.
           search.
 
         % zeroL case
@@ -4092,6 +4218,8 @@ case H1 (keep).
         apply perm_merge_1 to H33 H15.
         apply merge_perm_det to H41 H25.
         apply add_to_merge_left to H10 H25.
+        exists G5, M. split. search. search.
+        unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
         search.
 
         % plusR1 case
@@ -4128,6 +4256,8 @@ case H1 (keep).
         apply merge_perm_det to H46 H45.
         apply perm_2_is_list to H47.
         apply perm_refl to *H48.
+        exists M, D5. split. search. search.
+        unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
         search.
 
       % the cut-formula is not principal
@@ -4173,6 +4303,8 @@ case H1 (keep).
     apply add_to_merge_right to H40 H22.
     apply adj_same_result to H41 H4.
     apply perm_merge_2 to H42 H44.
+    exists G5, M. split. search. search.
+    unfold 14. exists A, B, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -4216,6 +4348,8 @@ case H1 (keep).
     apply merge_perm_det to H37 H35.
     apply perm_2_is_list to H38.
     apply perm_refl to *H39.
+    exists M, D5. split. search. search.
+    unfold 17. exists A, B, LL. exists LL1, G5, G6. exists D5, D6.
     search.
 
   %% 9. Atom case
@@ -4313,6 +4447,8 @@ case H1 (keep).
           apply add_to_merge_left to H10 H38.
           apply merge_sym to H27.
           apply merge_sym to H34.
+          exists L, M. split. search. search.
+          unfold 5. exists A2, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
           search.
 
         % botL case
@@ -4381,6 +4517,8 @@ case H1 (keep).
           apply merge_sym to *H47.
           apply merge_sym to *H44.
           apply merge_sym to *H31.
+          exists M, L1. split. search. search.
+          unfold 9. exists A2, B, L. exists G3, G5, G1', LL. exists D3, D5.
           search.
 
         % zeroL case
@@ -4447,7 +4585,9 @@ case H1 (keep).
         apply perm_merge_1 to H33 H15.
         apply merge_perm_det to H41 H25.
         apply add_to_merge_left to H10 H25.
-        search.   
+        exists G5, M. split. search. search.
+        unfold 14. exists A2, B, LL. exists LL1, D5, D6. exists G5, G6.
+        search.
 
         % plusR1 case
         apply IH2 to H1 H2 H12 H4 H5.
@@ -4483,6 +4623,8 @@ case H1 (keep).
         apply merge_perm_det to H46 H45.
         apply perm_2_is_list to H47.
         apply perm_refl to *H48.
+        exists M, D5. split. search. search.
+        unfold 17. exists A2, B, LL. exists LL1, G5, G6. exists D5, D6.
         search.
 
       % 2. The cut-formula is not principal
@@ -4546,6 +4688,8 @@ case H1 (keep).
       apply perm_merge_2 to H37 H39.
       apply merge_sym to H8.
       apply change_merge_order to H28 H20 H41.
+      exists L, M. split. search. search.
+      unfold 5. exists A1, B, L1. exists D3, D5, D1'1, LL. exists G3, G5.
       search.
 
     % botL case
@@ -4607,6 +4751,8 @@ case H1 (keep).
       apply merge_sym to H31.
       apply merge_sym to H15.
       apply change_merge_order to H31 H17 H33.
+      exists M, L1. split. search. search.
+      unfold 9. exists A1, B, L. exists G3, G5, G1', LL. exists D3, D5.
       search.
 
     % zeroL case
@@ -4664,6 +4810,8 @@ case H1 (keep).
     apply add_to_merge_right to H40 H22.
     apply adj_same_result to H41 H4.
     apply perm_merge_2 to H42 H44.
+    exists G5, M. split. search. search.
+    unfold 14. exists A1, B, LL. exists LL1, D5, D6. exists G5, G6.
     search.
 
     % plusR1 case
@@ -4707,4 +4855,6 @@ case H1 (keep).
     apply merge_perm_det to H37 H35.
     apply perm_2_is_list to H38.
     apply perm_refl to *H39.
+    exists M, D5. split. search. search.
+    unfold 17. exists A1, B, LL. exists LL1, G5, G6. exists D5, D6.
     search.
