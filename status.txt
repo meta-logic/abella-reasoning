@@ -35,6 +35,6 @@
 │       └── mllq.thm      x MLL first-order (search failed)
 └── two-sided
     ├── lj.thm            x LJ (incomplete)
-    ├── mall-perm.thm     x MALL up to permutation (lemma not found)
-    ├── mall.thm          x MALL (search does not terminate)
+    ├── mall-perm.thm     x MALL up to permutation (incomplete)
+    ├── mall.thm          o MALL
     └── mlj.thm           x LJ multi-conclusion (incomplete proof -- search failed)
