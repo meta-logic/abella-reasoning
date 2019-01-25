@@ -368,14 +368,6 @@ intros.
     apply adj_implies_merge to H8. apply perm_sym to H5.
      apply perm_merge_3 to H9 H10. search.
 
-Theorem merge_split : forall J K L LL A,
-  merge LL (A :: nil) L ->
-  merge J K L ->
-  (exists JJ, merge JJ (A :: nil) J /\ merge JJ K LL) \/
-  (exists KK, merge KK (A :: nil) K /\ merge J KK LL).
-skip.
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% subsets via merge
 
